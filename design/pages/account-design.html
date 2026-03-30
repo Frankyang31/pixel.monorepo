@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>个人中心 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--brand-start:#7B5EF0;--brand-end:#4F8EF7;--brand-mid:#6370F3;--accent-teal:#2DD4BF;--accent-amber:#FBBF24;--bg-base:#0D0D12;--bg-surface:#13131A;--bg-elevated:#1C1C27;--bg-overlay:#252535;--border-subtle:rgba(255,255,255,0.06);--border-default:rgba(255,255,255,0.10);--border-brand:rgba(123,94,240,0.40);--text-primary:#F0F0F8;--text-secondary:#A0A0B8;--text-tertiary:#606078;--color-success:#2DD4BF;--color-error:#F87171;--shadow-md:0 4px 16px rgba(0,0,0,0.4);--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-2xl:24px;--radius-full:9999px;--font-sans:'Inter','PingFang SC',system-ui,sans-serif;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,18,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 24px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;}
+    .nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .credits-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-full);font-size:13px;}
+    .btn-back{padding:7px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);cursor:pointer;}
+
+    .page-layout{display:flex;min-height:calc(100vh - 64px);}
+    .sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border-subtle);padding:24px 12px;}
+    /* User card in sidebar */
+    .user-card{padding:16px;background:var(--bg-elevated);border-radius:var(--radius-xl);margin-bottom:20px;text-align:center;}
+    .user-avatar-lg{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;}
+    .user-name{font-size:15px;font-weight:700;}
+    .user-plan{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(123,94,240,0.12);border-radius:var(--radius-full);font-size:12px;color:var(--brand-mid);margin-top:4px;}
+    .sidebar-menu{display:flex;flex-direction:column;gap:2px;}
+    .menu-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .2s;}
+    .menu-item:hover{color:var(--text-primary);background:rgba(255,255,255,0.05);}
+    .menu-item.active{color:var(--text-primary);background:rgba(123,94,240,0.12);}
+    .menu-item .icon{font-size:16px;width:20px;}
+    .menu-divider{height:1px;background:var(--border-subtle);margin:10px 0;}
+
+    .main-content{flex:1;padding:32px 40px;max-width:780px;}
+    .section-title-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .section-title-bar h2{font-size:20px;font-weight:700;}
+    .btn-sm{padding:7px 14px;font-size:13px;font-weight:500;border-radius:var(--radius-md);cursor:pointer;transition:all .2s;}
+    .btn-save{background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;border:none;}
+    .btn-save:hover{opacity:.9;}
+
+    /* Profile Form */
+    .avatar-section{display:flex;align-items:center;gap:20px;padding:20px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);margin-bottom:20px;}
+    .avatar-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;}
+    .avatar-info h4{font-size:15px;font-weight:600;margin-bottom:4px;}
+    .avatar-info p{font-size:13px;color:var(--text-tertiary);margin-bottom:10px;}
+    .avatar-actions{display:flex;gap:8px;}
+    .btn-upload{padding:7px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);cursor:pointer;}
+
+    .form-group{margin-bottom:18px;}
+    .form-label{font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:7px;display:block;}
+    .form-input{width:100%;padding:10px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:14px;color:var(--text-primary);outline:none;font-family:var(--font-sans);transition:border-color .2s;}
+    .form-input:focus{border-color:var(--border-brand);}
+    .form-input::placeholder{color:var(--text-tertiary);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-hint{font-size:12px;color:var(--text-tertiary);margin-top:5px;}
+    .form-note{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-success);margin-top:5px;}
+
+    /* Bind section */
+    .bind-section{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);overflow:hidden;margin-top:28px;}
+    .bind-header{padding:16px 20px;border-bottom:1px solid var(--border-subtle);font-size:15px;font-weight:600;}
+    .bind-item{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-subtle);}
+    .bind-item:last-child{border-bottom:none;}
+    .bind-left{display:flex;align-items:center;gap:12px;}
+    .bind-icon{width:36px;height:36px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;}
+    .bi-wechat{background:rgba(45,212,191,0.1);}
+    .bi-google{background:rgba(79,142,247,0.1);}
+    .bi-phone{background:rgba(251,191,36,0.1);}
+    .bind-info h4{font-size:14px;font-weight:500;}
+    .bind-info p{font-size:12px;color:var(--text-tertiary);}
+    .bind-status-done{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-success);}
+    .bind-status-none{font-size:12px;color:var(--text-tertiary);}
+    .btn-bind{padding:6px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:12px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .2s;}
+    .btn-bind:hover{border-color:var(--border-brand);color:var(--text-primary);}
+    .btn-unbind{padding:6px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:var(--radius-md);font-size:12px;font-weight:500;color:var(--color-error);cursor:pointer;}
+
+    /* Danger zone */
+    .danger-section{margin-top:28px;padding:20px;background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.15);border-radius:var(--radius-xl);}
+    .danger-title{font-size:14px;font-weight:600;color:var(--color-error);margin-bottom:10px;}
+    .danger-desc{font-size:13px;color:var(--text-tertiary);margin-bottom:14px;}
+    .btn-danger{padding:8px 16px;background:transparent;border:1px solid rgba(248,113,113,0.3);border-radius:var(--radius-md);font-size:13px;color:var(--color-error);cursor:pointer;transition:all .2s;}
+    .btn-danger:hover{background:rgba(248,113,113,0.08);}
+
+    @media(max-width:768px){.page-layout{flex-direction:column;}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border-subtle);}.main-content{padding:20px 16px;}.form-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<nav><div class="nav-inner">
+  <div class="nav-logo"><div class="nav-logo-icon">✦</div>PixelMind</div>
+  <div class="nav-right">
+    <div class="credits-badge">⚡ <strong>842</strong> 积分</div>
+    <button class="btn-back">← 返回工作台</button>
+  </div>
+</div></nav>
+
+<div class="page-layout">
+  <aside class="sidebar">
+    <div class="user-card">
+      <div class="user-avatar-lg">👤</div>
+      <div class="user-name">小林创作者</div>
+      <div class="user-plan">⭐ 专业版 L2</div>
+    </div>
+    <div class="sidebar-menu">
+      <div class="menu-item active"><span class="icon">👤</span>个人信息</div>
+      <div class="menu-item" onclick="window.location.href='points-design.html'"><span class="icon">⚡</span>积分明细</div>
+      <div class="menu-item" onclick="window.location.href='membership-design.html'"><span class="icon">👑</span>会员管理</div>
+      <div class="menu-divider"></div>
+      <div class="menu-item"><span class="icon">🔔</span>通知设置</div>
+      <div class="menu-item"><span class="icon">🌐</span>语言与地区</div>
+      <div class="menu-divider"></div>
+      <div class="menu-item" style="color:var(--color-error);"><span class="icon">🚪</span>退出登录</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="section-title-bar">
+      <h2>个人信息</h2>
+      <button class="btn-sm btn-save">保存修改</button>
+    </div>
+
+    <!-- Avatar -->
+    <div class="avatar-section">
+      <div class="avatar-big">👤</div>
+      <div class="avatar-info">
+        <h4>头像</h4>
+        <p>支持 JPG、PNG 格式，建议尺寸 400×400px，最大 2MB</p>
+        <div class="avatar-actions">
+          <button class="btn-upload">📷 更换头像</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">昵称</label>
+        <input class="form-input" value="小林创作者"/>
+        <div class="form-hint">最多 20 个字符，支持中英文和数字</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">用户 ID</label>
+        <input class="form-input" value="pixelmind_xiaoLin" readonly style="opacity:.6;cursor:not-allowed;"/>
+        <div class="form-hint">注册后不可修改</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">个人简介</label>
+      <textarea class="form-input" rows="3" style="resize:vertical;">设计师 | AI 创作爱好者 | 探索人机协作的边界</textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">邮箱地址</label>
+        <input class="form-input" value="xiaoLin@example.com"/>
+        <div class="form-note">✓ 已验证</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">手机号码</label>
+        <input class="form-input" placeholder="绑定手机号获得账号保护"/>
+        <div class="form-hint">绑定后可用手机号登录</div>
+      </div>
+    </div>
+
+    <!-- Bind accounts -->
+    <div class="bind-section">
+      <div class="bind-header">第三方账号绑定</div>
+      <div class="bind-item">
+        <div class="bind-left">
+          <div class="bind-icon bi-wechat">💚</div>
+          <div class="bind-info"><h4>微信</h4><p>已绑定：微信昵称「创意小林」</p></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="bind-status-done">✓ 已绑定</div>
+          <button class="btn-unbind">解绑</button>
+        </div>
+      </div>
+      <div class="bind-item">
+        <div class="bind-left">
+          <div class="bind-icon bi-google">💙</div>
+          <div class="bind-info"><h4>Google</h4><p>绑定后可使用 Google 账号快速登录</p></div>
+        </div>
+        <button class="btn-bind">绑定 Google</button>
+      </div>
+      <div class="bind-item">
+        <div class="bind-left">
+          <div class="bind-icon bi-phone">📱</div>
+          <div class="bind-info"><h4>手机验证</h4><p>未绑定，绑定后可接收安全验证短信</p></div>
+        </div>
+        <button class="btn-bind">绑定手机</button>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="danger-section">
+      <div class="danger-title">⚠️ 危险操作</div>
+      <div class="danger-desc">注销账号后，你的所有数据（作品、积分、会员权益）将被永久删除，且无法恢复。</div>
+      <button class="btn-danger">注销账号</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

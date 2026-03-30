@@ -1,0 +1,11 @@
+# IDE / 工具
+.workbuddy/
+.vscode/
+.idea/
+
+# 备份目录
+web_local_backup/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>2026 年文生图终极提示词指南 | PixelMind 博客</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--brand-start:#7B5EF0;--brand-end:#4F8EF7;--brand-mid:#6370F3;--accent-teal:#2DD4BF;--bg-base:#F5F4F8;--bg-surface:#FFFFFF;--bg-overlay:#F0EFF4;--border-subtle:rgba(0,0,0,0.05);--border-default:rgba(0,0,0,0.10);--border-brand:rgba(123,94,240,0.35);--text-primary:#18181F;--text-secondary:#5A5A72;--text-tertiary:#9090A8;--shadow-sm:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 12px rgba(0,0,0,0.10);--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-2xl:24px;--radius-full:9999px;--font-sans:'Inter','PingFang SC',system-ui,sans-serif;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+    nav{position:sticky;top:0;z-index:100;background:rgba(245,244,248,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1200px;margin:0 auto;padding:0 40px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;}
+    .nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text-secondary);transition:color .2s;}
+    .nav-back:hover{color:var(--brand-mid);}
+    .btn-nav-cta{padding:8px 18px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:14px;font-weight:600;border-radius:var(--radius-full);}
+
+    /* Layout */
+    .article-layout{max-width:1100px;margin:0 auto;padding:48px 40px;display:grid;grid-template-columns:1fr 280px;gap:48px;align-items:start;}
+
+    /* Article */
+    article{}
+    .article-header{margin-bottom:32px;}
+    .article-tags{display:flex;gap:8px;margin-bottom:14px;}
+    .art-tag{padding:3px 10px;border-radius:var(--radius-full);font-size:12px;font-weight:600;}
+    .t1{background:rgba(123,94,240,0.1);color:var(--brand-mid);}
+    .t2{background:rgba(251,191,36,0.12);color:#D97706;}
+    .article-title{font-size:32px;font-weight:800;letter-spacing:-0.02em;line-height:1.2;margin-bottom:16px;}
+    .article-subtitle{font-size:17px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;}
+    .article-meta{display:flex;align-items:center;gap:14px;padding-bottom:20px;border-bottom:1px solid var(--border-subtle);font-size:13px;color:var(--text-tertiary);}
+    .meta-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .meta-author{font-size:14px;font-weight:600;color:var(--text-primary);}
+    .meta-divider{color:var(--border-default);}
+
+    /* Hero Image */
+    .article-hero-img{height:320px;border-radius:var(--radius-2xl);display:flex;align-items:center;justify-content:center;font-size:80px;background:linear-gradient(135deg,#667eea,#764ba2);margin-bottom:36px;}
+
+    /* Content */
+    .article-content{font-size:16px;line-height:1.8;color:var(--text-primary);}
+    .article-content h2{font-size:22px;font-weight:700;margin:32px 0 14px;color:var(--text-primary);}
+    .article-content h3{font-size:18px;font-weight:600;margin:24px 0 10px;color:var(--text-primary);}
+    .article-content p{margin-bottom:16px;color:var(--text-secondary);}
+    .article-content ul,.article-content ol{margin:12px 0 16px 20px;}
+    .article-content li{margin-bottom:6px;color:var(--text-secondary);}
+    .prompt-block{background:#1a1a2e;border-radius:var(--radius-lg);padding:18px 20px;margin:16px 0;font-family:monospace;font-size:14px;color:rgba(180,160,255,0.9);line-height:1.6;position:relative;}
+    .prompt-block::before{content:'Prompt';position:absolute;top:8px;right:12px;font-size:11px;color:rgba(255,255,255,0.25);font-family:var(--font-sans);}
+    .tip-block{background:rgba(45,212,191,0.06);border-left:3px solid var(--accent-teal);border-radius:0 var(--radius-md) var(--radius-md) 0;padding:14px 18px;margin:16px 0;}
+    .tip-block p{color:var(--text-secondary);margin:0;}
+    .tip-label{font-size:12px;font-weight:700;color:var(--accent-teal);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+    .example-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0;}
+    .example-img{border-radius:var(--radius-lg);height:120px;display:flex;align-items:center;justify-content:center;font-size:32px;}
+    .ei1{background:linear-gradient(135deg,#667eea,#764ba2);}
+    .ei2{background:linear-gradient(135deg,#f093fb,#f5576c);}
+    .ei3{background:linear-gradient(135deg,#4facfe,#00f2fe);}
+
+    /* Sidebar */
+    .sidebar{position:sticky;top:88px;}
+    .toc-card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);padding:20px;margin-bottom:20px;}
+    .toc-title{font-size:13px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;}
+    .toc-list{display:flex;flex-direction:column;gap:8px;}
+    .toc-item{font-size:13px;color:var(--text-secondary);cursor:pointer;transition:color .2s;display:flex;align-items:flex-start;gap:8px;}
+    .toc-item:hover,.toc-item.active{color:var(--brand-mid);}
+    .toc-num{flex-shrink:0;width:18px;height:18px;border-radius:50%;background:rgba(123,94,240,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--brand-mid);}
+    .cta-card{background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-xl);padding:20px;text-align:center;}
+    .cta-card h4{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;}
+    .cta-card p{font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:16px;}
+    .btn-cta-white{width:100%;padding:10px;background:#fff;color:var(--brand-mid);font-size:14px;font-weight:700;border:none;border-radius:var(--radius-md);cursor:pointer;}
+
+    /* Article footer */
+    .article-footer{margin-top:40px;padding-top:28px;border-top:1px solid var(--border-subtle);}
+    .article-footer-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+    .footer-tag{padding:5px 12px;background:var(--bg-overlay);border:1px solid var(--border-default);border-radius:var(--radius-full);font-size:13px;color:var(--text-secondary);}
+    .share-row{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-tertiary);}
+    .share-btn{padding:8px 16px;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;cursor:pointer;transition:border-color .2s;}
+    .share-btn:hover{border-color:var(--border-brand);}
+
+    footer{background:#18181F;color:rgba(255,255,255,0.5);padding:24px 0;margin-top:64px;}
+    .footer-bottom{display:flex;align-items:center;justify-content:space-between;font-size:13px;max-width:1200px;margin:0 auto;padding:0 40px;}
+    .footer-legal{display:flex;gap:20px;}
+    .footer-legal a{color:rgba(255,255,255,0.3);}
+
+    @media(max-width:768px){.article-layout{grid-template-columns:1fr;padding:24px 16px;}.sidebar{display:none;}.nav-inner{padding:0 16px;}.article-title{font-size:24px;}}
+  </style>
+</head>
+<body>
+<nav><div class="nav-inner">
+  <a href="#" class="nav-logo"><div class="nav-logo-icon">✦</div>PixelMind</a>
+  <a href="#" class="nav-back">← 返回博客</a>
+  <a href="#" class="btn-nav-cta">免费开始</a>
+</div></nav>
+
+<div class="article-layout">
+  <article>
+    <div class="article-header">
+      <div class="article-tags"><span class="art-tag t1">教程</span><span class="art-tag t2">精选</span></div>
+      <h1 class="article-title">2026 年文生图终极提示词指南：100 个高效 Prompt 模板</h1>
+      <p class="article-subtitle">从风格描述到光线控制，从构图语言到氛围营造，本文整理了 100 个经过验证的高效提示词模板，涵盖写实、插画、概念艺术等主要场景。</p>
+      <div class="article-meta">
+        <div class="meta-avatar">✍</div>
+        <div><div class="meta-author">设计研究院</div><div style="font-size:12px;">官方创作团队</div></div>
+        <span class="meta-divider">|</span>
+        <span>2026-03-20</span>
+        <span class="meta-divider">|</span>
+        <span>⏱ 12 分钟阅读</span>
+        <span class="meta-divider">|</span>
+        <span>👁 8,432 阅读</span>
+      </div>
+    </div>
+
+    <div class="article-hero-img">🎨</div>
+
+    <div class="article-content">
+      <h2>一、为什么提示词如此重要？</h2>
+      <p>提示词（Prompt）是你与 AI 沟通的唯一语言。同样的模型、同样的参数设置，不同的提示词可以产生天壤之别的结果。一个写得好的 Prompt，能让 AI 准确理解你的意图，生成出令人惊叹的作品。</p>
+      <p>在大量测试和社区经验总结的基础上，我们整理了这份提示词指南。内容分为五个核心维度：主体描述、风格定义、光线设置、构图控制和质量强化词。</p>
+
+      <div class="tip-block"><div class="tip-label">💡 核心原则</div><p>好的 Prompt 遵循「主体 + 风格 + 光线 + 构图 + 质量」的基本结构，越具体越好，越有画面感越准确。</p></div>
+
+      <h2>二、基础结构模板</h2>
+      <h3>2.1 写实摄影风格</h3>
+      <p>写实摄影是最常用的风格之一，适合产品图、人像、风景等场景。关键是加入具体的相机和镜头参数。</p>
+      <div class="prompt-block">"[主体描述], [具体场景], [光线描述], shot on Canon EOS R5, 85mm f/1.4 lens, golden hour, photorealistic, 8k, ultra detailed"</div>
+      <div class="example-grid">
+        <div class="example-img ei1">🌆</div>
+        <div class="example-img ei2">🌸</div>
+        <div class="example-img ei3">🏔️</div>
+      </div>
+
+      <h3>2.2 插画与艺术风格</h3>
+      <p>当你想要更具艺术感的输出时，风格关键词至关重要。明确指定艺术媒介和参考风格，能让 AI 更准确地还原你想要的质感。</p>
+      <div class="prompt-block">"[主体描述], [场景], watercolor illustration, soft edges, pastel colors, by Studio Ghibli, warm lighting, cozy atmosphere, detailed background"</div>
+
+      <h2>三、光线描述关键词库</h2>
+      <p>光线是决定图片氛围的核心因素。以下是最有效的光线描述词，按效果分类：</p>
+      <ul>
+        <li><strong>暖光/自然光：</strong>golden hour, magic hour, warm sunlight, dappled light</li>
+        <li><strong>戏剧性光线：</strong>dramatic lighting, chiaroscuro, rim lighting, volumetric light</li>
+        <li><strong>柔和弥散：</strong>soft diffused light, overcast sky, studio lighting, butterfly lighting</li>
+        <li><strong>夜景/人工光：</strong>neon lights, city lights, moonlight, candlelight, bioluminescent</li>
+      </ul>
+
+      <h2>四、质量强化词（必加）</h2>
+      <p>这些词语能显著提升生成图片的整体质量，建议在大多数 Prompt 末尾加入：</p>
+      <div class="prompt-block">"..., masterpiece, best quality, ultra detailed, sharp focus, professional photography, award winning, highly detailed, intricate details"</div>
+
+      <div class="tip-block"><div class="tip-label">⚠️ 注意</div><p>不要一次性堆砌太多修饰词，选择最关键的 3-5 个即可。词语之间用逗号分隔，AI 会对每个词分别加权处理。</p></div>
+
+      <h2>五、负向提示词（Negative Prompt）</h2>
+      <p>告诉 AI「不要什么」和告诉它「要什么」同样重要。以下是通用的负向提示词，可以有效减少常见缺陷：</p>
+      <div class="prompt-block">"blurry, low quality, bad anatomy, extra limbs, duplicate, watermark, text, signature, ugly, deformed, distorted, disfigured"</div>
+    </div>
+
+    <div class="article-footer">
+      <div class="article-footer-tags">
+        <span class="footer-tag">#提示词</span>
+        <span class="footer-tag">#文生图</span>
+        <span class="footer-tag">#Prompt 技巧</span>
+        <span class="footer-tag">#AI 绘画</span>
+      </div>
+      <div class="share-row">
+        <span>分享文章：</span>
+        <button class="share-btn">📋 复制链接</button>
+        <button class="share-btn">🐦 Twitter</button>
+        <button class="share-btn">💬 微信</button>
+      </div>
+    </div>
+  </article>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="toc-card">
+      <div class="toc-title">文章目录</div>
+      <div class="toc-list">
+        <div class="toc-item active"><div class="toc-num">1</div>为什么提示词如此重要</div>
+        <div class="toc-item"><div class="toc-num">2</div>基础结构模板</div>
+        <div class="toc-item"><div class="toc-num">3</div>光线描述关键词库</div>
+        <div class="toc-item"><div class="toc-num">4</div>质量强化词（必加）</div>
+        <div class="toc-item"><div class="toc-num">5</div>负向提示词</div>
+      </div>
+    </div>
+    <div class="cta-card">
+      <h4>立即用文生图创作</h4>
+      <p>注册免费获得 30 积分，马上试试这些提示词模板</p>
+      <button class="btn-cta-white">🚀 免费开始</button>
+    </div>
+  </aside>
+</div>
+
+<footer><div class="footer-bottom"><div>© 2026 PixelMind. All rights reserved.</div><div class="footer-legal"><a href="#">隐私政策</a><a href="#">服务条款</a></div></div></footer>
+</body>
+</html>

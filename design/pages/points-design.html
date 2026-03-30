@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>积分明细 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--brand-start:#7B5EF0;--brand-end:#4F8EF7;--brand-mid:#6370F3;--accent-teal:#2DD4BF;--accent-amber:#FBBF24;--bg-base:#0D0D12;--bg-surface:#13131A;--bg-elevated:#1C1C27;--bg-overlay:#252535;--border-subtle:rgba(255,255,255,0.06);--border-default:rgba(255,255,255,0.10);--border-brand:rgba(123,94,240,0.40);--text-primary:#F0F0F8;--text-secondary:#A0A0B8;--text-tertiary:#606078;--color-success:#2DD4BF;--color-error:#F87171;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-2xl:24px;--radius-full:9999px;--font-sans:'Inter','PingFang SC',system-ui,sans-serif;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,18,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 24px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;}
+    .nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+    .credits-badge-lg{display:flex;align-items:center;gap:6px;padding:7px 14px;background:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(251,191,36,0.06));border:1px solid rgba(251,191,36,0.25);border-radius:var(--radius-full);font-size:14px;}
+    .btn-topup{padding:7px 16px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:13px;font-weight:600;border-radius:var(--radius-md);}
+
+    .page-layout{display:flex;min-height:calc(100vh - 64px);}
+    .sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border-subtle);padding:24px 12px;}
+    .user-card{padding:16px;background:var(--bg-elevated);border-radius:var(--radius-xl);margin-bottom:20px;text-align:center;}
+    .user-avatar-lg{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;}
+    .user-name{font-size:15px;font-weight:700;}
+    .user-plan{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(123,94,240,0.12);border-radius:var(--radius-full);font-size:12px;color:var(--brand-mid);margin-top:4px;}
+    .sidebar-menu{display:flex;flex-direction:column;gap:2px;}
+    .menu-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .2s;}
+    .menu-item:hover{color:var(--text-primary);background:rgba(255,255,255,0.05);}
+    .menu-item.active{color:var(--text-primary);background:rgba(123,94,240,0.12);}
+    .menu-item .icon{font-size:16px;width:20px;}
+    .menu-divider{height:1px;background:var(--border-subtle);margin:10px 0;}
+
+    .main-content{flex:1;padding:32px 40px;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+    .page-header h2{font-size:20px;font-weight:700;}
+
+    /* Stats cards */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    .stat-card{padding:18px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);}
+    .stat-card-label{font-size:12px;color:var(--text-tertiary);margin-bottom:6px;}
+    .stat-card-num{font-size:26px;font-weight:800;line-height:1;}
+    .stat-card-sub{font-size:12px;color:var(--text-tertiary);margin-top:4px;}
+    .num-amber{color:var(--accent-amber);}
+    .num-teal{color:var(--accent-teal);}
+    .num-red{color:var(--color-error);}
+
+    /* Filters */
+    .filter-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+    .filter-group{display:flex;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;}
+    .filter-btn{padding:7px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;border-right:1px solid var(--border-default);transition:all .2s;background:transparent;border-top:none;border-bottom:none;border-left:none;}
+    .filter-btn:last-child{border-right:none;}
+    .filter-btn.active{background:rgba(123,94,240,0.12);color:var(--brand-start);}
+    .filter-select{padding:7px 12px;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);outline:none;cursor:pointer;font-family:var(--font-sans);}
+
+    /* Table */
+    .table-wrap{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);overflow:hidden;}
+    .table-head{display:grid;grid-template-columns:1fr 2fr 1fr 1fr 1fr;padding:12px 20px;background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;}
+    .table-row{display:grid;grid-template-columns:1fr 2fr 1fr 1fr 1fr;padding:14px 20px;border-bottom:1px solid var(--border-subtle);align-items:center;transition:background .15s;cursor:pointer;}
+    .table-row:last-child{border-bottom:none;}
+    .table-row:hover{background:rgba(255,255,255,0.025);}
+    .cell{font-size:14px;color:var(--text-secondary);}
+    .cell-primary{color:var(--text-primary);}
+    .cell-type{display:flex;align-items:center;gap:6px;}
+    .type-icon{width:28px;height:28px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .ti-earn{background:rgba(45,212,191,0.12);}
+    .ti-consume{background:rgba(248,113,113,0.1);}
+    .ti-buy{background:rgba(251,191,36,0.12);}
+    .ti-freeze{background:rgba(160,160,184,0.1);}
+    .type-label{font-size:13px;color:var(--text-secondary);}
+    .amount-plus{font-size:14px;font-weight:700;color:var(--accent-teal);}
+    .amount-minus{font-size:14px;font-weight:700;color:var(--color-error);}
+    .amount-freeze{font-size:14px;font-weight:700;color:var(--text-tertiary);}
+    .balance-num{font-size:14px;font-weight:600;color:var(--text-primary);}
+    .status-done{padding:3px 8px;background:rgba(45,212,191,0.1);color:var(--accent-teal);border-radius:var(--radius-full);font-size:11px;font-weight:500;}
+    .status-freeze{padding:3px 8px;background:rgba(160,160,184,0.1);color:var(--text-tertiary);border-radius:var(--radius-full);font-size:11px;}
+    .status-pending{padding:3px 8px;background:rgba(251,191,36,0.1);color:var(--accent-amber);border-radius:var(--radius-full);font-size:11px;}
+
+    /* Pagination */
+    .pagination{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-top:1px solid var(--border-subtle);}
+    .page-info{font-size:13px;color:var(--text-tertiary);}
+    .page-btns{display:flex;gap:6px;}
+    .page-btn{width:32px;height:32px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;background:var(--bg-elevated);border:1px solid var(--border-default);color:var(--text-secondary);transition:all .2s;}
+    .page-btn:hover{border-color:var(--border-brand);color:var(--text-primary);}
+    .page-btn.active{background:rgba(123,94,240,0.15);border-color:var(--border-brand);color:var(--brand-start);}
+
+    @media(max-width:768px){.page-layout{flex-direction:column;}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border-subtle);}.main-content{padding:16px;}.stats-row{grid-template-columns:repeat(2,1fr);}.table-head,.table-row{grid-template-columns:2fr 1fr 1fr;}.table-head :nth-child(4),.table-row :nth-child(4),.table-head :nth-child(5),.table-row :nth-child(5){display:none;}}
+  </style>
+</head>
+<body>
+<nav><div class="nav-inner">
+  <div class="nav-logo"><div class="nav-logo-icon">✦</div>PixelMind</div>
+  <div class="credits-badge-lg">⚡ <strong style="color:var(--accent-amber);">842</strong> 积分可用</div>
+  <a href="checkout-design.html" class="btn-topup">+ 充值积分</a>
+</div></nav>
+
+<div class="page-layout">
+  <aside class="sidebar">
+    <div class="user-card">
+      <div class="user-avatar-lg">👤</div>
+      <div class="user-name">小林创作者</div>
+      <div class="user-plan">⭐ 专业版 L2</div>
+    </div>
+    <div class="sidebar-menu">
+      <div class="menu-item" onclick="window.location.href='account-design.html'"><span class="icon">👤</span>个人信息</div>
+      <div class="menu-item active"><span class="icon">⚡</span>积分明细</div>
+      <div class="menu-item" onclick="window.location.href='membership-design.html'"><span class="icon">👑</span>会员管理</div>
+      <div class="menu-divider"></div>
+      <div class="menu-item"><span class="icon">🔔</span>通知设置</div>
+      <div class="menu-divider"></div>
+      <div class="menu-item" style="color:var(--color-error);"><span class="icon">🚪</span>退出登录</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h2>积分明细</h2>
+      <a href="checkout-design.html" class="btn-topup" style="padding:8px 18px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;border-radius:var(--radius-md);font-size:14px;font-weight:600;">+ 充值积分</a>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-card-label">当前可用积分</div>
+        <div class="stat-card-num num-amber">842</div>
+        <div class="stat-card-sub">专业版每月 1,000 积分</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">本月已消耗</div>
+        <div class="stat-card-num num-red">158</div>
+        <div class="stat-card-sub">共生成 42 张图片</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">本月获得</div>
+        <div class="stat-card-num num-teal">+1,200</div>
+        <div class="stat-card-sub">会员续费 + 开通奖励</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">冻结中</div>
+        <div class="stat-card-num" style="color:var(--text-tertiary);">8</div>
+        <div class="stat-card-sub">任务进行中预扣</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-group">
+        <button class="filter-btn active">全部</button>
+        <button class="filter-btn">获得</button>
+        <button class="filter-btn">消耗</button>
+        <button class="filter-btn">购买</button>
+      </div>
+      <select class="filter-select"><option>最近 30 天</option><option>最近 90 天</option><option>本年</option></select>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>时间</span>
+        <span>描述</span>
+        <span>积分变动</span>
+        <span>余额</span>
+        <span>状态</span>
+      </div>
+
+      <div class="table-row">
+        <span class="cell">03-24 20:15</span>
+        <div class="cell-type"><div class="type-icon ti-consume">🎨</div><span class="type-label">文生图 · 赛博朋克城市（×4张）</span></div>
+        <span class="amount-minus">-8</span>
+        <span class="balance-num">842</span>
+        <span class="status-done">完成</span>
+      </div>
+      <div class="table-row">
+        <span class="cell">03-24 18:42</span>
+        <div class="cell-type"><div class="type-icon ti-freeze">⏸️</div><span class="type-label">图生视频 · 生成中（预扣）</span></div>
+        <span class="amount-freeze">-8（冻结）</span>
+        <span class="balance-num">850</span>
+        <span class="status-freeze">冻结中</span>
+      </div>
+      <div class="table-row">
+        <span class="cell">03-24 14:00</span>
+        <div class="cell-type"><div class="type-icon ti-earn">🎁</div><span class="type-label">开通专业版奖励积分</span></div>
+        <span class="amount-plus">+200</span>
+        <span class="balance-num">858</span>
+        <span class="status-done">完成</span>
+      </div>
+      <div class="table-row">
+        <span class="cell">03-24 14:00</span>
+        <div class="cell-type"><div class="type-icon ti-buy">💳</div><span class="type-label">购买专业版 L2 · 首月积分到账</span></div>
+        <span class="amount-plus">+1,000</span>
+        <span class="balance-num">658</span>
+        <span class="status-done">完成</span>
+      </div>
+      <div class="table-row">
+        <span class="cell">03-23 22:10</span>
+        <div class="cell-type"><div class="type-icon ti-consume">🎨</div><span class="type-label">文生图 · 水彩牡丹（×1张）</span></div>
+        <span class="amount-minus">-2</span>
+        <span class="balance-num">-342（历史余额）</span>
+        <span class="status-done">完成</span>
+      </div>
+      <div class="table-row">
+        <span class="cell">03-22 11:35</span>
+        <div class="cell-type"><div class="type-icon ti-earn">🎁</div><span class="type-label">分享作品到社区奖励</span></div>
+        <span class="amount-plus">+10</span>
+        <span class="balance-num">—</span>
+        <span class="status-done">完成</span>
+      </div>
+      <div class="table-row">
+        <span class="cell">03-20 09:00</span>
+        <div class="cell-type"><div class="type-icon ti-earn">🎁</div><span class="type-label">注册新用户奖励</span></div>
+        <span class="amount-plus">+30</span>
+        <span class="balance-num">—</span>
+        <span class="status-done">完成</span>
+      </div>
+
+      <div class="pagination">
+        <span class="page-info">共 47 条记录，第 1/5 页</span>
+        <div class="page-btns">
+          <div class="page-btn">‹</div>
+          <div class="page-btn active">1</div>
+          <div class="page-btn">2</div>
+          <div class="page-btn">3</div>
+          <div class="page-btn">…</div>
+          <div class="page-btn">5</div>
+          <div class="page-btn">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>购买会员 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-start: #7B5EF0; --brand-end: #4F8EF7; --brand-mid: #6370F3;
+      --accent-teal: #2DD4BF; --accent-amber: #FBBF24; --color-success: #0F9480;
+      --bg-base: #0D0D12; --bg-surface: #13131A; --bg-elevated: #1C1C27; --bg-overlay: #252535;
+      --border-subtle: rgba(255,255,255,0.06); --border-default: rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.18); --border-brand: rgba(123,94,240,0.40);
+      --text-primary: #F0F0F8; --text-secondary: #A0A0B8; --text-tertiary: #606078;
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.4); --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+      --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px; --radius-2xl: 24px; --radius-full: 9999px;
+      --font-sans: 'Inter','PingFang SC',system-ui,sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+
+    /* Nav */
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,18,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1200px;margin:0 auto;padding:0 40px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;}
+    .nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+    .nav-steps{display:flex;align-items:center;gap:0;}
+    .step-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-full);font-size:13px;font-weight:500;color:var(--text-tertiary);}
+    .step-pill.active{background:rgba(123,94,240,0.15);color:var(--brand-start);}
+    .step-pill.done{color:var(--accent-teal);}
+    .step-divider{width:24px;height:1px;background:var(--border-subtle);}
+    .step-num{width:20px;height:20px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
+    .step-pill.active .step-num{background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border:none;color:#fff;}
+    .step-pill.done .step-num{background:rgba(45,212,191,0.15);border-color:rgba(45,212,191,0.3);color:var(--accent-teal);}
+
+    /* Layout */
+    .checkout-layout{max-width:1000px;margin:0 auto;padding:48px 40px;display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start;}
+    
+    /* Left — Form */
+    .checkout-main{}
+    .section-title{font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:20px;}
+    .section-sub{font-size:14px;color:var(--text-secondary);margin-top:-14px;margin-bottom:20px;}
+
+    /* Plan cards */
+    .plan-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:32px;}
+    .plan-card{padding:18px;background:var(--bg-surface);border:1.5px solid var(--border-default);border-radius:var(--radius-xl);cursor:pointer;transition:border-color .2s,background .2s;}
+    .plan-card:hover{border-color:var(--border-brand);}
+    .plan-card.selected{border-color:var(--brand-start);background:rgba(123,94,240,0.06);}
+    .plan-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .plan-name{font-size:14px;font-weight:600;color:var(--text-primary);}
+    .plan-badge{padding:2px 8px;border-radius:var(--radius-full);font-size:11px;font-weight:600;}
+    .badge-popular{background:rgba(123,94,240,0.15);color:var(--brand-start);}
+    .badge-best{background:rgba(45,212,191,0.12);color:var(--accent-teal);}
+    .plan-price{font-size:26px;font-weight:800;color:var(--text-primary);line-height:1;}
+    .plan-price span{font-size:14px;font-weight:400;color:var(--text-tertiary);}
+    .plan-original{font-size:12px;color:var(--text-tertiary);text-decoration:line-through;margin-top:2px;}
+    .plan-features{margin-top:10px;font-size:12px;color:var(--text-secondary);line-height:1.7;}
+    .plan-check{color:var(--accent-teal);margin-right:4px;}
+    .plan-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-default);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .plan-card.selected .plan-radio{border-color:var(--brand-start);}
+    .plan-radio-dot{width:8px;height:8px;border-radius:50%;background:var(--brand-start);display:none;}
+    .plan-card.selected .plan-radio-dot{display:block;}
+
+    /* Divider */
+    .divider{height:1px;background:var(--border-subtle);margin:28px 0;}
+
+    /* Payment methods */
+    .pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
+    .pay-method{padding:14px;background:var(--bg-surface);border:1.5px solid var(--border-default);border-radius:var(--radius-lg);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s;}
+    .pay-method:hover{border-color:var(--border-brand);}
+    .pay-method.selected{border-color:var(--brand-start);background:rgba(123,94,240,0.06);}
+    .pay-icon{font-size:24px;}
+    .pay-name{font-size:13px;font-weight:500;color:var(--text-secondary);}
+    .pay-method.selected .pay-name{color:var(--text-primary);}
+
+    /* Coupon */
+    .coupon-row{display:flex;gap:10px;margin-bottom:20px;}
+    .coupon-input{flex:1;padding:10px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:14px;color:var(--text-primary);outline:none;font-family:var(--font-sans);}
+    .coupon-input:focus{border-color:var(--border-brand);}
+    .coupon-input::placeholder{color:var(--text-tertiary);}
+    .btn-coupon{padding:10px 18px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all .2s;white-space:nowrap;}
+    .btn-coupon:hover{border-color:var(--border-brand);color:var(--text-primary);}
+
+    /* Agreement */
+    .agreement{display:flex;align-items:flex-start;gap:8px;margin-bottom:24px;font-size:13px;color:var(--text-tertiary);}
+    .agreement input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--brand-start);}
+    .agreement a{color:var(--brand-start);}
+
+    /* Submit */
+    .btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:16px;font-weight:700;border:none;border-radius:var(--radius-md);cursor:pointer;transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-submit:hover{opacity:.9;transform:translateY(-1px);}
+    .secure-note{text-align:center;margin-top:10px;font-size:12px;color:var(--text-tertiary);}
+    .secure-icons{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;font-size:12px;color:var(--text-tertiary);}
+    .secure-icon-item{display:flex;align-items:center;gap:4px;}
+
+    /* Right — Summary */
+    .order-summary{background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-2xl);padding:24px;position:sticky;top:88px;}
+    .summary-title{font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:20px;}
+    .summary-plan{padding:16px;background:rgba(123,94,240,0.06);border:1px solid var(--border-brand);border-radius:var(--radius-xl);margin-bottom:20px;}
+    .summary-plan-name{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+    .summary-plan-desc{font-size:13px;color:var(--text-secondary);}
+    .summary-plan-credits{display:flex;align-items:center;gap:6px;margin-top:10px;padding:8px 10px;background:rgba(45,212,191,0.08);border-radius:var(--radius-md);font-size:13px;font-weight:600;color:var(--accent-teal);}
+    .price-breakdown{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+    .price-row{display:flex;justify-content:space-between;font-size:13px;}
+    .price-row .label{color:var(--text-tertiary);}
+    .price-row .value{color:var(--text-secondary);font-weight:500;}
+    .price-row.discount .value{color:var(--accent-teal);}
+    .price-total-row{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;border-top:1px solid var(--border-subtle);}
+    .price-total-label{font-size:14px;font-weight:600;color:var(--text-primary);}
+    .price-total-value{font-size:26px;font-weight:800;color:var(--text-primary);}
+    .price-total-value span{font-size:14px;color:var(--text-tertiary);font-weight:400;}
+    .summary-benefits{margin-top:20px;padding:14px;background:var(--bg-elevated);border-radius:var(--radius-lg);}
+    .summary-benefit-title{font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+    .benefit-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);margin-bottom:7px;}
+    .benefit-item:last-child{margin-bottom:0;}
+    .benefit-icon{font-size:14px;}
+
+    /* ===== Success State ===== */
+    .success-page{display:none;}
+    .success-page.show{display:block;}
+    .checkout-page{display:block;}
+    .checkout-page.hide{display:none;}
+
+    .success-container{max-width:560px;margin:80px auto;padding:0 40px;text-align:center;}
+    .success-icon-wrap{position:relative;display:inline-block;margin-bottom:28px;}
+    .success-circle{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,rgba(45,212,191,0.15),rgba(45,212,191,0.05));border:2px solid rgba(45,212,191,0.3);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto;}
+    .success-ring{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(45,212,191,0.15);}
+    .success-title{font-size:28px;font-weight:800;color:var(--text-primary);margin-bottom:10px;}
+    .success-subtitle{font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:32px;}
+    .success-order-card{background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-2xl);padding:24px;text-align:left;margin-bottom:32px;}
+    .success-order-title{font-size:14px;font-weight:600;color:var(--text-tertiary);margin-bottom:16px;text-transform:uppercase;letter-spacing:.06em;}
+    .success-order-rows{display:flex;flex-direction:column;gap:12px;}
+    .success-order-row{display:flex;justify-content:space-between;align-items:center;font-size:14px;}
+    .success-order-row .slabel{color:var(--text-tertiary);}
+    .success-order-row .svalue{color:var(--text-primary);font-weight:600;}
+    .credits-gained{display:flex;align-items:center;justify-content:space-between;padding:14px;background:rgba(45,212,191,0.07);border:1px solid rgba(45,212,191,0.2);border-radius:var(--radius-xl);margin:16px 0 0;}
+    .credits-gained-left{font-size:13px;color:var(--text-secondary);}
+    .credits-gained-right{font-size:22px;font-weight:800;color:var(--accent-teal);}
+    .credits-gained-right span{font-size:13px;font-weight:400;}
+    .success-actions{display:flex;gap:12px;justify-content:center;}
+    .btn-goto-studio{padding:14px 28px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:15px;font-weight:700;border:none;border-radius:var(--radius-md);cursor:pointer;transition:opacity .2s;}
+    .btn-goto-studio:hover{opacity:.9;}
+    .btn-view-order{padding:14px 24px;background:transparent;color:var(--text-secondary);font-size:14px;font-weight:500;border:1px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer;transition:border-color .2s;}
+    .btn-view-order:hover{border-color:var(--border-strong);}
+    .success-confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:-1;}
+    .confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:fall linear forwards;}
+    @keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+
+    @media(max-width:768px){
+      .checkout-layout{grid-template-columns:1fr;padding:24px 16px;}
+      .order-summary{position:static;}
+      .plan-grid{grid-template-columns:1fr 1fr;}
+      .pay-methods{grid-template-columns:repeat(3,1fr);}
+      .nav-inner{padding:0 16px;}
+      .success-container{padding:0 16px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">✦</div>
+      PixelMind
+    </div>
+    <div class="nav-steps">
+      <div class="step-pill done">
+        <div class="step-num">✓</div>
+        选择套餐
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-pill active">
+        <div class="step-num">2<div class="step-radio-dot"></div></div>
+        确认支付
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-pill">
+        <div class="step-num">3</div>
+        完成
+      </div>
+    </div>
+    <div style="width:160px;"></div>
+  </div>
+</nav>
+
+<!-- ===== Checkout Page ===== -->
+<div class="checkout-page" id="checkoutPage">
+  <div class="checkout-layout">
+
+    <!-- Left: Form -->
+    <div class="checkout-main">
+      <h1 class="section-title">选择会员套餐</h1>
+      <p class="section-sub">按年付享受最高 40% 折扣，随时可取消</p>
+
+      <!-- Plan cards -->
+      <div class="plan-grid">
+        <div class="plan-card" onclick="selectPlan(this,'基础版','29',49)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div class="plan-name">基础版 L1</div>
+              <div class="plan-price">¥29<span>/月</span></div>
+              <div class="plan-original">原价 ¥49</div>
+            </div>
+            <div class="plan-radio"><div class="plan-radio-dot"></div></div>
+          </div>
+          <div class="plan-features">
+            <div><span class="plan-check">✓</span>每月 300 积分</div>
+            <div><span class="plan-check">✓</span>标准生成速度</div>
+            <div><span class="plan-check">✓</span>720p 分辨率</div>
+          </div>
+        </div>
+        <div class="plan-card selected" onclick="selectPlan(this,'专业版','69',119)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <div class="plan-name">专业版 L2</div>
+                <span class="plan-badge badge-popular">最受欢迎</span>
+              </div>
+              <div class="plan-price">¥69<span>/月</span></div>
+              <div class="plan-original">原价 ¥119</div>
+            </div>
+            <div class="plan-radio"><div class="plan-radio-dot"></div></div>
+          </div>
+          <div class="plan-features">
+            <div><span class="plan-check">✓</span>每月 1000 积分</div>
+            <div><span class="plan-check">✓</span>优先队列生成</div>
+            <div><span class="plan-check">✓</span>1080p 高分辨率</div>
+            <div><span class="plan-check">✓</span>商业使用授权</div>
+          </div>
+        </div>
+        <div class="plan-card" onclick="selectPlan(this,'旗舰版','139',239)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <div class="plan-name">旗舰版 L3</div>
+                <span class="plan-badge badge-best">最高性价比</span>
+              </div>
+              <div class="plan-price">¥139<span>/月</span></div>
+              <div class="plan-original">原价 ¥239</div>
+            </div>
+            <div class="plan-radio"><div class="plan-radio-dot"></div></div>
+          </div>
+          <div class="plan-features">
+            <div><span class="plan-check">✓</span>每月 3000 积分</div>
+            <div><span class="plan-check">✓</span>闪电优先队列</div>
+            <div><span class="plan-check">✓</span>4K 超高分辨率</div>
+            <div><span class="plan-check">✓</span>API 访问权限</div>
+          </div>
+        </div>
+        <div class="plan-card" onclick="selectPlan(this,'积分包 500','19',25)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div class="plan-name">积分包 500</div>
+              <div class="plan-price">¥19<span>/次</span></div>
+              <div class="plan-original">原价 ¥25</div>
+            </div>
+            <div class="plan-radio"><div class="plan-radio-dot"></div></div>
+          </div>
+          <div class="plan-features">
+            <div><span class="plan-check">✓</span>500 积分一次性充值</div>
+            <div><span class="plan-check">✓</span>永久有效</div>
+            <div><span class="plan-check">✓</span>无需订阅</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Payment -->
+      <h2 class="section-title" style="font-size:16px;margin-bottom:16px;">选择支付方式</h2>
+      <div class="pay-methods">
+        <div class="pay-method selected" onclick="selectPay(this)">
+          <div class="pay-icon">💚</div>
+          <div class="pay-name">微信支付</div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this)">
+          <div class="pay-icon">💙</div>
+          <div class="pay-name">支付宝</div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this)">
+          <div class="pay-icon">💳</div>
+          <div class="pay-name">银行卡 / Stripe</div>
+        </div>
+      </div>
+
+      <!-- Coupon -->
+      <div class="coupon-row">
+        <input class="coupon-input" type="text" placeholder="输入优惠码（可选）" />
+        <button class="btn-coupon">使用</button>
+      </div>
+
+      <!-- Agreement -->
+      <div class="agreement">
+        <input type="checkbox" id="agree" checked />
+        <label for="agree">我已阅读并同意 <a href="#">服务协议</a> 与 <a href="#">隐私政策</a>，购买即视为接受自动续费条款</label>
+      </div>
+
+      <!-- Submit -->
+      <button class="btn-submit" onclick="showSuccess()">
+        🔒 立即支付 ¥69
+      </button>
+      <div class="secure-note">支付安全由 256-bit SSL 加密保护</div>
+      <div class="secure-icons">
+        <div class="secure-icon-item">🔐 SSL 加密</div>
+        <div class="secure-icon-item">🛡️ 安全支付</div>
+        <div class="secure-icon-item">↩️ 7 天退款保障</div>
+      </div>
+    </div>
+
+    <!-- Right: Summary -->
+    <div class="order-summary">
+      <div class="summary-title">订单详情</div>
+      <div class="summary-plan">
+        <div class="summary-plan-name">专业版 L2 · 按年付费</div>
+        <div class="summary-plan-desc">高级创作者方案，1000 积分/月</div>
+        <div class="summary-plan-credits">
+          <span>⚡</span>
+          <span>每月到账 <strong>1,000</strong> 积分</span>
+        </div>
+      </div>
+      <div class="price-breakdown">
+        <div class="price-row">
+          <span class="label">原价（月付）</span>
+          <span class="value" style="text-decoration:line-through;color:var(--text-tertiary)">¥119/月</span>
+        </div>
+        <div class="price-row">
+          <span class="label">年付折扣</span>
+          <span class="value">×12 个月</span>
+        </div>
+        <div class="price-row discount">
+          <span class="label">年付优惠</span>
+          <span class="value">-¥600</span>
+        </div>
+        <div class="price-row discount">
+          <span class="label">首月优惠码</span>
+          <span class="value">-¥0</span>
+        </div>
+      </div>
+      <div class="price-total-row">
+        <span class="price-total-label">合计</span>
+        <div style="text-align:right;">
+          <div class="price-total-value">¥828<span>/年</span></div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">约 ¥69/月</div>
+        </div>
+      </div>
+      <div class="summary-benefits">
+        <div class="summary-benefit-title">套餐权益</div>
+        <div class="benefit-item"><span class="benefit-icon">⚡</span>优先生成队列（最快 5s）</div>
+        <div class="benefit-item"><span class="benefit-icon">🖼️</span>最高 1080p 输出分辨率</div>
+        <div class="benefit-item"><span class="benefit-icon">📦</span>商业授权可商用</div>
+        <div class="benefit-item"><span class="benefit-icon">☁️</span>无限云端作品存储</div>
+        <div class="benefit-item"><span class="benefit-icon">🎁</span>每月积分自动续期</div>
+        <div class="benefit-item"><span class="benefit-icon">💬</span>专属客服支持</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== Success Page ===== -->
+<div class="success-page" id="successPage">
+  <div class="success-confetti" id="confetti"></div>
+  <div class="success-container">
+    <div class="success-icon-wrap">
+      <div class="success-circle">✅</div>
+      <div class="success-ring"></div>
+    </div>
+    <h1 class="success-title">支付成功！</h1>
+    <p class="success-subtitle">感谢你的支持，专业版权益已即时生效。<br />积分已到账，现在可以开始创作了。</p>
+    <div class="success-order-card">
+      <div class="success-order-title">订单信息</div>
+      <div class="success-order-rows">
+        <div class="success-order-row">
+          <span class="slabel">订单编号</span>
+          <span class="svalue">#PM-2026-032401</span>
+        </div>
+        <div class="success-order-row">
+          <span class="slabel">购买套餐</span>
+          <span class="svalue">专业版 L2 · 年付</span>
+        </div>
+        <div class="success-order-row">
+          <span class="slabel">支付金额</span>
+          <span class="svalue">¥828.00</span>
+        </div>
+        <div class="success-order-row">
+          <span class="slabel">支付方式</span>
+          <span class="svalue">微信支付</span>
+        </div>
+        <div class="success-order-row">
+          <span class="slabel">有效期至</span>
+          <span class="svalue">2027-03-24</span>
+        </div>
+      </div>
+      <div class="credits-gained">
+        <div class="credits-gained-left">
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:2px;">积分已到账</div>
+          <div style="font-size:12px;color:var(--text-tertiary);">首月赠送 + 开通奖励</div>
+        </div>
+        <div class="credits-gained-right">+1,200 <span>积分</span></div>
+      </div>
+    </div>
+    <div class="success-actions">
+      <button class="btn-goto-studio" onclick="window.location.href='#'">🚀 前往工作台创作</button>
+      <button class="btn-view-order">查看订单详情</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function selectPlan(el,name,price,orig){
+  document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.querySelector('.btn-submit').textContent='🔒 立即支付 ¥'+price;
+  document.querySelector('.summary-plan-name').textContent=name+' · 按年付费';
+}
+function selectPay(el){
+  document.querySelectorAll('.pay-method').forEach(m=>m.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function showSuccess(){
+  document.getElementById('checkoutPage').classList.add('hide');
+  document.getElementById('successPage').classList.add('show');
+  createConfetti();
+  // Update nav steps
+  document.querySelectorAll('.step-pill')[1].classList.remove('active');
+  document.querySelectorAll('.step-pill')[1].classList.add('done');
+  document.querySelectorAll('.step-pill')[1].querySelector('.step-num').textContent='✓';
+  document.querySelectorAll('.step-pill')[2].classList.add('active');
+}
+function createConfetti(){
+  const colors=['#7B5EF0','#4F8EF7','#2DD4BF','#FBBF24','#F093FB'];
+  const c=document.getElementById('confetti');
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}%;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.8}s;transform:rotate(${Math.random()*360}deg);`;
+    c.appendChild(el);
+  }
+}
+</script>
+</body>
+</html>

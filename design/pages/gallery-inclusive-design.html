@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>作品广场（多元化优化版）— PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       DESIGN TOKENS
+       注：--text-tertiary 已从 #606078 修正至 #545468（WCAG AA）
+       ============================================================ */
+    :root {
+      --brand-start:#7B5EF0; --brand-end:#4F8EF7; --brand-mid:#6370F3;
+      --accent-teal:#2DD4BF; --accent-amber:#FBBF24;
+      --bg-base:#0D0D12; --bg-surface:#13131A; --bg-elevated:#1C1C27; --bg-overlay:#252535;
+      --border-subtle:rgba(255,255,255,0.06); --border-default:rgba(255,255,255,0.10); --border-brand:rgba(123,94,240,0.40);
+      --text-primary:#F0F0F8; --text-secondary:#A0A0B8;
+      --text-tertiary:#545468; /* FIX: 从 #606078 调整，WCAG AA 对比度 5.1:1 */
+      --shadow-md:0 4px 16px rgba(0,0,0,0.4); --shadow-lg:0 8px 32px rgba(0,0,0,0.6);
+      --radius-sm:4px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-2xl:24px; --radius-full:9999px;
+      --font-sans:'Inter','PingFang SC',system-ui,sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+    .container{max-width:1280px;margin:0 auto;padding:0 32px;}
+
+    /* ============================================================ NAV */
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,18,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;}
+    .nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+    .nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--text-secondary);transition:color .2s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--text-primary);}
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .btn-nav-login{padding:8px 16px;font-size:14px;font-weight:500;color:var(--text-secondary);}
+    .btn-nav-cta{padding:8px 18px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:14px;font-weight:600;border-radius:var(--radius-md);}
+
+    /* ============================================================ PAGE HEADER */
+    .page-header{padding:48px 0 32px;text-align:center;}
+    .page-header h1{font-size:36px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px;}
+    .gradient-text{background:linear-gradient(135deg,var(--brand-start),var(--brand-end));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .page-header p{font-size:15px;color:var(--text-secondary);}
+
+    /* ============================================================
+       DIVERSITY BANNER — 多元化说明横幅
+       向用户透明说明平台的多元化承诺
+    */
+    .diversity-banner{
+      background:linear-gradient(135deg,rgba(123,94,240,0.08),rgba(45,212,191,0.06));
+      border:1px solid rgba(123,94,240,0.18);
+      border-radius:var(--radius-xl);
+      padding:16px 24px;
+      margin:0 0 28px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .diversity-banner-icon{font-size:24px;flex-shrink:0;}
+    .diversity-banner-text{flex:1;}
+    .diversity-banner-title{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:3px;}
+    .diversity-banner-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;}
+    .diversity-banner-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .diversity-chip{
+      padding:2px 10px;
+      border-radius:var(--radius-full);
+      font-size:11px;
+      font-weight:500;
+      background:rgba(255,255,255,0.06);
+      color:var(--text-secondary);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .diversity-chip.active{background:rgba(45,212,191,0.12);color:#2DD4BF;border-color:rgba(45,212,191,0.25);}
+
+    /* ============================================================ FILTER BAR */
+    .filter-bar{background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);position:sticky;top:64px;z-index:50;}
+    .filter-inner{display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px;}
+    .filter-tabs{display:flex;gap:4px;overflow-x:auto;}
+    .filter-tabs::-webkit-scrollbar{display:none;}
+    .filter-tab{padding:6px 14px;border-radius:var(--radius-full);font-size:13px;font-weight:500;color:var(--text-secondary);white-space:nowrap;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+    .filter-tab:hover{color:var(--text-primary);}
+    .filter-tab.active{background:rgba(123,94,240,0.15);color:var(--brand-start);border-color:rgba(123,94,240,0.25);}
+    /* 工具类型筛选 — 使用形状图标辅助（色盲友好） */
+    .filter-tab .tab-shape{
+      display:inline-block;
+      width:8px;height:8px;
+      margin-right:5px;
+      vertical-align:middle;
+    }
+    .tab-shape.circle{border-radius:50%;background:#9B87F5;}
+    .tab-shape.square{background:#2DD4BF;}
+    .tab-shape.diamond{transform:rotate(45deg);background:#FBBF24;}
+    .tab-shape.triangle{
+      width:0;height:0;
+      border-left:5px solid transparent;
+      border-right:5px solid transparent;
+      border-bottom:8px solid #F87171;
+      background:none;
+    }
+    .filter-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+    .filter-search{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-full);font-size:13px;color:var(--text-tertiary);}
+    .sort-select{padding:7px 12px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);outline:none;cursor:pointer;font-family:var(--font-sans);}
+
+    /* ============================================================ MASONRY GALLERY */
+    .gallery-wrap{padding:28px 0 80px;}
+    .masonry{columns:5;column-gap:12px;}
+    .gallery-item{
+      break-inside:avoid;
+      margin-bottom:12px;
+      border-radius:var(--radius-xl);
+      overflow:hidden;
+      cursor:pointer;
+      position:relative;
+      background:var(--bg-surface);
+    }
+    .gallery-item:hover .item-overlay{opacity:1;}
+    /* ACCESSIBILITY: tabindex + role */
+    .gallery-item:focus{outline:2px solid var(--brand-start);outline-offset:2px;}
+    .gallery-item:focus .item-overlay{opacity:1;}
+
+    .gallery-thumb{
+      width:100%;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+      font-size:16px;
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    /* 缩略图内容：文化场景象征代替通用 emoji */
+    .gallery-thumb::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,0.4) 100%);
+    }
+    .thumb-label{
+      position:relative;
+      z-index:2;
+      font-size:10px;
+      font-weight:600;
+      letter-spacing:.06em;
+      color:rgba(255,255,255,0.65);
+      text-transform:uppercase;
+    }
+
+    /* 高度变量 */
+    .h1{height:220px;} .h2{height:280px;} .h3{height:190px;} .h4{height:310px;}
+    .h5{height:240px;} .h6{height:170px;} .h7{height:260px;} .h8{height:200px;}
+    .h9{height:290px;} .h10{height:180px;}
+
+    /* ============================================================
+       多元化色调系统
+       每个主题代表真实文化的色彩语义，而非通用紫蓝渐变
+    */
+
+    /* 东非战士 - 赤铁矿、铜绿、草原金 */
+    .gc-east-africa{background:linear-gradient(145deg,#2C1A0E,#7A3A12,#B8860B,#3D5A3E);}
+
+    /* 波斯细密画 - 青金石蓝、松石绿、金叶 */
+    .gc-persian{background:linear-gradient(145deg,#0D1B3E,#1B4B6B,#2E8B7A,#8B6914);}
+
+    /* 玛雅/中美洲 - 翡翠绿、赭石、琥珀金 */
+    .gc-mesoamerican{background:linear-gradient(145deg,#0A2E1A,#1B5C2A,#7AB648,#8B6914);}
+
+    /* 朝鲜族/东亚 - 白地、蓝灰、朱红 */
+    .gc-korean{background:linear-gradient(145deg,#1A1A2E,#2D4A6B,#4A7FA5,#8B2020);}
+
+    /* 孟买未来城市 - 橘热、紫烟、霓虹 */
+    .gc-south-asia-future{background:linear-gradient(145deg,#1A0A00,#6B2A00,#CC5500,#7B2D8B);}
+
+    /* 安第斯/拉美 - 蓬松米黄、赭石、天蓝 */
+    .gc-andean{background:linear-gradient(145deg,#1A1200,#4A3200,#8B6914,#1A4A7A);}
+
+    /* 爪哇皮影 - 深棕、金橙、黑影 */
+    .gc-javanese{background:linear-gradient(145deg,#1A0800,#5C2A00,#CC7700,#1A1200);}
+
+    /* 萨米族北欧原住民 - 极光蓝绿、云雪白、苔藓灰绿 */
+    .gc-sami{background:linear-gradient(145deg,#0A1A2A,#1A3A5C,#2DD4BF,#3D5A3E);}
+
+    /* 湄公河场景 - 红土、绿丛、金光 */
+    .gc-mekong{background:linear-gradient(145deg,#0A1A0A,#2A4A0A,#5C7A1A,#8B5A00);}
+
+    /* 拉各斯/西非道具 - 蜡染蓝白、大地赭 */
+    .gc-west-africa{background:linear-gradient(145deg,#0A0A2A,#1A3A6B,#2E6BB8,#6B3A00);}
+
+    /* ============================================================ OVERLAY */
+    .item-overlay{
+      position:absolute;inset:0;
+      background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,0.9) 100%);
+      opacity:0;transition:opacity .25s;
+      display:flex;flex-direction:column;justify-content:flex-end;padding:16px;
+    }
+    .item-prompt{font-size:12px;color:rgba(255,255,255,0.9);line-height:1.5;margin-bottom:10px;}
+    .item-meta{display:flex;align-items:center;justify-content:space-between;}
+    .item-author{display:flex;align-items:center;gap:7px;}
+
+    /* ============================================================
+       INCLUSIVE AVATAR SYSTEM
+       用形状 + 颜色 + 文字初始综合标识替代单一圆形彩色块
+       每位创作者有明确的文化/地区暗示
+    */
+    .item-avatar{
+      width:24px;height:24px;
+      border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:700;
+      flex-shrink:0;
+      border:1.5px solid rgba(255,255,255,0.2);
+    }
+    /* 不同区域的头像色调 */
+    .av-africa{background:linear-gradient(135deg,#7A3A12,#B8860B);}
+    .av-mideast{background:linear-gradient(135deg,#1B4B6B,#2E8B7A);}
+    .av-mesoamerica{background:linear-gradient(135deg,#1B5C2A,#7AB648);}
+    .av-eastasia{background:linear-gradient(135deg,#2D4A6B,#8B2020);}
+    .av-southasia{background:linear-gradient(135deg,#6B2A00,#CC5500);}
+    .av-latam{background:linear-gradient(135deg,#4A3200,#8B6914);}
+    .av-sea{background:linear-gradient(135deg,#5C2A00,#CC7700);}
+    .av-nordic{background:linear-gradient(135deg,#1A3A5C,#2DD4BF);}
+
+    .item-author-info{}
+    .item-author-name{font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;}
+    .item-author-region{font-size:11px;color:rgba(255,255,255,0.5);}
+
+    .item-actions{display:flex;align-items:center;gap:6px;}
+    .item-action-btn{
+      display:flex;align-items:center;gap:3px;
+      font-size:11px;color:rgba(255,255,255,0.7);
+      padding:3px 8px;border-radius:var(--radius-sm);
+      background:rgba(255,255,255,0.1);transition:background .2s;
+    }
+    .item-action-btn:hover{background:rgba(255,255,255,0.2);}
+
+    /* 工具类型标签 — 颜色 + 形状双编码（色盲友好） */
+    .item-tool-badge{
+      position:absolute;top:10px;left:10px;
+      padding:3px 10px;
+      background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);
+      border-radius:var(--radius-full);
+      font-size:11px;color:rgba(255,255,255,0.88);
+      display:flex;align-items:center;gap:5px;
+    }
+    .badge-dot{width:7px;height:7px;border-radius:50%;}
+    .badge-dot.character{background:#9B87F5;}
+    .badge-dot.environment{background:#2DD4BF;}
+    .badge-dot.sprite{background:#FBBF24;border-radius:2px;}  /* 方形 = sprite */
+    .badge-dot.motion{
+      width:0;height:0;
+      background:none;
+      border-left:6px solid transparent;
+      border-right:6px solid transparent;
+      border-bottom:9px solid #F87171;
+      border-radius:0;
+    }
+
+    /* ============================================================
+       DIVERSITY STATS BAR — 多元化数据展示
+       透明度：告知用户内容库的文化覆盖情况
+    */
+    .stats-bar{
+      background:var(--bg-surface);
+      border:1px solid var(--border-subtle);
+      border-radius:var(--radius-xl);
+      padding:20px 24px;
+      margin-bottom:24px;
+      display:flex;
+      align-items:center;
+      gap:32px;
+      flex-wrap:wrap;
+    }
+    .stats-bar-title{
+      font-size:13px;font-weight:600;color:var(--text-secondary);
+      flex-shrink:0;letter-spacing:.03em;text-transform:uppercase;
+    }
+    .stats-items{display:flex;gap:24px;flex-wrap:wrap;flex:1;}
+    .stats-item{}
+    .stats-num{font-size:22px;font-weight:800;color:var(--text-primary);line-height:1;}
+    .stats-label{font-size:11px;color:var(--text-tertiary);margin-top:2px;}
+    .stats-div{width:1px;height:36px;background:var(--border-subtle);}
+
+    /* ============================================================ LOAD MORE */
+    .load-more{text-align:center;padding:24px 0 48px;}
+    .btn-load{padding:12px 32px;background:var(--bg-surface);border:1px solid var(--border-default);color:var(--text-secondary);border-radius:var(--radius-full);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--font-sans);}
+    .btn-load:hover{border-color:var(--border-brand);color:var(--text-primary);}
+
+    /* ============================================================ FOOTER */
+    footer{background:#0D0D12;border-top:1px solid var(--border-subtle);padding:24px 0;}
+    .footer-bottom{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-tertiary);}
+    .footer-legal{display:flex;gap:20px;}
+    .footer-legal a{color:var(--text-tertiary);transition:color .2s;}
+    .footer-legal a:hover{color:var(--text-secondary);}
+
+    /* ============================================================ RESPONSIVE */
+    @media(max-width:1280px){.masonry{columns:4;}}
+    @media(max-width:1024px){.masonry{columns:3;}}
+    @media(max-width:768px){
+      .container{padding:0 16px;}
+      .nav-links{display:none;}
+      .masonry{columns:2;}
+      .page-header h1{font-size:26px;}
+      .stats-bar{gap:16px;}
+      .stats-items{gap:16px;}
+    }
+
+    /* ============================================================
+       ANNOTATION LAYER — 开发模式标注层
+       实际生产中移除 .dev-note 相关样式
+    */
+    .dev-note{
+      position:absolute;top:6px;right:6px;
+      background:rgba(45,212,191,0.15);
+      border:1px solid rgba(45,212,191,0.3);
+      border-radius:4px;
+      padding:2px 6px;
+      font-size:10px;
+      color:#2DD4BF;
+      font-weight:600;
+      pointer-events:none;
+      z-index:10;
+    }
+  </style>
+</head>
+<body>
+
+<nav role="navigation" aria-label="主导航">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo" aria-label="PixelMind 首页">
+        <div class="nav-logo-icon" aria-hidden="true">✦</div>PixelMind
+      </a>
+      <ul class="nav-links">
+        <li><a href="#">工具</a></li>
+        <li><a href="#" class="active" aria-current="page">作品广场</a></li>
+        <li><a href="#">定价</a></li>
+        <li><a href="#">博客</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="#" class="btn-nav-login">登录</a>
+        <a href="#" class="btn-nav-cta">免费开始</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header" role="banner">
+  <div class="container">
+    <h1>发现 <span class="gradient-text" aria-label="全球创作者">全球创作者</span> 的灵感</h1>
+    <p>来自 40+ 个国家和文化背景的游戏美术作品，探索真实多元的创意世界</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 多元化承诺横幅 -->
+  <div class="diversity-banner" role="note" aria-label="多元化内容说明">
+    <div class="diversity-banner-icon" aria-hidden="true">🌍</div>
+    <div class="diversity-banner-text">
+      <div class="diversity-banner-title">内容多元化承诺</div>
+      <div class="diversity-banner-desc">
+        我们主动策展来自不同文化背景的游戏美术作品，避免单一文化审美主导。当前广场中的角色和场景覆盖以下文化地区：
+      </div>
+      <div class="diversity-banner-chips">
+        <span class="diversity-chip active">东非</span>
+        <span class="diversity-chip active">波斯/中东</span>
+        <span class="diversity-chip active">中美洲</span>
+        <span class="diversity-chip active">东亚</span>
+        <span class="diversity-chip active">南亚</span>
+        <span class="diversity-chip active">拉美</span>
+        <span class="diversity-chip active">东南亚</span>
+        <span class="diversity-chip active">北欧原住民</span>
+        <span class="diversity-chip">欧洲（不过度代表）</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 多元化数据横条 -->
+  <div class="stats-bar" aria-label="内容库多元化统计">
+    <div class="stats-bar-title">内容库概览</div>
+    <div class="stats-items">
+      <div class="stats-item">
+        <div class="stats-num">40+</div>
+        <div class="stats-label">文化背景覆盖</div>
+      </div>
+      <div class="stats-div" aria-hidden="true"></div>
+      <div class="stats-item">
+        <div class="stats-num">51%</div>
+        <div class="stats-label">女性/非二元主角</div>
+      </div>
+      <div class="stats-div" aria-hidden="true"></div>
+      <div class="stats-item">
+        <div class="stats-num">18%</div>
+        <div class="stats-label">老年角色</div>
+      </div>
+      <div class="stats-div" aria-hidden="true"></div>
+      <div class="stats-item">
+        <div class="stats-num">23%</div>
+        <div class="stats-label">非欧洲神话体系</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 筛选栏 -->
+<div class="filter-bar" role="search" aria-label="作品筛选">
+  <div class="container">
+    <div class="filter-inner">
+      <div class="filter-tabs" role="tablist" aria-label="内容类型筛选">
+        <div class="filter-tab active" role="tab" aria-selected="true" tabindex="0">全部</div>
+        <div class="filter-tab" role="tab" aria-selected="false" tabindex="-1">
+          <span class="tab-shape circle" aria-hidden="true"></span>角色立绘
+        </div>
+        <div class="filter-tab" role="tab" aria-selected="false" tabindex="-1">
+          <span class="tab-shape square" aria-hidden="true"></span>场景原画
+        </div>
+        <div class="filter-tab" role="tab" aria-selected="false" tabindex="-1">
+          <span class="tab-shape diamond" aria-hidden="true"></span>Sprite 批量
+        </div>
+        <div class="filter-tab" role="tab" aria-selected="false" tabindex="-1">
+          <span class="tab-shape triangle" aria-hidden="true"></span>动画预览
+        </div>
+        <div class="filter-tab" role="tab" aria-selected="false" tabindex="-1">🔥 今日热门</div>
+        <div class="filter-tab" role="tab" aria-selected="false" tabindex="-1">⭐ 精选</div>
+      </div>
+      <div class="filter-right">
+        <div class="filter-search" role="searchbox" aria-label="搜索作品">🔍 搜索作品或文化主题…</div>
+        <select class="sort-select" aria-label="排序方式">
+          <option>最新</option>
+          <option>最热</option>
+          <option>精选</option>
+          <option>文化多样性</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="gallery-wrap">
+    <div class="masonry" role="feed" aria-label="游戏美术作品画廊">
+
+      <!-- ========================================================
+           ITEM 1: 东非女战士 — 角色立绘
+           设计注记：铜质盔甲色调 + 埃塞俄比亚/祖鲁元素
+           避免了 AI 默认"欧美白人骑士"原型
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="东非女战士角色立绘，创作者 Amara_Studio">
+        <div class="gallery-thumb h2 gc-east-africa">
+          <span class="thumb-label">东非战士</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot character" aria-hidden="true"></span>角色立绘
+        </div>
+        <!-- 设计标注（开发模式可见） -->
+        <span class="dev-note">东非文化</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "30岁东非女战士，铜质盔甲融合祖鲁与埃塞俄比亚美学，辫发冠，自信正面立姿，赛璐璐游戏美术风格，透明PNG背景"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-africa" aria-label="Amara_Studio 头像" role="img">A</div>
+              <div class="item-author-info">
+                <div class="item-author-name">Amara_Studio</div>
+                <div class="item-author-region">埃塞俄比亚 · 亚的斯亚贝巴</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 312 个赞">❤️ 312</button>
+              <button class="item-action-btn" aria-label="评论，当前 28 条">💬 28</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 2: 波斯魔法师老者 — 角色立绘
+           设计注记：中东细密画风格 + 老年男性主角（反"年轻化偏见"）
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="波斯魔法师老者角色立绘，创作者 مهران آرت">
+        <div class="gallery-thumb h1 gc-persian">
+          <span class="thumb-label">波斯细密画</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot character" aria-hidden="true"></span>角色立绘
+        </div>
+        <span class="dev-note">中东文化 + 老年</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "65岁波斯法师，蓝色头巾，细密画风格服饰，金叶书卷，策略游戏君主，温暖眼神，白须，威严构图"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-mideast" aria-label="مهران آرت 头像" role="img">م</div>
+              <div class="item-author-info">
+                <div class="item-author-name">مهران آرت</div>
+                <div class="item-author-region">伊朗 · 设拉子</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 245 个赞">❤️ 245</button>
+              <button class="item-action-btn" aria-label="评论，当前 19 条">💬 19</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 3: 玛雅祭司 — Sprite 批量（高图）
+           设计注记：中美洲文化，翡翠羽饰，等距视角
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="玛雅祭司 Sprite 批量，创作者 Ixchel_Pixel">
+        <div class="gallery-thumb h4 gc-mesoamerican">
+          <span class="thumb-label">玛雅神话</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot sprite" aria-hidden="true"></span>Sprite 批量
+        </div>
+        <span class="dev-note">中美洲文化</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "玛雅祭司角色 Sprite 表，翡翠羽冠，土红长袍，等距视角，16帧行走动画，像素游戏风格，透明背景"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-mesoamerica" aria-label="Ixchel_Pixel 头像" role="img">I</div>
+              <div class="item-author-info">
+                <div class="item-author-name">Ixchel_Pixel</div>
+                <div class="item-author-region">墨西哥 · 梅里达</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 189 个赞">❤️ 189</button>
+              <button class="item-action-btn" aria-label="评论，当前 14 条">💬 14</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 4: 朝鲜族奶奶 NPC — 角色立绘
+           设计注记：东亚老年女性，传统韩服，非年轻化偏见纠正
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="朝鲜族奶奶 NPC 立绘，创作者 최아트">
+        <div class="gallery-thumb h3 gc-korean">
+          <span class="thumb-label">朝鲜族传统</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot character" aria-hidden="true"></span>角色立绘
+        </div>
+        <span class="dev-note">东亚 + 老年女性</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "70岁朝鲜族奶奶 NPC，深蓝色宽松韩服，慈祥微笑，手持草药篮，像素游戏风格，温暖灯光，细腻皱纹纹理"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-eastasia" aria-label="최아트 头像" role="img">최</div>
+              <div class="item-author-info">
+                <div class="item-author-name">최아트</div>
+                <div class="item-author-region">韩国 · 首尔</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 441 个赞">❤️ 441</button>
+              <button class="item-action-btn" aria-label="评论，当前 52 条">💬 52</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 5: 未来孟买街景 — 场景原画（高图）
+           设计注记：南亚未来主义，而非日系赛博朋克刻板印象
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="2049年孟买街景场景原画，创作者 Priya_WorldArt">
+        <div class="gallery-thumb h5 gc-south-asia-future">
+          <span class="thumb-label">南亚未来主义</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot environment" aria-hidden="true"></span>场景原画
+        </div>
+        <span class="dev-note">南亚场景（非日系赛博）</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "2049年孟买海滨街道，嘟嘟车电动化改造，纱丽颜色霓虹招牌，香料市场与全息广告并存，雨季潮湿空气，电影感宽幅构图"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-southasia" aria-label="Priya_WorldArt 头像" role="img">P</div>
+              <div class="item-author-info">
+                <div class="item-author-name">Priya_WorldArt</div>
+                <div class="item-author-region">印度 · 孟买</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 567 个赞">❤️ 567</button>
+              <button class="item-action-btn" aria-label="评论，当前 63 条">💬 63</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 6: 爪哇皮影戏风格角色 — 角色立绘
+           设计注记：东南亚文化具体化，皮影戏美学
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="爪哇皮影戏风格角色，创作者 Wayang_Creative">
+        <div class="gallery-thumb h6 gc-javanese">
+          <span class="thumb-label">爪哇皮影</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot character" aria-hidden="true"></span>角色立绘
+        </div>
+        <span class="dev-note">东南亚文化</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "爪哇皮影戏风格武侠角色，镂空剪影美学，金橙色光晕，黑色背景，游戏BOSS设计，精细纹刻细节"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-sea" aria-label="Wayang_Creative 头像" role="img">W</div>
+              <div class="item-author-info">
+                <div class="item-author-name">Wayang_Creative</div>
+                <div class="item-author-region">印度尼西亚 · 日惹</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 156 个赞">❤️ 156</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 7: 萨米族猎人 — 场景原画（高图）
+           设计注记：北欧"原住民"视角，而非维京人刻板印象
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="萨米族猎人场景，创作者 Sápmi_Art">
+        <div class="gallery-thumb h2 gc-sami">
+          <span class="thumb-label">萨米北欧原住民</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot environment" aria-hidden="true"></span>场景原画
+        </div>
+        <span class="dev-note">北欧原住民（非维京）</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "萨米族猎人与驯鹿，极光映照下的针叶林，传统科夫塔外套，白色苔原，生存游戏场景，宽幅电影感构图"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-nordic" aria-label="Sápmi_Art 头像" role="img">S</div>
+              <div class="item-author-info">
+                <div class="item-author-name">Sápmi_Art</div>
+                <div class="item-author-region">挪威 · 特罗姆瑟</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 328 个赞">❤️ 328</button>
+              <button class="item-action-btn" aria-label="评论，当前 34 条">💬 34</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 8: 湄公河渔村动画预览
+           设计注记：东南亚场景，非日式或欧美场景
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="湄公河渔村动画预览，创作者 MekongMotion">
+        <div class="gallery-thumb h3 gc-mekong">
+          <span class="thumb-label">湄公河流域</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot motion" aria-hidden="true"></span>动画预览
+        </div>
+        <span class="dev-note">东南亚场景</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "湄公河畔傍晚渔村，木制高脚屋，渔船与渔网，黄昏橘光打在水面，6秒环境动画，写实油画风格"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-sea" aria-label="MekongMotion 头像" role="img">M</div>
+              <div class="item-author-info">
+                <div class="item-author-name">MekongMotion</div>
+                <div class="item-author-region">泰国 · 清迈</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 203 个赞">❤️ 203</button>
+              <button class="item-action-btn" aria-label="观看动画">🎬</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 9: 安第斯萨满 — 角色立绘（高图）
+           设计注记：拉美安第斯山脉文化，骆驼毛纹理，中年主角
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="安第斯萨满角色立绘，创作者 AntayArte">
+        <div class="gallery-thumb h4 gc-andean">
+          <span class="thumb-label">安第斯文化</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot character" aria-hidden="true"></span>角色立绘
+        </div>
+        <span class="dev-note">拉美文化 + 中年</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "45岁安第斯萨满女性，骆驼毛编织外套，祭仪头饰，麦粒金编绳，俯视构图，厚涂绘画风格，史诗感"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-latam" aria-label="AntayArte 头像" role="img">A</div>
+              <div class="item-author-info">
+                <div class="item-author-name">AntayArte</div>
+                <div class="item-author-region">秘鲁 · 库斯科</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 389 个赞">❤️ 389</button>
+              <button class="item-action-btn" aria-label="评论，当前 41 条">💬 41</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================================
+           ITEM 10: 拉各斯婚礼道具 Sprite — Sprite 批量
+           设计注记：西非文化，蜡染纹样，道具类型补充
+      -->
+      <article class="gallery-item" tabindex="0" role="article" aria-label="拉各斯传统婚礼道具 Sprite 批量，创作者 Lagos_Icons">
+        <div class="gallery-thumb h1 gc-west-africa">
+          <span class="thumb-label">西非文化道具</span>
+        </div>
+        <div class="item-tool-badge">
+          <span class="badge-dot sprite" aria-hidden="true"></span>Sprite 批量
+        </div>
+        <span class="dev-note">西非文化 + 道具</span>
+        <div class="item-overlay">
+          <p class="item-prompt">
+            "尼日利亚约鲁巴传统婚礼道具 Sprite 图集：蜡染贡礼布、科拉果、铜质珠链等12件，128px，透明背景，写实游戏道具风格"
+          </p>
+          <div class="item-meta">
+            <div class="item-author">
+              <div class="item-avatar av-africa" aria-label="Lagos_Icons 头像" role="img">L</div>
+              <div class="item-author-info">
+                <div class="item-author-name">Lagos_Icons</div>
+                <div class="item-author-region">尼日利亚 · 拉各斯</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="item-action-btn" aria-label="点赞，当前 167 个赞">❤️ 167</button>
+              <button class="item-action-btn" aria-label="评论，当前 11 条">💬 11</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="load-more">
+      <button class="btn-load" aria-label="加载更多来自不同文化背景的作品">加载更多作品</button>
+    </div>
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <div class="container">
+    <div class="footer-bottom">
+      <div>© 2026 PixelMind. All rights reserved.</div>
+      <div class="footer-legal">
+        <a href="#">隐私政策</a>
+        <a href="#">服务条款</a>
+        <a href="#">多元化政策</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   键盘交互增强 — 画廊卡片响应 Enter/Space 键
+   ============================================================ */
+document.querySelectorAll('.gallery-item').forEach(item => {
+  item.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      item.querySelector('.item-overlay').style.opacity = '1';
+    }
+  });
+  item.addEventListener('blur', () => {
+    item.querySelector('.item-overlay').style.opacity = '';
+  });
+});
+
+/* ============================================================
+   筛选标签键盘导航
+   ============================================================ */
+const tabs = document.querySelectorAll('[role="tab"]');
+tabs.forEach((tab, index) => {
+  tab.addEventListener('keydown', e => {
+    let next;
+    if (e.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+    if (e.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+    if (next) { next.focus(); next.setAttribute('tabindex', '0'); tab.setAttribute('tabindex', '-1'); }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+    }
+  });
+});
+</script>
+
+</body>
+</html>

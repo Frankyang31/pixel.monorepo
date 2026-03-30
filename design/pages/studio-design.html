@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>游戏资产生成 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       Design Tokens — Dark Theme
+       ============================================= */
+    :root {
+      --color-brand-start: #7B5EF0;
+      --color-brand-end:   #4F8EF7;
+      --color-brand-mid:   #6370F3;
+      --gradient-brand: linear-gradient(135deg, #7B5EF0, #4F8EF7);
+
+      --color-accent-purple: #9B87F5;
+      --color-accent-blue:   #60A5FA;
+      --color-accent-teal:   #2DD4BF;
+      --color-accent-amber:  #FBBF24;
+      --color-accent-red:    #F87171;
+
+      /* Tool-specific accent colors */
+      --color-tool-character: #9B87F5;
+      --color-tool-environment: #2DD4BF;
+      --color-tool-sprite: #FBBF24;
+      --color-tool-motion: #F87171;
+      --color-tool-texture: #60A5FA;
+      --color-tool-retouch: #A78BFA;
+
+      /* Dark Backgrounds */
+      --bg-base:     #0D0D12;
+      --bg-surface:  #13131A;
+      --bg-elevated: #1C1C27;
+      --bg-overlay:  #252535;
+
+      /* Borders */
+      --border-subtle:  rgba(255,255,255,0.05);
+      --border-default: rgba(255,255,255,0.09);
+      --border-strong:  rgba(255,255,255,0.16);
+      --border-brand:   rgba(123,94,240,0.40);
+
+      /* Text */
+      --text-primary:   #F0F0F8;
+      --text-secondary: #A0A0B8;
+      --text-tertiary:  #606078;
+      --text-disabled:  #404058;
+      --text-on-brand:  #FFFFFF;
+
+      /* Shadows */
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg:    0 8px 32px rgba(0,0,0,0.6);
+      --shadow-brand: 0 0 20px rgba(123,94,240,0.35);
+      --shadow-glow:  0 0 40px rgba(123,94,240,0.18);
+
+      /* Spacing */
+      --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;
+      --s6:24px;--s8:32px;--s10:40px;--s12:48px;--s16:64px;
+
+      /* Radius */
+      --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-2xl:24px;--r-full:9999px;
+
+      /* Font */
+      --font-sans: 'Inter','PingFang SC','Noto Sans SC',system-ui,sans-serif;
+      --font-mono: 'JetBrains Mono','Fira Code',monospace;
+
+      /* Transitions */
+      --t-fast:   100ms ease;
+      --t-normal: 200ms ease;
+      --t-slow:   300ms cubic-bezier(0,0,0.2,1);
+    }
+
+    /* =============================================
+       Reset & Base
+       ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      height: 100%;
+      overflow: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    textarea, input, select { font-family: inherit; }
+
+    /* =============================================
+       APP SHELL
+       ============================================= */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* =============================================
+       TOP NAV
+       ============================================= */
+    .studio-nav {
+      height: 56px;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--s5);
+      gap: var(--s4);
+      z-index: 50;
+    }
+    .studio-nav__logo {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+    .studio-nav__logo-icon {
+      width: 26px;
+      height: 26px;
+      background: var(--gradient-brand);
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    .studio-nav__divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border-default);
+      flex-shrink: 0;
+    }
+    .studio-nav__page-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* Tool tabs in nav */
+    .studio-nav__tools {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      margin-left: var(--s4);
+    }
+    .tool-tab {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      padding: 5px 12px;
+      border-radius: var(--r-md);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+      position: relative;
+    }
+    .tool-tab:hover {
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+    }
+    .tool-tab.active {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+    }
+    .tool-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 12px;
+      right: 12px;
+      height: 2px;
+      border-radius: var(--r-full);
+    }
+    .tool-tab[data-tool="character"].active::after { background: var(--color-tool-character); }
+    .tool-tab[data-tool="environment"].active::after { background: var(--color-tool-environment); }
+    .tool-tab[data-tool="sprite"].active::after { background: var(--color-tool-sprite); }
+    .tool-tab[data-tool="motion"].active::after { background: var(--color-tool-motion); }
+    .tool-tab[data-tool="texture"].active::after { background: var(--color-tool-texture); }
+    .tool-tab[data-tool="retouch"].active::after { background: var(--color-tool-retouch); }
+
+    .tool-tab__icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+    .tool-tab[data-tool="character"] .tool-tab__icon { background: rgba(155,135,245,0.2); color: var(--color-tool-character); }
+    .tool-tab[data-tool="environment"] .tool-tab__icon { background: rgba(45,212,191,0.2); color: var(--color-tool-environment); }
+    .tool-tab[data-tool="sprite"] .tool-tab__icon { background: rgba(251,191,36,0.2); color: var(--color-tool-sprite); }
+    .tool-tab[data-tool="motion"] .tool-tab__icon { background: rgba(248,113,113,0.2); color: var(--color-tool-motion); }
+    .tool-tab[data-tool="texture"] .tool-tab__icon { background: rgba(96,165,250,0.2); color: var(--color-tool-texture); }
+    .tool-tab[data-tool="retouch"] .tool-tab__icon { background: rgba(167,139,250,0.2); color: var(--color-tool-retouch); }
+
+    .tool-tab__badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: var(--r-full);
+    }
+    .tool-tab[data-tool="motion"] .tool-tab__badge {
+      background: var(--color-tool-motion);
+      color: #fff;
+    }
+
+    /* Right side of nav */
+    .studio-nav__right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+    }
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+    .nav-icon-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+
+    /* Credits badge */
+    .credits-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-full);
+      padding: 4px 12px 4px 8px;
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+    .credits-badge:hover {
+      border-color: var(--border-brand);
+    }
+    .credits-badge__icon {
+      width: 18px;
+      height: 18px;
+      background: var(--gradient-brand);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .credits-badge__num {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .credits-badge__label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* Avatar */
+    .nav-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--gradient-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* =============================================
+       STUDIO BODY
+       ============================================= */
+    .studio-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* =============================================
+       LEFT PANEL
+       ============================================= */
+    .left-panel {
+      width: 340px;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Tool header */
+    .tool-header {
+      padding: var(--s4);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+    }
+    .tool-header__top {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+    }
+    .tool-header__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .tool-header.active[data-tool="character"] .tool-header__icon { background: rgba(155,135,245,0.15); }
+    .tool-header.active[data-tool="environment"] .tool-header__icon { background: rgba(45,212,191,0.15); }
+    .tool-header.active[data-tool="sprite"] .tool-header__icon { background: rgba(251,191,36,0.15); }
+    .tool-header.active[data-tool="motion"] .tool-header__icon { background: rgba(248,113,113,0.15); }
+    .tool-header.active[data-tool="texture"] .tool-header__icon { background: rgba(96,165,250,0.15); }
+    .tool-header.active[data-tool="retouch"] .tool-header__icon { background: rgba(167,139,250,0.15); }
+    
+    .tool-header__info { flex: 1; }
+    .tool-header__name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .tool-header__desc {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+    .tool-header__cost {
+      font-size: 11px;
+      color: var(--color-accent-purple);
+      background: rgba(123,94,240,0.12);
+      padding: 2px 8px;
+      border-radius: var(--r-full);
+      font-weight: 600;
+    }
+
+    /* Scrollable inner */
+    .left-panel__scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--s4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s4);
+    }
+    .left-panel__scroll::-webkit-scrollbar { width: 4px; }
+    .left-panel__scroll::-webkit-scrollbar-track { background: transparent; }
+    .left-panel__scroll::-webkit-scrollbar-thumb {
+      background: var(--border-default);
+      border-radius: var(--r-full);
+    }
+
+    /* Section label */
+    .panel-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: var(--s2);
+    }
+
+    /* ---- Reference Image Upload ---- */
+    .upload-zone {
+      background: var(--bg-elevated);
+      border: 2px dashed var(--border-default);
+      border-radius: var(--r-lg);
+      padding: var(--s6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--s3);
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+    .upload-zone:hover {
+      border-color: var(--border-brand);
+      background: rgba(123,94,240,0.05);
+    }
+    .upload-zone__icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r-lg);
+      background: var(--bg-overlay);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--text-tertiary);
+    }
+    .upload-zone__text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .upload-zone__hint {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* ---- Prompt Area ---- */
+    .prompt-wrapper {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      transition: border-color var(--t-normal), box-shadow var(--t-normal);
+    }
+    .prompt-wrapper:focus-within {
+      border-color: var(--border-brand);
+      box-shadow: 0 0 0 3px rgba(123,94,240,0.12);
+    }
+    .prompt-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      color: var(--text-primary);
+      font-size: 13px;
+      line-height: 1.65;
+      padding: var(--s3);
+      min-height: 100px;
+      font-family: var(--font-mono);
+    }
+    .prompt-textarea::placeholder {
+      color: var(--text-tertiary);
+      font-family: var(--font-sans);
+    }
+    .prompt-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--s2) var(--s3);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .prompt-toolbar__actions {
+      display: flex;
+      gap: var(--s1);
+    }
+    .prompt-action-btn {
+      padding: 4px 8px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .prompt-action-btn:hover {
+      background: var(--bg-overlay);
+      color: var(--text-secondary);
+    }
+    .prompt-count {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* ---- Negative Prompt ---- */
+    .neg-prompt-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px var(--s3);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background var(--t-normal);
+    }
+    .neg-prompt-toggle:hover { background: var(--bg-elevated); }
+    .neg-prompt-toggle__label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+    }
+    .neg-prompt-toggle__chevron {
+      font-size: 11px;
+      color: var(--text-disabled);
+      transition: transform var(--t-normal);
+    }
+    .neg-prompt-toggle.open .neg-prompt-toggle__chevron {
+      transform: rotate(180deg);
+    }
+    .neg-prompt-content {
+      display: none;
+      padding: 0 var(--s1);
+    }
+    .neg-prompt-content.open { display: block; }
+    .neg-prompt-textarea {
+      width: 100%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      outline: none;
+      resize: none;
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.6;
+      padding: var(--s2) var(--s3);
+      min-height: 60px;
+      font-family: var(--font-mono);
+    }
+    .neg-prompt-textarea:focus {
+      border-color: var(--border-brand);
+    }
+
+    /* ---- Style Presets ---- */
+    .style-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s2);
+    }
+    .style-preset {
+      padding: 6px 12px;
+      border-radius: var(--r-full);
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border-default);
+      background: var(--bg-elevated);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+    .style-preset:hover {
+      border-color: var(--border-strong);
+      color: var(--text-secondary);
+    }
+    .style-preset.active {
+      border-color: var(--color-brand-start);
+      background: rgba(123,94,240,0.12);
+      color: var(--color-accent-purple);
+    }
+
+    /* ---- Collapsible block ---- */
+    .collapsible {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .collapsible__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--s3) var(--s4);
+      cursor: pointer;
+      background: var(--bg-elevated);
+      transition: background var(--t-normal);
+    }
+    .collapsible__header:hover { background: var(--bg-overlay); }
+    .collapsible__title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+    }
+    .collapsible__chevron {
+      font-size: 11px;
+      color: var(--text-disabled);
+      transition: transform var(--t-normal);
+    }
+    .collapsible.open .collapsible__chevron { transform: rotate(180deg); }
+    .collapsible__body {
+      padding: var(--s4);
+      background: var(--bg-surface);
+      display: none;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .collapsible.open .collapsible__body { display: block; }
+
+    /* Slider */
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+    }
+    .slider-row__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .slider-row__name {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .slider-row__value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-accent-purple);
+      font-family: var(--font-mono);
+      background: rgba(123,94,240,0.10);
+      padding: 1px 7px;
+      border-radius: var(--r-full);
+    }
+    .slider-track-wrap {
+      position: relative;
+      height: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .slider-track {
+      width: 100%;
+      height: 4px;
+      background: var(--bg-overlay);
+      border-radius: var(--r-full);
+      position: relative;
+    }
+    .slider-fill {
+      height: 100%;
+      border-radius: var(--r-full);
+      background: var(--gradient-brand);
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .slider-thumb {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%) translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--color-brand-start), var(--shadow-sm);
+      cursor: grab;
+    }
+
+    /* Count picker */
+    .count-picker {
+      display: flex;
+      gap: var(--s2);
+    }
+    .count-btn {
+      flex: 1;
+      padding: 6px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border-default);
+      background: var(--bg-elevated);
+      color: var(--text-tertiary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--t-normal);
+    }
+    .count-btn:hover { border-color: var(--border-strong); color: var(--text-secondary); }
+    .count-btn.active {
+      border-color: var(--color-brand-start);
+      background: rgba(123,94,240,0.12);
+      color: var(--color-accent-purple);
+    }
+
+    /* ---- Left panel footer ---- */
+    .left-panel__footer {
+      padding: var(--s4);
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      flex-shrink: 0;
+    }
+    .credits-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--s3);
+    }
+    .credits-summary__left {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+    .credits-summary__icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gradient-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+    }
+    .credits-summary__cost {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .generate-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--r-lg);
+      background: var(--gradient-brand);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2);
+      position: relative;
+      overflow: hidden;
+      transition: all var(--t-normal);
+      box-shadow: 0 4px 20px rgba(123,94,240,0.40);
+    }
+    .generate-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background var(--t-normal);
+    }
+    .generate-btn:hover::before { background: rgba(255,255,255,0.07); }
+    .generate-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(123,94,240,0.50);
+    }
+    .generate-btn:active { transform: translateY(0); }
+    .generate-btn__shortcut {
+      font-size: 11px;
+      opacity: 0.6;
+      font-weight: 400;
+      margin-left: var(--s1);
+    }
+
+    /* =============================================
+       RIGHT CANVAS
+       ============================================= */
+    .right-canvas {
+      flex: 1;
+      background: var(--bg-base);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Toolbar */
+    .canvas-toolbar {
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--s5);
+      gap: var(--s3);
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(13,13,18,0.8);
+    }
+    .canvas-toolbar__title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .canvas-toolbar__sep {
+      width: 1px;
+      height: 16px;
+      background: var(--border-default);
+    }
+    .canvas-filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+    }
+    .canvas-filter-btn {
+      padding: 4px 10px;
+      border-radius: var(--r-full);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+      border: 1px solid transparent;
+    }
+    .canvas-filter-btn:hover { color: var(--text-secondary); }
+    .canvas-filter-btn.active {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      border-color: var(--border-default);
+    }
+    .canvas-toolbar__right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+    }
+    .layout-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      transition: all var(--t-normal);
+      border: 1px solid transparent;
+    }
+    .layout-btn:hover { color: var(--text-secondary); background: var(--bg-elevated); }
+    .layout-btn.active {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      border-color: var(--border-default);
+    }
+
+    /* Canvas scroll area */
+    .canvas-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--s6);
+    }
+    .canvas-scroll::-webkit-scrollbar { width: 5px; }
+    .canvas-scroll::-webkit-scrollbar-track { background: transparent; }
+    .canvas-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-default);
+      border-radius: var(--r-full);
+    }
+
+    /* Results grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--s4);
+    }
+
+    /* ---- Task card: Generating ---- */
+    .task-card {
+      border-radius: var(--r-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      overflow: hidden;
+      position: relative;
+    }
+    .task-card--generating {
+      border-color: rgba(123,94,240,0.30);
+    }
+    .task-card--generating::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg,
+        rgba(123,94,240,0.06) 0%,
+        rgba(79,142,247,0.04) 100%);
+      pointer-events: none;
+    }
+
+    .task-card--generating::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(123,94,240,0.06) 40%,
+        rgba(123,94,240,0.10) 50%,
+        rgba(123,94,240,0.06) 60%,
+        transparent 100%
+      );
+      animation: shimmer 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .task-card__preview {
+      aspect-ratio: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-elevated);
+    }
+
+    /* Progress ring */
+    .progress-ring-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--s3);
+    }
+    .progress-ring {
+      position: relative;
+      width: 64px;
+      height: 64px;
+    }
+    .progress-ring svg {
+      transform: rotate(-90deg);
+    }
+    .progress-ring__bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.06);
+      stroke-width: 3;
+    }
+    .progress-ring__fill {
+      fill: none;
+      stroke: url(#ring-gradient);
+      stroke-width: 3;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    .progress-ring__pct {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+    .progress-ring__label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+    .progress-ring__status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--color-accent-purple);
+    }
+    .progress-ring__pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent-purple);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .task-card__info {
+      padding: var(--s3);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .task-card__prompt-preview {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: var(--s2);
+      font-family: var(--font-mono);
+    }
+    .task-card__meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .task-card__tags {
+      display: flex;
+      gap: var(--s1);
+    }
+    .task-tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--r-full);
+      border: 1px solid var(--border-default);
+      color: var(--text-tertiary);
+    }
+    .task-card__time {
+      font-size: 11px;
+      color: var(--text-disabled);
+    }
+
+    /* ---- Result card: Completed ---- */
+    .result-card {
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      background: var(--bg-surface);
+    }
+    .result-card__img-wrap {
+      aspect-ratio: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0,0,0.2,1);
+      display: block;
+    }
+    .result-card:hover .result-card__img { transform: scale(1.05); }
+
+    /* Hover overlay */
+    .result-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 40%,
+        rgba(0,0,0,0.7) 100%
+      );
+      opacity: 0;
+      transition: opacity var(--t-slow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: var(--s3);
+    }
+    .result-card:hover .result-card__overlay { opacity: 1; }
+
+    .result-card__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--s2);
+    }
+    .result-action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-md);
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #fff;
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+    .result-action-btn:hover {
+      background: rgba(123,94,240,0.6);
+      border-color: rgba(123,94,240,0.5);
+    }
+    .result-action-btn.liked {
+      background: rgba(248,113,113,0.6);
+      border-color: rgba(248,113,113,0.5);
+    }
+
+    .result-card__bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .result-card__model-tag {
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(123,94,240,0.7);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: var(--r-full);
+    }
+    .result-card__private-badge {
+      font-size: 10px;
+      color: rgba(255,255,255,0.55);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Card info below image */
+    .result-card__info {
+      padding: 8px var(--s3) var(--s3);
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .result-card__prompt {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+    .result-card__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-disabled);
+    }
+
+    /* ---- Empty state ---- */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+      text-align: center;
+      padding: var(--s16);
+    }
+    .empty-state__icon {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--r-2xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: var(--s6);
+    }
+    .empty-state__title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--s3);
+    }
+    .empty-state__desc {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      max-width: 300px;
+      line-height: 1.65;
+    }
+
+    /* =============================================
+       Scrollbar global
+       ============================================= */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-default) transparent;
+    }
+
+    /* =============================================
+       Tooltip
+       ============================================= */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: var(--r-sm);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* =============================================
+       Image gradient placeholders
+       ============================================= */
+    .img-grad-1 { background: linear-gradient(135deg,#1a0533,#4a1a7a,#2a1060); }
+    .img-grad-2 { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); }
+    .img-grad-3 { background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); }
+    .img-grad-4 { background: linear-gradient(135deg,#2d1b00,#5c3d00,#8b5a00); }
+    .img-grad-5 { background: linear-gradient(135deg,#0a0a1a,#1a1a3a,#2a2a5a); }
+    .img-grad-6 { background: linear-gradient(135deg,#001a1a,#003d3d,#006666); }
+
+    /* =============================================
+       Responsive
+       ============================================= */
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .app { height: auto; min-height: 100vh; }
+      .studio-body { flex-direction: column; overflow: visible; }
+      .left-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .left-panel__scroll { max-height: 60vh; }
+      .right-canvas { min-height: 70vh; }
+      .studio-nav__tools { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hidden SVG gradients -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7B5EF0"/>
+      <stop offset="100%" stop-color="#4F8EF7"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="app">
+
+  <!-- ============================================================
+       TOP NAV
+       ============================================================ -->
+  <header class="studio-nav" role="banner">
+    <!-- Logo -->
+    <a href="/" class="studio-nav__logo" aria-label="返回首页">
+      <div class="studio-nav__logo-icon" aria-hidden="true">✦</div>
+      PixelMind
+    </a>
+
+    <div class="studio-nav__divider" aria-hidden="true"></div>
+    <span class="studio-nav__page-title">游戏资产生成</span>
+
+    <!-- Tool Tabs -->
+    <nav class="studio-nav__tools" aria-label="工具选择">
+      <button class="tool-tab active" data-tool="character" aria-pressed="true">
+        <span class="tool-tab__icon">👤</span>
+        角色立绘
+      </button>
+      <button class="tool-tab" data-tool="environment" aria-pressed="false">
+        <span class="tool-tab__icon">🏔️</span>
+        场景原画
+      </button>
+      <button class="tool-tab" data-tool="sprite" aria-pressed="false">
+        <span class="tool-tab__icon">📦</span>
+        Sprite
+      </button>
+      <button class="tool-tab" data-tool="motion" aria-pressed="false">
+        <span class="tool-tab__icon">🎬</span>
+        动画预览
+        <span class="tool-tab__badge">NEW</span>
+      </button>
+      <button class="tool-tab" data-tool="texture" aria-pressed="false">
+        <span class="tool-tab__icon">🎨</span>
+        材质纹理
+      </button>
+      <button class="tool-tab" data-tool="retouch" aria-pressed="false">
+        <span class="tool-tab__icon">✏️</span>
+        细节精修
+      </button>
+    </nav>
+
+    <!-- Right actions -->
+    <div class="studio-nav__right">
+      <button class="nav-icon-btn" aria-label="历史记录" data-tip="我的作品集">📋</button>
+      <button class="nav-icon-btn" aria-label="通知" data-tip="通知">🔔</button>
+
+      <div class="credits-badge" role="button" aria-label="积分余额：1,240 积分，点击购买更多" tabindex="0">
+        <div class="credits-badge__icon" aria-hidden="true">✦</div>
+        <div>
+          <div class="credits-badge__num">1,240</div>
+          <div class="credits-badge__label">积分</div>
+        </div>
+      </div>
+
+      <div class="nav-avatar" role="button" aria-label="个人中心" tabindex="0" aria-haspopup="true">
+        A
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ============================================================
+       STUDIO BODY
+       ============================================================ -->
+  <div class="studio-body">
+
+    <!-- ==========================================
+         LEFT PANEL: Form
+         ========================================== -->
+    <aside class="left-panel" aria-label="创作参数面板">
+
+      <!-- Tool Header -->
+      <div class="tool-header active" data-tool="character">
+        <div class="tool-header__top">
+          <div class="tool-header__icon">👤</div>
+          <div class="tool-header__info">
+            <div class="tool-header__name">角色立绘</div>
+            <div class="tool-header__desc">RPG、SLG、卡牌游戏角色设计</div>
+          </div>
+          <span class="tool-header__cost">4 积分/次</span>
+        </div>
+      </div>
+
+      <div class="left-panel__scroll" role="form">
+
+        <!-- Reference Image -->
+        <div>
+          <div class="panel-label">参考图（可选）</div>
+          <div class="upload-zone" role="button" tabindex="0" aria-label="上传参考图片">
+            <div class="upload-zone__icon">📤</div>
+            <div class="upload-zone__text">拖拽图片或点击上传</div>
+            <div class="upload-zone__hint">支持 PNG、JPG，最大 10MB</div>
+          </div>
+        </div>
+
+        <!-- Prompt -->
+        <div>
+          <div class="panel-label" id="prompt-label">角色描述</div>
+          <div class="prompt-wrapper" role="group" aria-labelledby="prompt-label">
+            <textarea
+              class="prompt-textarea"
+              id="prompt-input"
+              aria-label="角色描述输入框"
+              aria-describedby="prompt-count"
+              placeholder="描述角色的外貌特征、服饰、姿态、背景故事等，例如：a brave knight in shining silver armor, red cape flowing in the wind, holding a legendary sword, dramatic lighting, fantasy RPG style..."
+              rows="6"
+            >a majestic warrior queen, flowing golden hair, ornate crown, crimson royal robes, holding a scepter, standing on a marble balcony, epic fantasy style, highly detailed, 4K</textarea>
+            <div class="prompt-toolbar">
+              <div class="prompt-toolbar__actions">
+                <button class="prompt-action-btn" aria-label="优化描述">✨ 优化</button>
+                <button class="prompt-action-btn" aria-label="翻译">🌐 翻译</button>
+                <button class="prompt-action-btn" aria-label="随机灵感">🎲 随机</button>
+              </div>
+              <span class="prompt-count" id="prompt-count" aria-live="polite">182 / 500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style Presets -->
+        <div>
+          <div class="panel-label">风格预设</div>
+          <div class="style-presets" role="group" aria-label="风格选择">
+            <button class="style-preset active" aria-pressed="true">奇幻RPG</button>
+            <button class="style-preset" aria-pressed="false">二次元</button>
+            <button class="style-preset" aria-pressed="false">像素游戏</button>
+            <button class="style-preset" aria-pressed="false">写实风格</button>
+            <button class="style-preset" aria-pressed="false">赛博朋克</button>
+          </div>
+        </div>
+
+        <!-- Image Ratio -->
+        <div>
+          <div class="panel-label" id="ratio-label">角色比例</div>
+          <div class="ratio-grid" role="radiogroup" aria-labelledby="ratio-label">
+            <div class="ratio-item" role="radio" aria-checked="false" tabindex="0" aria-label="1比1正方形">
+              <div class="ratio-item__box" style="width:22px;height:22px" aria-hidden="true"></div>
+              <div class="ratio-item__label">1:1</div>
+            </div>
+            <div class="ratio-item active" role="radio" aria-checked="true" tabindex="0" aria-label="2比3竖向">
+              <div class="ratio-item__box" style="width:18px;height:26px" aria-hidden="true"></div>
+              <div class="ratio-item__label">2:3</div>
+            </div>
+            <div class="ratio-item" role="radio" aria-checked="false" tabindex="0" aria-label="3比4竖向">
+              <div class="ratio-item__box" style="width:18px;height:24px" aria-hidden="true"></div>
+              <div class="ratio-item__label">3:4</div>
+            </div>
+            <div class="ratio-item" role="radio" aria-checked="false" tabindex="0" aria-label="9比16竖屏">
+              <div class="ratio-item__box" style="width:15px;height:26px" aria-hidden="true"></div>
+              <div class="ratio-item__label">9:16</div>
+            </div>
+            <div class="ratio-item" role="radio" aria-checked="false" tabindex="0" aria-label="4比5竖向">
+              <div class="ratio-item__box" style="width:20px;height:24px" aria-hidden="true"></div>
+              <div class="ratio-item__label">4:5</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Negative Prompt -->
+        <div>
+          <div class="neg-prompt-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="neg-prompt-body" id="neg-toggle">
+            <span class="neg-prompt-toggle__label">
+              <span aria-hidden="true">⊖</span>
+              反向提示词（可选）
+            </span>
+            <span class="neg-prompt-toggle__chevron" aria-hidden="true">⌄</span>
+          </div>
+          <div class="neg-prompt-content" id="neg-prompt-body" aria-labelledby="neg-toggle">
+            <textarea
+              class="neg-prompt-textarea"
+              aria-label="反向提示词"
+              placeholder="不想要的元素，例如：blurry, deformed hands, extra limbs, watermark..."
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Advanced Parameters -->
+        <div class="collapsible open" id="params-block">
+          <div class="collapsible__header" role="button" tabindex="0" aria-expanded="true" aria-controls="params-body">
+            <span class="collapsible__title">⚙️ 高级参数</span>
+            <span class="collapsible__chevron" aria-hidden="true">⌄</span>
+          </div>
+          <div class="collapsible__body" id="params-body">
+            <div class="params-section" style="display:flex;flex-direction:column;gap:16px">
+
+              <!-- Detail Level -->
+              <div class="slider-row">
+                <div class="slider-row__header">
+                  <span class="slider-row__name">细节等级</span>
+                  <span class="slider-row__value" id="detail-val">高</span>
+                </div>
+                <div class="slider-track-wrap" aria-label="细节等级滑块">
+                  <div class="slider-track">
+                    <div class="slider-fill" style="width:75%"></div>
+                    <div class="slider-thumb" style="left:75%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Style Strength -->
+              <div class="slider-row">
+                <div class="slider-row__header">
+                  <span class="slider-row__name">风格强度</span>
+                  <span class="slider-row__value" id="style-val">7</span>
+                </div>
+                <div class="slider-track-wrap" aria-label="风格强度滑块，当前值7">
+                  <div class="slider-track">
+                    <div class="slider-fill" style="width:70%"></div>
+                    <div class="slider-thumb" style="left:70%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Seed -->
+              <div>
+                <div class="slider-row__header" style="margin-bottom:8px">
+                  <span class="slider-row__name">随机种子</span>
+                  <span class="slider-row__value">随机</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input
+                    type="text"
+                    aria-label="种子数值"
+                    placeholder="留空则随机"
+                    style="flex:1;background:var(--bg-overlay);border:1px solid var(--border-default);border-radius:var(--r-md);padding:6px 10px;font-size:12px;color:var(--text-secondary);outline:none;font-family:var(--font-mono);"
+                  />
+                  <button style="width:30px;height:30px;border-radius:var(--r-md);background:var(--bg-overlay);border:1px solid var(--border-default);color:var(--text-tertiary);font-size:14px;cursor:pointer;" aria-label="重新随机种子">🎲</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Output count -->
+        <div>
+          <div class="panel-label" id="count-label">生成数量</div>
+          <div class="count-picker" role="radiogroup" aria-labelledby="count-label">
+            <button class="count-btn active" aria-pressed="true">1</button>
+            <button class="count-btn" aria-pressed="false">2</button>
+            <button class="count-btn" aria-pressed="false">4</button>
+          </div>
+        </div>
+
+      </div><!-- end scroll -->
+
+      <!-- Generate CTA -->
+      <div class="left-panel__footer">
+        <div class="credits-summary">
+          <div class="credits-summary__left">
+            <div class="credits-summary__icon" aria-hidden="true">✦</div>
+            本次消耗
+          </div>
+          <div class="credits-summary__cost" aria-label="本次消耗4积分">4 积分</div>
+        </div>
+        <button class="generate-btn" aria-label="开始生成角色立绘，消耗4积分，快捷键 Ctrl+Enter">
+          <span>✦</span>
+          <span>生成角色</span>
+          <span class="generate-btn__shortcut" aria-hidden="true">⌘↵</span>
+        </button>
+      </div>
+    </aside>
+
+
+    <!-- ==========================================
+         RIGHT CANVAS: Results
+         ========================================== -->
+    <main class="right-canvas" aria-label="生成结果区域">
+
+      <!-- Toolbar -->
+      <div class="canvas-toolbar" role="toolbar" aria-label="结果过滤和布局">
+        <span class="canvas-toolbar__title">我的角色库</span>
+        <div class="canvas-toolbar__sep" aria-hidden="true"></div>
+
+        <div class="canvas-filter-group" role="group" aria-label="结果筛选">
+          <button class="canvas-filter-btn active" aria-pressed="true">全部</button>
+          <button class="canvas-filter-btn" aria-pressed="false">
+            <span style="display:inline-flex;align-items:center;gap:4px">
+              <span class="progress-ring__pulse" style="animation:pulse 1.2s infinite;width:6px;height:6px;border-radius:50%;background:#9B87F5;display:inline-block"></span>
+              生成中 (1)
+            </span>
+          </button>
+          <button class="canvas-filter-btn" aria-pressed="false">已完成</button>
+          <button class="canvas-filter-btn" aria-pressed="false">已收藏</button>
+        </div>
+
+        <div class="canvas-toolbar__right">
+          <button class="layout-btn active" aria-label="网格视图" aria-pressed="true" data-tip="网格">⊞</button>
+          <button class="layout-btn" aria-label="列表视图" aria-pressed="false" data-tip="列表">☰</button>
+          <button class="nav-icon-btn" aria-label="更多选项" style="width:28px;height:28px;font-size:13px">···</button>
+        </div>
+      </div>
+
+      <!-- Scroll area -->
+      <div class="canvas-scroll" aria-live="polite" aria-label="生成结果列表">
+        <div class="results-grid" role="list">
+
+          <!-- -------- TASK CARD: Generating -------- -->
+          <article class="task-card task-card--generating" role="listitem" aria-label="生成中的任务，进度67%">
+            <div class="task-card__preview">
+              <div class="progress-ring-wrap">
+                <div class="progress-ring" role="progressbar" aria-valuenow="67" aria-valuemin="0" aria-valuemax="100" aria-label="生成进度67%">
+                  <svg width="64" height="64" viewBox="0 0 64 64">
+                    <defs>
+                      <linearGradient id="ring-g" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#7B5EF0"/>
+                        <stop offset="100%" stop-color="#4F8EF7"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="progress-ring__bg" cx="32" cy="32" r="27"/>
+                    <circle class="progress-ring__fill" cx="32" cy="32" r="27"
+                      stroke="url(#ring-g)"
+                      stroke-dasharray="169.6"
+                      stroke-dashoffset="56"/>
+                  </svg>
+                  <div class="progress-ring__pct" aria-hidden="true">67%</div>
+                </div>
+                <div class="progress-ring__status">
+                  <span class="progress-ring__pulse" aria-hidden="true"></span>
+                  AI 渲染中…
+                </div>
+                <div class="progress-ring__label" style="font-size:11px;color:var(--text-disabled)">预计剩余 15s</div>
+              </div>
+            </div>
+            <div class="task-card__info">
+              <div class="task-card__prompt-preview">
+                a majestic warrior queen, golden hair...
+              </div>
+              <div class="task-card__meta-row">
+                <div class="task-card__tags">
+                  <span class="task-tag">角色立绘</span>
+                  <span class="task-tag">2:3</span>
+                </div>
+                <span class="task-card__time">刚刚</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- -------- RESULT CARD 1 -------- -->
+          <article class="result-card" role="listitem" aria-label="已生成角色：战士">
+            <div class="result-card__img-wrap">
+              <div class="result-card__img img-grad-1" style="height:100%;min-height:180px"></div>
+              <div class="result-card__overlay" aria-hidden="true">
+                <div class="result-card__actions">
+                  <button class="result-action-btn liked" aria-label="取消收藏">♥</button>
+                  <button class="result-action-btn" aria-label="下载">⤓</button>
+                  <button class="result-action-btn" aria-label="精修此图" title="精修">✏️</button>
+                </div>
+                <div class="result-card__bottom">
+                  <span class="result-card__model-tag">角色立绘</span>
+                  <span class="result-card__private-badge">🔒 私密</span>
+                </div>
+              </div>
+            </div>
+            <div class="result-card__info">
+              <div class="result-card__prompt">warrior queen, golden hair, crimson robes...</div>
+              <div class="result-card__meta">
+                <span>2:3 · 奇幻RPG</span>
+                <span>5 分钟前</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- -------- RESULT CARD 2 -------- -->
+          <article class="result-card" role="listitem">
+            <div class="result-card__img-wrap">
+              <div class="result-card__img img-grad-2" style="height:100%;min-height:180px"></div>
+              <div class="result-card__overlay" aria-hidden="true">
+                <div class="result-card__actions">
+                  <button class="result-action-btn" aria-label="收藏">♡</button>
+                  <button class="result-action-btn" aria-label="下载">⤓</button>
+                  <button class="result-action-btn" aria-label="精修此图">✏️</button>
+                </div>
+                <div class="result-card__bottom">
+                  <span class="result-card__model-tag">角色立绘</span>
+                  <span class="result-card__private-badge">🔒 私密</span>
+                </div>
+              </div>
+            </div>
+            <div class="result-card__info">
+              <div class="result-card__prompt">dark mage, hooded figure, magical staff...</div>
+              <div class="result-card__meta">
+                <span>2:3 · 奇幻RPG</span>
+                <span>15 分钟前</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- -------- RESULT CARD 3 -------- -->
+          <article class="result-card" role="listitem">
+            <div class="result-card__img-wrap">
+              <div class="result-card__img img-grad-3" style="height:100%;min-height:180px"></div>
+              <div class="result-card__overlay" aria-hidden="true">
+                <div class="result-card__actions">
+                  <button class="result-action-btn" aria-label="收藏">♡</button>
+                  <button class="result-action-btn" aria-label="下载">⤓</button>
+                  <button class="result-action-btn" aria-label="精修此图">✏️</button>
+                </div>
+                <div class="result-card__bottom">
+                  <span class="result-card__model-tag">角色立绘</span>
+                  <span class="result-card__private-badge">🌐 公开</span>
+                </div>
+              </div>
+            </div>
+            <div class="result-card__info">
+              <div class="result-card__prompt">cyberpunk assassin, neon lights, katana...</div>
+              <div class="result-card__meta">
+                <span>1:1 · 赛博朋克</span>
+                <span>30 分钟前</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- -------- RESULT CARD 4 -------- -->
+          <article class="result-card" role="listitem">
+            <div class="result-card__img-wrap">
+              <div class="result-card__img img-grad-4" style="height:100%;min-height:180px"></div>
+              <div class="result-card__overlay" aria-hidden="true">
+                <div class="result-card__actions">
+                  <button class="result-action-btn" aria-label="收藏">♡</button>
+                  <button class="result-action-btn" aria-label="下载">⤓</button>
+                  <button class="result-action-btn" aria-label="精修此图">✏️</button>
+                </div>
+                <div class="result-card__bottom">
+                  <span class="result-card__model-tag">角色立绘</span>
+                  <span class="result-card__private-badge">🔒 私密</span>
+                </div>
+              </div>
+            </div>
+            <div class="result-card__info">
+              <div class="result-card__prompt">dwarf blacksmith, beard, hammer, forge...</div>
+              <div class="result-card__meta">
+                <span>3:4 · 奇幻RPG</span>
+                <span>1 小时前</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- -------- RESULT CARD 5 -------- -->
+          <article class="result-card" role="listitem">
+            <div class="result-card__img-wrap">
+              <div class="result-card__img img-grad-5" style="height:100%;min-height:180px"></div>
+              <div class="result-card__overlay" aria-hidden="true">
+                <div class="result-card__actions">
+                  <button class="result-action-btn" aria-label="收藏">♡</button>
+                  <button class="result-action-btn" aria-label="下载">⤓</button>
+                  <button class="result-action-btn" aria-label="精修此图">✏️</button>
+                </div>
+                <div class="result-card__bottom">
+                  <span class="result-card__model-tag">角色立绘</span>
+                  <span class="result-card__private-badge">🌐 公开</span>
+                </div>
+              </div>
+            </div>
+            <div class="result-card__info">
+              <div class="result-card__prompt">elven archer, green cloak, bow and arrow...</div>
+              <div class="result-card__meta">
+                <span>9:16 · 奇幻RPG</span>
+                <span>2 小时前</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- -------- RESULT CARD 6 -------- -->
+          <article class="result-card" role="listitem">
+            <div class="result-card__img-wrap">
+              <div class="result-card__img img-grad-6" style="height:100%;min-height:180px"></div>
+              <div class="result-card__overlay" aria-hidden="true">
+                <div class="result-card__actions">
+                  <button class="result-action-btn" aria-label="收藏">♡</button>
+                  <button class="result-action-btn" aria-label="下载">⤓</button>
+                  <button class="result-action-btn" aria-label="精修此图">✏️</button>
+                </div>
+                <div class="result-card__bottom">
+                  <span class="result-card__model-tag">角色立绘</span>
+                  <span class="result-card__private-badge">🔒 私密</span>
+                </div>
+              </div>
+            </div>
+            <div class="result-card__info">
+              <div class="result-card__prompt">samurai warrior, katana, traditional armor...</div>
+              <div class="result-card__meta">
+                <span>2:3 · 写实风格</span>
+                <span>3 小时前</span>
+              </div>
+            </div>
+          </article>
+
+        </div><!-- end results-grid -->
+      </div><!-- end canvas-scroll -->
+
+    </main><!-- end right-canvas -->
+
+  </div><!-- end studio-body -->
+
+</div><!-- end app -->
+
+
+<!-- =============================================
+     Interactions
+     ============================================= -->
+<script>
+  // Tool tab switching
+  const toolData = {
+    character: {
+      name: '角色立绘',
+      desc: 'RPG、SLG、卡牌游戏角色设计',
+      cost: '4 积分/次',
+      icon: '👤',
+      prompt: 'a majestic warrior queen, flowing golden hair, ornate crown, crimson royal robes, holding a scepter, standing on a marble balcony, epic fantasy style, highly detailed, 4K',
+      creditPerImg: 4
+    },
+    environment: {
+      name: '场景原画',
+      desc: '游戏背景、环境、关卡设计',
+      cost: '5 积分/次',
+      icon: '🏔️',
+      prompt: 'mystical forest temple, ancient ruins covered in moss, floating lanterns, ethereal mist, fantasy RPG background, epic composition, 4K, highly detailed',
+      creditPerImg: 5
+    },
+    sprite: {
+      name: 'Sprite 批量',
+      desc: '游戏图标、道具、NPC 批量生成',
+      cost: '2 积分/张',
+      icon: '📦',
+      prompt: 'pixel art game item, health potion, red liquid in glass bottle, sparkling, 16x16 pixels, retro game style, transparent background',
+      creditPerImg: 2
+    },
+    motion: {
+      name: '动画预览',
+      desc: '角色动作、战斗、技能动画预览',
+      cost: '15 积分/次',
+      icon: '🎬',
+      prompt: 'warrior character performing sword slash animation, 4 keyframes, loop-ready, sprite sheet format, fantasy RPG style',
+      creditPerImg: 15
+    },
+    texture: {
+      name: '材质纹理',
+      desc: 'PBR 材质、法线贴图、平铺纹理',
+      cost: '4 积分/次',
+      icon: '🎨',
+      prompt: 'seamless stone wall texture, diffuse map, normal map, roughness map included, game-ready, 2K resolution, medieval castle style',
+      creditPerImg: 4
+    },
+    retouch: {
+      name: '细节精修',
+      desc: '局部修改、放大、Inpainting',
+      cost: '2 积分/次',
+      icon: '✏️',
+      prompt: 'fix hands and fingers, enhance details, improve facial features, professional retouching',
+      creditPerImg: 2
+    }
+  };
+
+  document.querySelectorAll('.tool-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tool = tab.dataset.tool;
+      
+      // Update active tab
+      document.querySelectorAll('.tool-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-pressed', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-pressed', 'true');
+      
+      // Update header
+      const header = document.querySelector('.tool-header');
+      header.dataset.tool = tool;
+      header.classList.add('active');
+      header.querySelector('.tool-header__icon').textContent = toolData[tool].icon;
+      header.querySelector('.tool-header__name').textContent = toolData[tool].name;
+      header.querySelector('.tool-header__desc').textContent = toolData[tool].desc;
+      header.querySelector('.tool-header__cost').textContent = toolData[tool].cost;
+      
+      // Update prompt placeholder
+      document.getElementById('prompt-input').placeholder = 
+        toolData[tool].prompt.replace(/,\s*[^,]+$/, '...');
+      document.getElementById('prompt-input').value = toolData[tool].prompt;
+      
+      // Update credit cost
+      updateCreditCost(toolData[tool].creditPerImg);
+      
+      // Update canvas title
+      document.querySelector('.canvas-toolbar__title').textContent = 
+        '我的' + toolData[tool].name.replace(' Sprite', '') + '库';
+    });
+  });
+
+  // Negative prompt toggle
+  const negToggle = document.getElementById('neg-toggle');
+  const negBody   = document.getElementById('neg-prompt-body');
+  negToggle.addEventListener('click', () => {
+    const open = negBody.classList.toggle('open');
+    negToggle.classList.toggle('open', open);
+    negToggle.setAttribute('aria-expanded', open);
+  });
+  negToggle.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); negToggle.click(); }
+  });
+
+  // Collapsible blocks
+  document.querySelectorAll('.collapsible__header').forEach(header => {
+    header.addEventListener('click', () => {
+      const block = header.closest('.collapsible');
+      const open = block.classList.toggle('open');
+      header.setAttribute('aria-expanded', open);
+    });
+    header.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); header.click(); }
+    });
+  });
+
+  // Ratio picker
+  document.querySelectorAll('.ratio-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.ratio-item').forEach(r => {
+        r.classList.remove('active');
+        r.setAttribute('aria-checked', 'false');
+      });
+      item.classList.add('active');
+      item.setAttribute('aria-checked', 'true');
+    });
+    item.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
+    });
+  });
+
+  // Style presets
+  document.querySelectorAll('.style-preset').forEach(preset => {
+    preset.addEventListener('click', () => {
+      document.querySelectorAll('.style-preset').forEach(p => {
+        p.classList.remove('active');
+        p.setAttribute('aria-pressed', 'false');
+      });
+      preset.classList.add('active');
+      preset.setAttribute('aria-pressed', 'true');
+    });
+  });
+
+  // Count picker
+  document.querySelectorAll('.count-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.count-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
+      updateCreditCost(getCurrentCreditPerImg());
+    });
+  });
+
+  function getCurrentCreditPerImg() {
+    const activeTab = document.querySelector('.tool-tab.active');
+    return toolData[activeTab.dataset.tool].creditPerImg;
+  }
+
+  function updateCreditCost(creditPerImg) {
+    const count = parseInt(document.querySelector('.count-btn.active').textContent);
+    document.querySelector('.credits-summary__cost').textContent = 
+      `${count * creditPerImg} 积分`;
+    document.querySelector('.generate-btn').setAttribute(
+      'aria-label', `开始生成，消耗${count * creditPerImg}积分，快捷键 Ctrl+Enter`
+    );
+  }
+
+  // Canvas filter tabs
+  document.querySelectorAll('.canvas-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.canvas-filter-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
+    });
+  });
+
+  // Layout toggle
+  document.querySelectorAll('.layout-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.layout-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
+    });
+  });
+
+  // Prompt character count
+  const textarea = document.getElementById('prompt-input');
+  const counter  = document.getElementById('prompt-count');
+  textarea.addEventListener('input', () => {
+    counter.textContent = `${textarea.value.length} / 500`;
+  });
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      const btn = document.querySelector('.generate-btn');
+      btn.style.transform = 'scale(0.97)';
+      setTimeout(() => btn.style.transform = '', 150);
+    }
+  });
+</script>
+</body>
+</html>

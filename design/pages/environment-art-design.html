@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>场景原画 — PixelMind · AI 游戏场景生成</title>
+  <meta name="description" content="AI 游戏场景原画生成工具，支持多种画风和宽幅比例。输入描述词，30 秒生成高质量游戏背景、环境设定图和世界观画面。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --c-p1:#7B5EF0; --c-p2:#4F8EF7; --c-p3:#A78BFA;
+      --c-accent:#2DD4BF;
+      --grad-brand:linear-gradient(135deg,#7B5EF0,#4F8EF7);
+      --bg-dark:#07070D;
+      --bg-base:#0D0D12;
+      --bg-surface:#13131A;
+      --bg-elevated:#1C1C27;
+      --surface:#FFFFFF;
+      --text-dark:#18181F;
+      --text-light:#F0F0F8;
+      --text-muted:#A0A0B8;
+      --text-faint:#606078;
+      --font:'Inter','PingFang SC','Noto Sans SC',system-ui,sans-serif;
+      --font-mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font);background:var(--bg-base);color:var(--text-light);line-height:1.6;-webkit-font-smoothing:antialiased;}
+    a{color:inherit;text-decoration:none;}
+    img{display:block;max-width:100%;}
+    button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;}
+    .container{width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+    @media(max-width:768px){.container{padding:0 16px;}}
+
+    /* Nav */
+    .nav{
+      position:fixed;top:0;left:0;right:0;z-index:500;
+      height:64px;display:flex;align-items:center;
+      background:rgba(7,7,13,0.88);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .nav__inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+    .nav__logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;color:var(--text-light);letter-spacing:-0.02em;}
+    .nav__logo-icon{width:32px;height:32px;border-radius:8px;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 4px 16px rgba(123,94,240,0.35);}
+    .nav__links{display:flex;align-items:center;gap:28px;list-style:none;}
+    .nav__links a{font-size:14px;font-weight:500;color:var(--text-muted);transition:color 0.2s;}
+    .nav__links a:hover{color:var(--text-light);}
+    .nav__links a.active{color:var(--text-light);}
+    .nav__actions{display:flex;align-items:center;gap:10px;}
+    .btn-ghost{font-size:14px;font-weight:500;color:var(--text-muted);padding:8px 16px;border-radius:8px;transition:all 0.2s;}
+    .btn-ghost:hover{color:var(--text-light);background:rgba(255,255,255,0.05);}
+    .btn-brand{font-size:14px;font-weight:600;color:#fff;padding:9px 20px;border-radius:8px;background:var(--grad-brand);box-shadow:0 4px 16px rgba(123,94,240,0.3);transition:all 0.25s;}
+    .btn-brand:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(123,94,240,0.4);}
+    @media(max-width:768px){.nav__links{display:none;}.nav__inner{padding:0 16px;}}
+
+    /* Hero */
+    .hero{
+      position:relative;padding:160px 0 100px;overflow:hidden;
+      background:var(--bg-base);
+    }
+    .hero__bg{
+      position:absolute;inset:0;z-index:0;
+      background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(123,94,240,0.08) 0%,transparent 70%);
+    }
+    .hero__grid{
+      position:absolute;inset:0;z-index:1;
+      background-image:radial-gradient(circle,rgba(123,94,240,0.06) 1px,transparent 1px);
+      background-size:40px 40px;
+      mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 80%);
+      -webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 80%);
+      pointer-events:none;
+    }
+    .hero__content{position:relative;z-index:10;max-width:760px;margin:0 auto;text-align:center;padding:0 20px;}
+    .hero__eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.25);
+      border-radius:100px;padding:5px 16px;
+      font-size:13px;font-weight:600;color:#2DD4BF;margin-bottom:24px;
+    }
+    .hero__title{
+      font-size:clamp(36px,6vw,64px);font-weight:900;
+      line-height:1.1;letter-spacing:-0.04em;color:#fff;margin-bottom:14px;
+    }
+    .hero__title em{font-style:normal;background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero__sub{font-size:18px;color:var(--text-muted);max-width:520px;margin:0 auto 36px;line-height:1.7;}
+    .hero__cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+    .btn-hero{font-size:16px;font-weight:700;color:#fff;padding:14px 36px;border-radius:12px;background:var(--grad-brand);box-shadow:0 8px 24px rgba(123,94,240,0.35);transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;}
+    .btn-hero:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(123,94,240,0.4);}
+    .btn-ghost-hero{font-size:16px;font-weight:600;color:var(--text-muted);padding:14px 32px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:transparent;transition:all 0.25s;}
+    .btn-ghost-hero:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
+
+    /* Tool Badge */
+    .tool-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--text-muted);margin:16px 0 32px;}
+    .tool-badge__dot{width:6px;height:6px;border-radius:50%;background:#2DD4BF;}
+
+    /* Features */
+    .features{padding:96px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .sec-label{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#7B5EF0;margin-bottom:12px;}
+    .sec-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-0.025em;color:#fff;line-height:1.2;margin-bottom:56px;}
+    .features__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+    @media(max-width:900px){.features__grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:560px){.features__grid{grid-template-columns:1fr;}}
+    .feat-card{
+      background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px;padding:28px;position:relative;overflow:hidden;
+    }
+    .feat-card__icon{width:48px;height:48px;border-radius:12px;background:rgba(45,212,191,0.1);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+    .feat-card__title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+    .feat-card__desc{font-size:14px;color:var(--text-muted);line-height:1.65;}
+
+    /* Gallery */
+    .gallery-sec{padding:96px 0;background:var(--bg-base);}
+    .gallery-tabs{display:flex;gap:8px;margin-bottom:40px;flex-wrap:wrap;}
+    .gallery-tab{
+      padding:7px 18px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);
+      font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.2s;
+    }
+    .gallery-tab:hover{color:#fff;border-color:rgba(255,255,255,0.18);}
+    .gallery-tab.active{background:rgba(123,94,240,0.18);border-color:rgba(123,94,240,0.35);color:#A78BFA;}
+    .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    @media(max-width:900px){.gallery-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:560px){.gallery-grid{grid-template-columns:repeat(2,1fr);}}
+    .gallery-item{
+      border-radius:12px;overflow:hidden;position:relative;cursor:pointer;
+      transition:transform 0.3s cubic-bezier(0,0,0.2,1);
+    }
+    .gallery-item:hover{transform:scale(1.04);}
+    .gallery-item__img{width:100%;aspect-ratio:16/9;display:block;}
+    .gallery-item__ov{
+      position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);
+      opacity:0;transition:opacity 0.3s;
+      display:flex;align-items:flex-end;padding:14px;
+    }
+    .gallery-item:hover .gallery-item__ov{opacity:1;}
+    .gallery-item__meta{color:#fff;font-size:12px;}
+    .gallery-item__badge{
+      display:inline-block;background:rgba(45,212,191,0.75);
+      border-radius:99px;padding:2px 9px;font-size:11px;font-weight:600;
+      margin-bottom:4px;backdrop-filter:blur(4px);
+    }
+
+    /* Prompt Templates */
+    .prompts{padding:96px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .prompt-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+    @media(max-width:768px){.prompt-cards{grid-template-columns:1fr;}}
+    .prompt-card{
+      background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.08);
+      border-radius:14px;padding:24px;cursor:pointer;transition:all 0.25s;
+    }
+    .prompt-card:hover{border-color:rgba(123,94,240,0.3);transform:translateY(-2px);}
+    .prompt-card__type{font-size:11px;font-weight:700;color:#7B5EF0;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+    .prompt-card__text{
+      font-family:var(--font-mono);font-size:12.5px;line-height:1.7;
+      color:var(--text-muted);background:var(--bg-base);border-radius:8px;
+      padding:14px;border:1px solid rgba(255,255,255,0.06);
+      white-space:pre-wrap;margin-bottom:12px;
+    }
+    .prompt-card__use{font-size:13px;color:#A0A0B8;}
+    .prompt-card__use strong{color:#fff;}
+
+    /* How it works */
+    .how{padding:96px 0;background:var(--bg-base);}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:0;}
+    @media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:560px){.steps{grid-template-columns:1fr;}}
+    .step{text-align:center;}
+    .step__num{
+      width:56px;height:56px;border-radius:16px;margin:0 auto 16px;
+      background:var(--grad-brand);display:flex;align-items:center;justify-content:center;
+      font-size:22px;font-weight:800;color:#fff;
+    }
+    .step__title{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;}
+    .step__desc{font-size:14px;color:var(--text-muted);line-height:1.65;}
+
+    /* Dev Quote */
+    .quote-sec{padding:80px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .quote-card{
+      max-width:680px;margin:0 auto;text-align:center;
+      background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.07);
+      border-radius:20px;padding:40px;
+    }
+    .quote-card__text{font-size:18px;line-height:1.75;color:var(--text-muted);font-style:italic;margin-bottom:20px;}
+    .quote-card__author{display:flex;align-items:center;justify-content:center;gap:12px;}
+    .quote-card__avatar{width:40px;height:40px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;}
+    .quote-card__name{font-size:14px;font-weight:600;color:#fff;}
+    .quote-card__role{font-size:12px;color:var(--text-faint);}
+
+    /* CTA */
+    .cta{padding:96px 0;background:var(--grad-brand);position:relative;overflow:hidden;}
+    .cta::before,.cta::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);}
+    .cta::before{width:500px;height:500px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(255,255,255,0.2),transparent 70%);}
+    .cta::after{width:400px;height:400px;bottom:-100px;right:-60px;background:radial-gradient(circle,rgba(255,255,255,0.15),transparent 70%);}
+    .cta__inner{position:relative;z-index:10;text-align:center;}
+    .cta__title{font-size:clamp(28px,4.5vw,48px);font-weight:900;letter-spacing:-0.03em;color:#fff;margin-bottom:16px;}
+    .cta__sub{font-size:17px;color:rgba(255,255,255,0.8);max-width:440px;margin:0 auto 36px;line-height:1.7;}
+    .cta__btn{font-size:16px;font-weight:700;color:#7B5EF0;padding:15px 40px;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);transition:all 0.25s;display:inline-block;}
+    .cta__btn:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.2);}
+    .cta__note{font-size:13px;color:rgba(255,255,255,0.65);margin-top:16px;}
+
+    /* Footer */
+    .footer{background:var(--bg-surface);padding:48px 0;border-top:1px solid rgba(255,255,255,0.05);}
+    .footer__inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .footer__copy{font-size:13px;color:var(--text-faint);}
+    .footer__links{display:flex;gap:20px;list-style:none;}
+    .footer__links a{font-size:13px;color:var(--text-faint);transition:color 0.2s;}
+    .footer__links a:hover{color:var(--text-muted);}
+
+    /* Scroll reveal */
+    @media(prefers-reduced-motion:no-preference){
+      .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s cubic-bezier(0,0,0.2,1);}
+      .reveal.in{opacity:1;transform:translateY(0);}
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav" role="banner">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo" aria-label="PixelMind 首页">
+      <div class="nav__logo-icon" aria-hidden="true">✦</div>
+      PixelMind
+    </a>
+    <nav aria-label="主导航">
+      <ul class="nav__links">
+        <li><a href="/tools" class="active">工具</a></li>
+        <li><a href="/gallery">作品广场</a></li>
+        <li><a href="/pricing">定价</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <a href="/login" class="btn-ghost">登录</a>
+      <a href="/register" class="btn-brand">免费开始</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="hero__grid" aria-hidden="true"></div>
+  <div class="hero__content">
+    <div class="hero__eyebrow">
+      <span aria-hidden="true">🏔️</span> 游戏场景原画专用
+    </div>
+    <h1 class="hero__title" id="hero-title">
+      快速生成<br/><em>游戏场景原画</em>
+    </h1>
+    <p class="hero__sub">
+      从森林废墟到赛博都市，输入描述词，AI 在 30 秒内生成高质量游戏背景、环境设定图和世界观画面。支持 21:9 宽幅比例和多种画风。
+    </p>
+    <div class="hero__cta">
+      <a href="/studio?tool=environment-art" class="btn-hero">
+        ✦ 立即生成场景
+      </a>
+      <a href="/gallery?tool=environment-art" class="btn-ghost-hero">
+        查看示例作品 →
+      </a>
+    </div>
+    <div class="tool-badge">
+      <span class="tool-badge__dot" aria-hidden="true"></span>
+      消耗 4–6 积分 / 次 · 支持 21:9 超宽幅 · 透明背景可选
+    </div>
+  </div>
+</section>
+
+<section class="features" aria-labelledby="features-title">
+  <div class="container">
+    <p class="sec-label reveal">核心能力</p>
+    <h2 class="sec-title reveal" id="features-title">专为游戏美术打造的场景生成工具</h2>
+    <div class="features__grid">
+      <article class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🌄</div>
+        <h3 class="feat-card__title">多种画风支持</h3>
+        <p class="feat-card__desc">赛璐璐、厚涂、水墨、写实、像素风……覆盖主流游戏美术风格，一键切换无违和。</p>
+      </article>
+      <article class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">📐</div>
+        <h3 class="feat-card__title">21:9 超宽幅比例</h3>
+        <p class="feat-card__desc">业界少有的 21:9 宽幅支持，生成可直接用于游戏开场、过场动画或地图背景的原画级画面。</p>
+      </article>
+      <article class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🎭</div>
+        <h3 class="feat-card__title">氛围控制</h3>
+        <p class="feat-card__desc">通过描述词精确控制时间（黎明/黄昏/深夜）、天气（雨/雪/晴）和情绪基调，生成风格统一的系列场景。</p>
+      </article>
+      <article class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🔄</div>
+        <h3 class="feat-card__title">风格一致性引擎</h3>
+        <p class="feat-card__desc">通过 Seed 锁定，同一场景可生成多个变体，保持光影、色调、笔触完全统一，适合关卡美术系列。</p>
+      </article>
+      <article class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🖼️</div>
+        <h3 class="feat-card__title">透明背景输出</h3>
+        <p class="feat-card__desc">可选透明背景 PNG 输出，角色和场景图层分离，导出后直接进入 Unity / Unreal / RPG Maker 工作流。</p>
+      </article>
+      <article class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">⚡</div>
+        <h3 class="feat-card__title">批量生成变体</h3>
+        <p class="feat-card__desc">一次生成 1–4 张同场景变体，用于美术内部比稿，快速筛选后再精细化，节省大量沟通成本。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="gallery-sec" aria-labelledby="gallery-title">
+  <div class="container">
+    <p class="sec-label reveal">生成示例</p>
+    <h2 class="sec-title reveal" id="gallery-title">看看不同游戏类型中的场景应用</h2>
+    <div class="gallery-tabs reveal" role="tablist" aria-label="游戏类型筛选">
+      <button class="gallery-tab active" role="tab" aria-selected="true">全部</button>
+      <button class="gallery-tab" role="tab" aria-selected="false">RPG / 冒险</button>
+      <button class="gallery-tab" role="tab" aria-selected="false">SLG / 策略</button>
+      <button class="gallery-tab" role="tab" aria-selected="false">二游 / 卡牌</button>
+      <button class="gallery-tab" role="tab" aria-selected="false">像素游戏</button>
+    </div>
+    <div class="gallery-grid reveal">
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#1a0533,#3d1a7a,#0a0a2e)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">RPG</span><br/>哥特式城堡废墟</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#001428,#003d6b,#001020)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">SLG</span><br/>冰原战争地图</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#1a0325,#5a0a85,#1a0325)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">二游</span><br/>赛博朋克都市夜景</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#001510,#004d3a,#001a0d)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">像素</span><br/>森林探险地图</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#2d1000,#7a3a00,#1a0a00)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">RPG</span><br/>沙漠古城遗迹</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#0a0a1a,#1a1a4e,#0a0a2e)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">SLG</span><br/>星空战争背景</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#0a1a00,#2d5a00,#0a1a00)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">像素</span><br/>地下城入口</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#1a0014,#5a0040,#1a0014)"></div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">二游</span><br/>和风神社庭院</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prompts" aria-labelledby="prompts-title">
+  <div class="container">
+    <p class="sec-label reveal">Prompt 模板</p>
+    <h2 class="sec-title reveal" id="prompts-title">不同游戏类型的场景 Prompt 示例</h2>
+    <div class="prompt-cards">
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">RPG / 冒险游戏</div>
+        <div class="prompt-card__text">A fantasy forest clearing at twilight, ancient moss-covered stone ruins, soft golden hour light filtering through tall trees, volumetric fog, cinematic composition, detailed environment concept art, trending on artstation, highly detailed</div>
+        <p class="prompt-card__use">适用：<strong>开放世界、冒险 RPG、探索类游戏</strong>的背景设定图</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">SLG / 策略游戏</div>
+        <div class="prompt-card__text">Top-down view of a medieval fortress at dawn, surrounded by green hills and a winding river, clean vector art style, muted earth tones, strategic game map aesthetic, flat color areas with subtle gradients, clean outlines</div>
+        <p class="prompt-card__use">适用：<strong>战棋、回合制策略、城市建设</strong>类游戏的地图底图</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">二游 / 卡牌游戏</div>
+        <div class="prompt-card__text">Elegant cyberpunk rooftop garden at night, holographic cherry blossoms floating in the air, neon cityscape in background, soft pastel lighting, anime art style, detailed illustration, beautiful dynamic pose, vibrant colors, high quality</div>
+        <p class="prompt-card__use">适用：<strong>二次元卡牌、角色收集类</strong>游戏的氛围背景</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">像素游戏</div>
+        <div class="prompt-card__text">16-bit style pixel art game background, enchanted forest at dusk, parallax scrolling layers, rich parallax depth, vibrant game boy advance palette, warm sunset tones, nostalgic retro game aesthetic, tileable</div>
+        <p class="prompt-card__use">适用：<strong>像素独立游戏、复古横版</strong>的场景图，需配合 sprite 工具生成角色</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" aria-labelledby="how-title">
+  <div class="container">
+    <p class="sec-label reveal">使用流程</p>
+    <h2 class="sec-title reveal" id="how-title">3 步完成高质量场景生成</h2>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step__num">1</div>
+        <h3 class="step__title">描述场景</h3>
+        <p class="step__desc">输入游戏类型、环境关键词、氛围描述和参考画风，或直接选择一个 Prompt 模板。</p>
+      </div>
+      <div class="step">
+        <div class="step__num">2</div>
+        <h3 class="step__title">选择比例</h3>
+        <p class="step__desc">16:9 横向电影感、21:9 超宽幅、9:16 竖屏封面——根据实际用途选择输出比例。</p>
+      </div>
+      <div class="step">
+        <div class="step__num">3</div>
+        <h3 class="step__title">锁定风格</h3>
+        <p class="step__desc">保存满意结果的 Seed 值，同系列场景保持光影、笔触、色调完全一致。</p>
+      </div>
+      <div class="step">
+        <div class="step__num">4</div>
+        <h3 class="step__title">导出使用</h3>
+        <p class="step__desc">下载 PNG/WebP，可选透明背景，直接导入 Unity、Unreal 或 Photoshop 进行后续处理。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="quote-sec">
+  <div class="container">
+    <div class="quote-card reveal">
+      <p class="quote-card__text">"过去制作一张概念原画，从找参考到手动绘制至少要 3 天。现在用 PixelMind 的场景原画工具，30 秒就能拿到 4 个可用变体，美术团队终于可以把时间花在真正的创意决策上。"</p>
+      <div class="quote-card__author">
+        <div class="quote-card__avatar" aria-hidden="true">林</div>
+        <div>
+          <div class="quote-card__name">林俊彦</div>
+          <div class="quote-card__role">独立游戏《深渊旅人》美术负责人</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="cta-title">
+  <div class="cta__inner">
+    <h2 class="cta__title" id="cta-title">你的游戏世界，从这里开始</h2>
+    <p class="cta__sub">注册即送 200 积分，场景原画每个版本仅需 4–6 积分。</p>
+    <a href="/register" class="cta__btn">免费开始生成</a>
+    <p class="cta__note">无需信用卡 · 30 秒完成注册 · 随时可取消</p>
+  </div>
+</section>
+
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer__inner">
+      <p class="footer__copy">© 2026 PixelMind. All rights reserved.</p>
+      <ul class="footer__links">
+        <li><a href="/tools">工具</a></li>
+        <li><a href="/gallery">作品广场</a></li>
+        <li><a href="/pricing">定价</a></li>
+        <li><a href="/terms">服务协议</a></li>
+        <li><a href="/privacy">隐私政策</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }});
+  }, {threshold:0.08, rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{
+    el.style.transitionDelay = (i%4)*60+'ms';
+    obs.observe(el);
+  });
+})();
+document.querySelectorAll('.gallery-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.gallery-tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+    tab.classList.add('active'); tab.setAttribute('aria-selected','true');
+  });
+});
+</script>
+</body>
+</html>

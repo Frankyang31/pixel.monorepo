@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>会员管理 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--brand-start:#7B5EF0;--brand-end:#4F8EF7;--brand-mid:#6370F3;--accent-teal:#2DD4BF;--accent-amber:#FBBF24;--bg-base:#0D0D12;--bg-surface:#13131A;--bg-elevated:#1C1C27;--border-subtle:rgba(255,255,255,0.06);--border-default:rgba(255,255,255,0.10);--border-brand:rgba(123,94,240,0.40);--text-primary:#F0F0F8;--text-secondary:#A0A0B8;--text-tertiary:#606078;--color-success:#2DD4BF;--color-error:#F87171;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-2xl:24px;--radius-full:9999px;--font-sans:'Inter','PingFang SC',system-ui,sans-serif;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,18,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 24px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;}
+    .nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+    .credits-badge-sm{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-full);font-size:13px;}
+
+    .page-layout{display:flex;min-height:calc(100vh - 64px);}
+    .sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border-subtle);padding:24px 12px;}
+    .user-card{padding:16px;background:var(--bg-elevated);border-radius:var(--radius-xl);margin-bottom:20px;text-align:center;}
+    .user-avatar-lg{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;}
+    .user-name{font-size:15px;font-weight:700;}
+    .user-plan{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(123,94,240,0.12);border-radius:var(--radius-full);font-size:12px;color:var(--brand-mid);margin-top:4px;}
+    .sidebar-menu{display:flex;flex-direction:column;gap:2px;}
+    .menu-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-md);font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .2s;}
+    .menu-item:hover{color:var(--text-primary);background:rgba(255,255,255,0.05);}
+    .menu-item.active{color:var(--text-primary);background:rgba(123,94,240,0.12);}
+    .menu-item .icon{font-size:16px;width:20px;}
+    .menu-divider{height:1px;background:var(--border-subtle);margin:10px 0;}
+
+    .main-content{flex:1;padding:32px 40px;max-width:840px;}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+    .page-header h2{font-size:20px;font-weight:700;}
+
+    /* Current plan */
+    .current-plan-card{background:linear-gradient(135deg,rgba(123,94,240,0.12),rgba(79,142,247,0.08));border:1px solid var(--border-brand);border-radius:var(--radius-2xl);padding:28px;margin-bottom:28px;position:relative;overflow:hidden;}
+    .plan-glow{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(123,94,240,0.15),transparent);pointer-events:none;}
+    .plan-badge-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+    .plan-badge{padding:4px 12px;border-radius:var(--radius-full);font-size:12px;font-weight:700;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;}
+    .plan-name{font-size:22px;font-weight:800;}
+    .plan-meta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0;}
+    .plan-meta-item{}
+    .plan-meta-label{font-size:12px;color:var(--text-tertiary);margin-bottom:4px;}
+    .plan-meta-value{font-size:16px;font-weight:700;color:var(--text-primary);}
+    .plan-expiry{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.04);border-radius:var(--radius-lg);margin-top:14px;}
+    .expiry-label{font-size:13px;color:var(--text-secondary);}
+    .expiry-date{font-size:13px;font-weight:600;color:var(--text-primary);}
+    .expiry-days{font-size:12px;color:var(--accent-teal);}
+    .plan-actions{display:flex;gap:10px;margin-top:18px;}
+    .btn-renew{padding:10px 22px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:14px;font-weight:700;border:none;border-radius:var(--radius-md);cursor:pointer;}
+    .btn-upgrade{padding:10px 22px;background:var(--bg-elevated);border:1px solid var(--border-default);color:var(--text-secondary);font-size:14px;font-weight:500;border-radius:var(--radius-md);cursor:pointer;transition:all .2s;}
+    .btn-upgrade:hover{border-color:var(--border-brand);color:var(--text-primary);}
+
+    /* Benefits list */
+    .benefits-section{margin-bottom:28px;}
+    .benefits-title{font-size:15px;font-weight:600;margin-bottom:14px;}
+    .benefits-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+    .benefit-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);}
+    .benefit-icon-wrap{width:32px;height:32px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .bw1{background:rgba(123,94,240,0.12);}
+    .bw2{background:rgba(79,142,247,0.12);}
+    .bw3{background:rgba(45,212,191,0.12);}
+    .bw4{background:rgba(251,191,36,0.12);}
+    .bw5{background:rgba(160,160,184,0.12);}
+    .bw6{background:rgba(248,113,113,0.1);}
+    .benefit-info{}
+    .benefit-name{font-size:13px;font-weight:600;color:var(--text-primary);}
+    .benefit-val{font-size:12px;color:var(--text-tertiary);}
+
+    /* Plan compare */
+    .compare-section{}
+    .compare-title{font-size:15px;font-weight:600;margin-bottom:16px;}
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-2xl);overflow:hidden;}
+    .compare-col{border-right:1px solid var(--border-subtle);}
+    .compare-col:last-child{border-right:none;}
+    .compare-header{padding:18px 16px;border-bottom:1px solid var(--border-subtle);text-align:center;}
+    .compare-header.current{background:rgba(123,94,240,0.08);}
+    .compare-plan-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+    .compare-plan-price{font-size:20px;font-weight:800;}
+    .compare-plan-price span{font-size:12px;font-weight:400;color:var(--text-tertiary);}
+    .compare-current-badge{display:inline-block;padding:2px 8px;background:rgba(123,94,240,0.15);color:var(--brand-mid);border-radius:var(--radius-full);font-size:11px;margin-top:4px;}
+    .compare-row{display:contents;}
+    .compare-cell{padding:11px 16px;border-bottom:1px solid var(--border-subtle);font-size:13px;color:var(--text-secondary);text-align:center;}
+    .compare-cell.current{background:rgba(123,94,240,0.04);}
+    .compare-cell.label{text-align:left;color:var(--text-tertiary);font-size:12px;}
+    .compare-cell:last-child{border-bottom:none;}
+    .check-yes{color:var(--accent-teal);}
+    .check-no{color:var(--text-tertiary);}
+    .compare-footer{padding:14px 16px;text-align:center;border-top:1px solid var(--border-subtle);}
+    .compare-footer.current{background:rgba(123,94,240,0.04);}
+    .btn-current{padding:8px 16px;background:rgba(123,94,240,0.12);color:var(--brand-mid);border:1px solid rgba(123,94,240,0.2);border-radius:var(--radius-md);font-size:13px;font-weight:600;cursor:default;}
+    .btn-choose{padding:8px 16px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;border:none;border-radius:var(--radius-md);font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+    .btn-choose:hover{opacity:.9;}
+    .btn-downgrade{padding:8px 16px;background:var(--bg-elevated);border:1px solid var(--border-default);color:var(--text-tertiary);border-radius:var(--radius-md);font-size:13px;cursor:pointer;}
+
+    /* Order history */
+    .order-section{margin-top:28px;}
+    .order-title{font-size:15px;font-weight:600;margin-bottom:14px;}
+    .order-list{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);overflow:hidden;}
+    .order-item{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border-subtle);}
+    .order-item:last-child{border-bottom:none;}
+    .order-left{}
+    .order-name{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:3px;}
+    .order-date{font-size:12px;color:var(--text-tertiary);}
+    .order-right{text-align:right;}
+    .order-amount{font-size:14px;font-weight:700;color:var(--text-primary);}
+    .order-status{font-size:12px;color:var(--accent-teal);margin-top:2px;}
+
+    @media(max-width:768px){.page-layout{flex-direction:column;}.sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border-subtle);}.main-content{padding:20px 16px;}.plan-meta-row{grid-template-columns:1fr 1fr;}.benefits-grid{grid-template-columns:1fr;}.compare-grid{grid-template-columns:1fr 1fr;}}
+  </style>
+</head>
+<body>
+<nav><div class="nav-inner">
+  <div class="nav-logo"><div class="nav-logo-icon">✦</div>PixelMind</div>
+  <div class="credits-badge-sm">⚡ <strong>842</strong> 积分</div>
+</div></nav>
+
+<div class="page-layout">
+  <aside class="sidebar">
+    <div class="user-card">
+      <div class="user-avatar-lg">👤</div>
+      <div class="user-name">小林创作者</div>
+      <div class="user-plan">⭐ 专业版 L2</div>
+    </div>
+    <div class="sidebar-menu">
+      <div class="menu-item" onclick="window.location.href='account-design.html'"><span class="icon">👤</span>个人信息</div>
+      <div class="menu-item" onclick="window.location.href='points-design.html'"><span class="icon">⚡</span>积分明细</div>
+      <div class="menu-item active"><span class="icon">👑</span>会员管理</div>
+      <div class="menu-divider"></div>
+      <div class="menu-item"><span class="icon">🔔</span>通知设置</div>
+      <div class="menu-divider"></div>
+      <div class="menu-item" style="color:var(--color-error);"><span class="icon">🚪</span>退出登录</div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h2>会员管理</h2>
+    </div>
+
+    <!-- Current Plan -->
+    <div class="current-plan-card">
+      <div class="plan-glow"></div>
+      <div class="plan-badge-row">
+        <span class="plan-badge">当前套餐</span>
+      </div>
+      <div class="plan-name">专业版 L2</div>
+      <div class="plan-meta-row">
+        <div class="plan-meta-item">
+          <div class="plan-meta-label">每月积分</div>
+          <div class="plan-meta-value" style="color:var(--accent-amber);">1,000</div>
+        </div>
+        <div class="plan-meta-item">
+          <div class="plan-meta-label">当前余额</div>
+          <div class="plan-meta-value">842 积分</div>
+        </div>
+        <div class="plan-meta-item">
+          <div class="plan-meta-label">付费周期</div>
+          <div class="plan-meta-value">按年付费</div>
+        </div>
+      </div>
+      <div class="plan-expiry">
+        <div>
+          <div class="expiry-label">到期时间</div>
+          <div class="expiry-date">2027年 3月 24日</div>
+        </div>
+        <div class="expiry-days">✓ 还剩 365 天</div>
+      </div>
+      <div class="plan-actions">
+        <button class="btn-renew">续费 · 同价续 1 年</button>
+        <button class="btn-upgrade">升级旗舰版</button>
+      </div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="benefits-section">
+      <div class="benefits-title">当前权益</div>
+      <div class="benefits-grid">
+        <div class="benefit-row"><div class="benefit-icon-wrap bw1">⚡</div><div class="benefit-info"><div class="benefit-name">每月积分</div><div class="benefit-val">1,000 积分 · 次月自动续期</div></div></div>
+        <div class="benefit-row"><div class="benefit-icon-wrap bw2">🚀</div><div class="benefit-info"><div class="benefit-name">优先生成队列</div><div class="benefit-val">跳过普通队列，最快 5s 出图</div></div></div>
+        <div class="benefit-row"><div class="benefit-icon-wrap bw3">🖼️</div><div class="benefit-info"><div class="benefit-name">高分辨率输出</div><div class="benefit-val">最高 1080p（1920×1080px）</div></div></div>
+        <div class="benefit-row"><div class="benefit-icon-wrap bw4">📦</div><div class="benefit-info"><div class="benefit-name">商业使用授权</div><div class="benefit-val">作品可用于商业项目</div></div></div>
+        <div class="benefit-row"><div class="benefit-icon-wrap bw5">☁️</div><div class="benefit-info"><div class="benefit-name">云端存储</div><div class="benefit-val">无限作品存储，永不过期</div></div></div>
+        <div class="benefit-row"><div class="benefit-icon-wrap bw6">💬</div><div class="benefit-info"><div class="benefit-name">专属客服</div><div class="benefit-val">工作日 24h 内响应</div></div></div>
+      </div>
+    </div>
+
+    <!-- Compare -->
+    <div class="compare-section">
+      <div class="compare-title">套餐对比</div>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-header"><div class="compare-plan-name">免费版</div><div class="compare-plan-price">¥0<span>/月</span></div></div>
+          <div class="compare-cell label">每月积分</div>
+          <div class="compare-cell label">生成速度</div>
+          <div class="compare-cell label">分辨率</div>
+          <div class="compare-cell label">商业授权</div>
+          <div class="compare-cell label">云端存储</div>
+          <div class="compare-footer"><button class="btn-downgrade">降级</button></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-header"><div class="compare-plan-name">基础版 L1</div><div class="compare-plan-price">¥29<span>/月</span></div></div>
+          <div class="compare-cell">300</div>
+          <div class="compare-cell">标准</div>
+          <div class="compare-cell">720p</div>
+          <div class="compare-cell check-no">✕</div>
+          <div class="compare-cell">30天</div>
+          <div class="compare-footer"><button class="btn-downgrade">降级</button></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-header current"><div class="compare-plan-name">专业版 L2</div><div class="compare-plan-price">¥69<span>/月</span></div><div class="compare-current-badge">当前套餐</div></div>
+          <div class="compare-cell current">1,000</div>
+          <div class="compare-cell current">优先</div>
+          <div class="compare-cell current">1080p</div>
+          <div class="compare-cell current check-yes">✓</div>
+          <div class="compare-cell current">无限</div>
+          <div class="compare-footer current"><button class="btn-current">当前套餐</button></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-header"><div class="compare-plan-name">旗舰版 L3</div><div class="compare-plan-price">¥139<span>/月</span></div></div>
+          <div class="compare-cell">3,000</div>
+          <div class="compare-cell">闪电优先</div>
+          <div class="compare-cell">4K</div>
+          <div class="compare-cell check-yes">✓</div>
+          <div class="compare-cell">无限 + API</div>
+          <div class="compare-footer"><button class="btn-choose" onclick="window.location.href='checkout-design.html'">升级</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order history -->
+    <div class="order-section">
+      <div class="order-title">订单记录</div>
+      <div class="order-list">
+        <div class="order-item">
+          <div class="order-left">
+            <div class="order-name">专业版 L2 · 年付</div>
+            <div class="order-date">2026-03-24 · 订单号 #PM-2026-032401</div>
+          </div>
+          <div class="order-right">
+            <div class="order-amount">¥828.00</div>
+            <div class="order-status">✓ 已支付</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

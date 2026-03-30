@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>作品广场 — 发现 AI 创作灵感 | PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-start:#7B5EF0;--brand-end:#4F8EF7;--brand-mid:#6370F3;
+      --accent-teal:#2DD4BF;--accent-amber:#FBBF24;
+      --bg-base:#0D0D12;--bg-surface:#13131A;--bg-elevated:#1C1C27;--bg-overlay:#252535;
+      --border-subtle:rgba(255,255,255,0.06);--border-default:rgba(255,255,255,0.10);--border-brand:rgba(123,94,240,0.40);
+      --text-primary:#F0F0F8;--text-secondary:#A0A0B8;--text-tertiary:#606078;
+      --shadow-md:0 4px 16px rgba(0,0,0,0.4);--shadow-lg:0 8px 32px rgba(0,0,0,0.6);
+      --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-2xl:24px;--radius-full:9999px;
+      --font-sans:'Inter','PingFang SC',system-ui,sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+    .container{max-width:1280px;margin:0 auto;padding:0 32px;}
+
+    /* Nav */
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,18,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;}
+    .nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+    .nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--text-secondary);transition:color .2s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--text-primary);}
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .btn-nav-login{padding:8px 16px;font-size:14px;font-weight:500;color:var(--text-secondary);}
+    .btn-nav-cta{padding:8px 18px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:14px;font-weight:600;border-radius:var(--radius-md);}
+
+    /* Page Header */
+    .page-header{padding:48px 0 32px;text-align:center;}
+    .page-header h1{font-size:36px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px;}
+    .gradient-text{background:linear-gradient(135deg,var(--brand-start),var(--brand-end));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .page-header p{font-size:15px;color:var(--text-secondary);}
+
+    /* Filter Bar */
+    .filter-bar{background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);position:sticky;top:64px;z-index:50;}
+    .filter-inner{display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px;}
+    .filter-tabs{display:flex;gap:4px;overflow-x:auto;}
+    .filter-tabs::-webkit-scrollbar{display:none;}
+    .filter-tab{padding:6px 14px;border-radius:var(--radius-full);font-size:13px;font-weight:500;color:var(--text-secondary);white-space:nowrap;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+    .filter-tab:hover{color:var(--text-primary);}
+    .filter-tab.active{background:rgba(123,94,240,0.15);color:var(--brand-start);border-color:rgba(123,94,240,0.25);}
+    .filter-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+    .filter-search{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-full);font-size:13px;color:var(--text-tertiary);}
+    .sort-select{padding:7px 12px;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);outline:none;cursor:pointer;font-family:var(--font-sans);}
+
+    /* Masonry Gallery */
+    .gallery-wrap{padding:28px 0 80px;}
+    .masonry{columns:5;column-gap:12px;}
+    .gallery-item{break-inside:avoid;margin-bottom:12px;border-radius:var(--radius-xl);overflow:hidden;cursor:pointer;position:relative;background:var(--bg-surface);}
+    .gallery-item:hover .item-overlay{opacity:1;}
+    .gallery-thumb{width:100%;display:flex;align-items:center;justify-content:center;font-size:36px;}
+    .h1{height:220px;}.h2{height:280px;}.h3{height:190px;}.h4{height:310px;}.h5{height:240px;}.h6{height:170px;}.h7{height:260px;}.h8{height:200px;}.h9{height:290px;}.h10{height:180px;}
+    .g1{background:linear-gradient(145deg,#667eea,#764ba2);}
+    .g2{background:linear-gradient(145deg,#f093fb,#f5576c);}
+    .g3{background:linear-gradient(145deg,#4facfe,#00f2fe);}
+    .g4{background:linear-gradient(145deg,#43e97b,#38f9d7);}
+    .g5{background:linear-gradient(145deg,#fa709a,#fee140);}
+    .g6{background:linear-gradient(145deg,#a18cd1,#fbc2eb);}
+    .g7{background:linear-gradient(145deg,#ffecd2,#fcb69f);}
+    .g8{background:linear-gradient(145deg,#a1c4fd,#c2e9fb);}
+    .g9{background:linear-gradient(145deg,#2d1b69,#11998e);}
+    .g10{background:linear-gradient(145deg,#ee0979,#ff6a00);}
+    .item-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.85) 100%);opacity:0;transition:opacity .25s;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;}
+    .item-prompt{font-size:12px;color:rgba(255,255,255,0.88);line-height:1.4;margin-bottom:8px;}
+    .item-meta{display:flex;align-items:center;justify-content:space-between;}
+    .item-author{display:flex;align-items:center;gap:6px;}
+    .item-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;}
+    .ia1{background:linear-gradient(135deg,#667eea,#764ba2);}
+    .ia2{background:linear-gradient(135deg,#f093fb,#f5576c);}
+    .ia3{background:linear-gradient(135deg,#43e97b,#38f9d7);}
+    .ia4{background:linear-gradient(135deg,#fa709a,#fee140);}
+    .ia5{background:linear-gradient(135deg,#4facfe,#00f2fe);}
+    .item-author-name{font-size:11px;color:rgba(255,255,255,0.7);}
+    .item-actions{display:flex;align-items:center;gap:8px;}
+    .item-action-btn{display:flex;align-items:center;gap:3px;font-size:11px;color:rgba(255,255,255,0.7);padding:3px 6px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.12);transition:background .2s;}
+    .item-action-btn:hover{background:rgba(255,255,255,0.22);}
+    .item-tool-badge{position:absolute;top:8px;left:8px;padding:3px 8px;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);border-radius:var(--radius-full);font-size:11px;color:rgba(255,255,255,0.85);}
+
+    /* Load more */
+    .load-more{text-align:center;padding:24px 0 48px;}
+    .btn-load{padding:12px 32px;background:var(--bg-surface);border:1px solid var(--border-default);color:var(--text-secondary);border-radius:var(--radius-full);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;}
+    .btn-load:hover{border-color:var(--border-brand);color:var(--text-primary);}
+
+    /* Footer */
+    footer{background:#0D0D12;border-top:1px solid var(--border-subtle);padding:24px 0;}
+    .footer-bottom{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-tertiary);}
+    .footer-legal{display:flex;gap:20px;}
+    .footer-legal a{color:var(--text-tertiary);transition:color .2s;}
+    .footer-legal a:hover{color:var(--text-secondary);}
+
+    @media(max-width:1280px){.masonry{columns:4;}}
+    @media(max-width:1024px){.masonry{columns:3;}}
+    @media(max-width:768px){
+      .container{padding:0 16px;}
+      .nav-links{display:none;}
+      .masonry{columns:2;}
+      .page-header h1{font-size:26px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo"><div class="nav-logo-icon">✦</div>PixelMind</a>
+      <ul class="nav-links">
+        <li><a href="#">工具</a></li>
+        <li><a href="#" class="active">作品广场</a></li>
+        <li><a href="#">定价</a></li>
+        <li><a href="#">博客</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="#" class="btn-nav-login">登录</a>
+        <a href="#" class="btn-nav-cta">免费开始</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>发现 <span class="gradient-text">AI 创作灵感</span></h1>
+    <p>来自全球创作者的真实作品，探索无限创意可能</p>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="container">
+    <div class="filter-inner">
+      <div class="filter-tabs">
+        <div class="filter-tab active">全部</div>
+        <div class="filter-tab">🖼️ 文生图</div>
+        <div class="filter-tab">🎬 图生视频</div>
+        <div class="filter-tab">🎨 风格迁移</div>
+        <div class="filter-tab">✂️ 图像处理</div>
+        <div class="filter-tab">🔥 今日热门</div>
+        <div class="filter-tab">⭐ 精选</div>
+      </div>
+      <div class="filter-right">
+        <div class="filter-search">🔍 搜索作品…</div>
+        <select class="sort-select">
+          <option>最新</option>
+          <option>最热</option>
+          <option>精选</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="gallery-wrap">
+    <div class="masonry">
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h2 g1">🌆</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"赛博朋克城市夜景，霓虹灯雨后倒影，电影感构图"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia1">小</div><div class="item-author-name">小林创作</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 234</div><div class="item-action-btn">💬 12</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h1 g2">🌸</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"水彩风格牡丹，粉色渐变，工笔画质感"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia2">陈</div><div class="item-author-name">陈婷</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 189</div><div class="item-action-btn">💬 8</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h4 g3">🤖</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"未来机器人与人类共存，概念艺术，油画质感，史诗构图"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia3">R</div><div class="item-author-name">Raymund</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 412</div><div class="item-action-btn">💬 31</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h3 g4">🏔️</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"星空下雪山，长曝光，极光，冷蓝色调"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia4">云</div><div class="item-author-name">云游摄者</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 156</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h5 g5">🦊</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"森林精灵小狐狸，吉卜力风格，温暖灯光，柔焦"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia5">梦</div><div class="item-author-name">梦境绘师</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 328</div><div class="item-action-btn">💬 24</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h6 g6">🌙</div>
+        <div class="item-tool-badge">风格迁移</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"月光下的少女，日本和风插画，紫色调"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia1">月</div><div class="item-author-name">月下漫步</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 97</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h2 g9">🏛️</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"废墟中的图书馆，神秘光线穿透窗户，尘埃漂浮"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia2">废</div><div class="item-author-name">废墟探险者</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 203</div><div class="item-action-btn">💬 18</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h3 g7">🌊</div>
+        <div class="item-tool-badge">图生视频</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"海浪拍打礁石，慢镜头，海天一色，壮阔感"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia3">海</div><div class="item-author-name">海边居民</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 441</div><div class="item-action-btn">🎬</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h1 g10">🔥</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"凤凰涅槃，炽热火焰，史诗感，中国神话风格"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia4">凰</div><div class="item-author-name">神话创作者</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 567</div><div class="item-action-btn">💬 45</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gallery-item">
+        <div class="gallery-thumb h4 g8">🐠</div>
+        <div class="item-tool-badge">文生图</div>
+        <div class="item-overlay">
+          <div class="item-prompt">"深海珊瑚礁，热带鱼群，水下摄影，梦幻蓝光"</div>
+          <div class="item-meta">
+            <div class="item-author"><div class="item-avatar ia5">海</div><div class="item-author-name">深海探索者</div></div>
+            <div class="item-actions"><div class="item-action-btn">❤️ 189</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="load-more">
+      <button class="btn-load">加载更多作品</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <div>© 2026 PixelMind. All rights reserved.</div>
+      <div class="footer-legal"><a href="#">隐私政策</a><a href="#">服务条款</a></div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

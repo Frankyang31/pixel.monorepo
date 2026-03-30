@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>隐私政策 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --brand-start:#7B5EF0;--brand-end:#4F8EF7;
+      --bg-base:#F5F4F8;--bg-surface:#FFFFFF;--bg-elevated:#EFEFF5;
+      --border-subtle:rgba(0,0,0,0.06);--border-default:rgba(0,0,0,0.10);
+      --text-primary:#111118;--text-secondary:#5A5A70;--text-tertiary:#9898B0;
+      --shadow-sm:0 1px 4px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.08);
+      --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-2xl:24px;--radius-full:9999px;
+      --font-sans:'Inter','PingFang SC',system-ui,sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-sans);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;line-height:1.7;}
+    a{text-decoration:none;color:inherit;}
+
+    /* Nav */
+    nav{background:rgba(245,244,248,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:100;}
+    .nav-inner{max-width:1280px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;}
+    .nav-logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;color:var(--text-primary);}
+    .nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+    .nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--text-secondary);transition:color .2s;}
+    .nav-links a:hover{color:var(--text-primary);}
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .btn-nav-login{padding:8px 16px;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;}
+    .btn-nav-cta{padding:8px 18px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;font-size:14px;font-weight:600;border-radius:var(--radius-md);cursor:pointer;}
+
+    /* Hero Banner */
+    .privacy-hero{background:linear-gradient(135deg,rgba(123,94,240,0.06),rgba(79,142,247,0.06));border-bottom:1px solid var(--border-subtle);padding:48px 32px;}
+    .privacy-hero-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(123,94,240,0.08);border:1px solid rgba(123,94,240,0.2);border-radius:var(--radius-full);font-size:12px;font-weight:600;color:var(--brand-start);margin-bottom:14px;}
+    .hero-title{font-size:36px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px;}
+    .hero-desc{font-size:15px;color:var(--text-secondary);line-height:1.7;max-width:560px;}
+    .hero-meta{display:flex;align-items:center;gap:16px;margin-top:16px;font-size:13px;color:var(--text-tertiary);}
+    .hero-card{background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-2xl);padding:24px 28px;box-shadow:var(--shadow-md);flex-shrink:0;min-width:240px;}
+    .hero-card-title{font-size:13px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;}
+    .hero-card-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-secondary);margin-bottom:10px;}
+    .hero-card-item:last-child{margin-bottom:0;}
+    .hero-card-icon{font-size:18px;width:24px;text-align:center;}
+
+    /* Layout */
+    .page-wrap{max-width:1100px;margin:0 auto;padding:48px 32px 80px;display:grid;grid-template-columns:240px 1fr;gap:48px;align-items:start;}
+
+    /* TOC */
+    .toc-sidebar{position:sticky;top:88px;}
+    .toc-header{font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;}
+    .toc-list{list-style:none;}
+    .toc-item{margin-bottom:4px;}
+    .toc-link{display:block;padding:7px 12px;border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);transition:all .2s;border-left:2px solid transparent;}
+    .toc-link:hover{color:var(--text-primary);background:var(--bg-elevated);}
+    .toc-link.active{color:var(--brand-start);border-left-color:var(--brand-start);background:rgba(123,94,240,0.06);}
+    .toc-sep{height:1px;background:var(--border-subtle);margin:12px 0;}
+
+    /* Article */
+    .doc-section{margin-bottom:40px;scroll-margin-top:88px;}
+    .section-num{display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));border-radius:var(--radius-md);color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:28px;margin-right:10px;flex-shrink:0;vertical-align:middle;}
+    .section-title{font-size:20px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;}
+    .section-body{font-size:15px;color:var(--text-secondary);line-height:1.8;}
+    .section-body p{margin-bottom:14px;}
+    .section-body p:last-child{margin-bottom:0;}
+    .section-body ul{padding-left:20px;margin-bottom:14px;}
+    .section-body ul li{margin-bottom:8px;}
+    .section-body strong{color:var(--text-primary);font-weight:600;}
+
+    /* Info Cards */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+    .info-card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);padding:18px;box-shadow:var(--shadow-sm);}
+    .info-card-icon{font-size:24px;margin-bottom:8px;}
+    .info-card-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+    .info-card-desc{font-size:13px;color:var(--text-secondary);}
+
+    /* Data Table */
+    .data-table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0;background:var(--bg-surface);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-sm);}
+    .data-table th{padding:12px 16px;background:var(--bg-elevated);color:var(--text-primary);font-weight:600;text-align:left;font-size:13px;}
+    .data-table td{padding:12px 16px;color:var(--text-secondary);border-top:1px solid var(--border-subtle);}
+    .data-table tr:first-child td{border-top:none;}
+
+    /* Highlight / Warn */
+    .highlight-box{background:rgba(123,94,240,0.06);border:1px solid rgba(123,94,240,0.15);border-left:3px solid var(--brand-start);border-radius:var(--radius-lg);padding:16px 20px;margin:16px 0;font-size:14px;color:var(--text-secondary);}
+    .highlight-box strong{color:var(--brand-start);}
+    .green-box{background:rgba(45,212,191,0.06);border:1px solid rgba(45,212,191,0.2);border-left:3px solid #2DD4BF;border-radius:var(--radius-lg);padding:16px 20px;margin:16px 0;font-size:14px;color:var(--text-secondary);}
+    .green-box strong{color:#0D9488;}
+
+    /* Rights Grid */
+    .rights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;}
+    .right-item{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-xl);padding:16px;text-align:center;box-shadow:var(--shadow-sm);}
+    .right-icon{font-size:28px;margin-bottom:8px;}
+    .right-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+    .right-desc{font-size:12px;color:var(--text-tertiary);}
+
+    /* Contact Card */
+    .contact-card{background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-sm);}
+    .contact-title{font-size:16px;font-weight:700;margin-bottom:12px;}
+    .contact-row{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-secondary);margin-bottom:8px;}
+    .contact-icon{font-size:18px;width:24px;text-align:center;}
+
+    /* Back to top */
+    .back-top{position:fixed;bottom:32px;right:32px;width:40px;height:40px;background:linear-gradient(135deg,var(--brand-start),var(--brand-end));color:#fff;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(123,94,240,0.4);opacity:0;transition:opacity .3s;z-index:200;}
+    .back-top.show{opacity:1;}
+
+    /* Footer */
+    footer{background:var(--bg-surface);border-top:1px solid var(--border-subtle);padding:24px 32px;text-align:center;font-size:13px;color:var(--text-tertiary);}
+    footer a{color:var(--text-tertiary);margin:0 12px;transition:color .2s;}
+    footer a:hover{color:var(--text-secondary);}
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">✦</div>
+      PixelMind
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">工具</a></li>
+      <li><a href="#">广场</a></li>
+      <li><a href="#">定价</a></li>
+      <li><a href="#">博客</a></li>
+    </ul>
+    <div class="nav-right">
+      <span class="btn-nav-login">登录</span>
+      <a href="#" class="btn-nav-cta">免费开始</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="privacy-hero">
+  <div class="privacy-hero-inner">
+    <div>
+      <div class="hero-badge">🔒 隐私保护</div>
+      <h1 class="hero-title">隐私政策</h1>
+      <p class="hero-desc">我们重视您的隐私，致力于以负责任的方式收集、使用和保护您的个人信息。本文件说明我们如何处理您的数据，以及您拥有哪些权利。</p>
+      <div class="hero-meta">
+        <span>📅 最近更新：2026 年 3 月 1 日</span>
+        <span>🔢 版本 v2.1</span>
+        <span>🌐 适用于中国大陆用户</span>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-title">我们的承诺</div>
+      <div class="hero-card-item"><span class="hero-card-icon">🚫</span><span>不出售您的个人数据</span></div>
+      <div class="hero-card-item"><span class="hero-card-icon">🔐</span><span>数据加密存储与传输</span></div>
+      <div class="hero-card-item"><span class="hero-card-icon">✋</span><span>您随时可申请删除数据</span></div>
+      <div class="hero-card-item"><span class="hero-card-icon">📋</span><span>最小化数据收集原则</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <!-- TOC -->
+  <aside class="toc-sidebar">
+    <div class="toc-header">目录</div>
+    <ul class="toc-list">
+      <li class="toc-item"><a href="#p1" class="toc-link active">1. 信息收集范围</a></li>
+      <li class="toc-item"><a href="#p2" class="toc-link">2. 信息使用目的</a></li>
+      <li class="toc-item"><a href="#p3" class="toc-link">3. 信息共享与披露</a></li>
+      <li class="toc-item"><a href="#p4" class="toc-link">4. Cookie 与追踪技术</a></li>
+      <li class="toc-item"><a href="#p5" class="toc-link">5. 数据存储与安全</a></li>
+      <li class="toc-item"><a href="#p6" class="toc-link">6. 您的数据权利</a></li>
+      <li class="toc-item"><a href="#p7" class="toc-link">7. 未成年人保护</a></li>
+      <li class="toc-item"><a href="#p8" class="toc-link">8. 跨境数据传输</a></li>
+      <li class="toc-item"><a href="#p9" class="toc-link">9. 政策更新</a></li>
+      <li class="toc-item"><a href="#p10" class="toc-link">10. 联系方式</a></li>
+    </ul>
+    <div class="toc-sep"></div>
+    <a href="#" style="font-size:13px;color:var(--text-tertiary);display:block;padding:6px 12px;">📄 服务协议</a>
+    <a href="#" style="font-size:13px;color:var(--text-tertiary);display:block;padding:6px 12px;">💎 订阅协议</a>
+  </aside>
+
+  <!-- Article -->
+  <article>
+    <div class="highlight-box" style="margin-bottom:32px;">
+      <strong>温馨提示：</strong>本隐私政策依据《个人信息保护法》《数据安全法》及相关法规制定，如您对本政策有任何疑问，欢迎随时联系我们的隐私保护专员。
+    </div>
+
+    <!-- P1 -->
+    <div class="doc-section" id="p1">
+      <h2 class="section-title"><span class="section-num">1</span>信息收集范围</h2>
+      <div class="section-body">
+        <p>我们仅收集为提供服务所必要的最小化信息，分为以下类别：</p>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-icon">👤</div>
+            <div class="info-card-title">账号信息</div>
+            <div class="info-card-desc">注册邮箱、手机号、昵称、头像（第三方登录时由授权平台提供）</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🎨</div>
+            <div class="info-card-title">创作数据</div>
+            <div class="info-card-desc">您输入的 Prompt 文字、上传的参考图片、生成的图像和视频内容</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">💳</div>
+            <div class="info-card-title">交易信息</div>
+            <div class="info-card-desc">积分购买记录、订阅套餐、支付金额（支付凭证由第三方支付平台处理，我们不存储银行卡信息）</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">📊</div>
+            <div class="info-card-title">使用数据</div>
+            <div class="info-card-desc">功能使用频率、页面访问记录、任务历史、设备类型、IP 地址</div>
+          </div>
+        </div>
+        <p>我们不会主动收集您的身份证件信息、生物特征信息或精确位置信息。</p>
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="doc-section" id="p2">
+      <h2 class="section-title"><span class="section-num">2</span>信息使用目的</h2>
+      <div class="section-body">
+        <table class="data-table">
+          <thead>
+            <tr><th>使用目的</th><th>涉及数据类型</th><th>法律依据</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>提供 AI 生成服务</td><td>Prompt、参考图、生成结果</td><td>合同履行</td></tr>
+            <tr><td>账号管理与身份验证</td><td>账号信息</td><td>合同履行</td></tr>
+            <tr><td>积分扣减与订单处理</td><td>积分余额、交易记录</td><td>合同履行</td></tr>
+            <tr><td>安全防护与风控</td><td>IP 地址、设备信息、行为日志</td><td>合法权益</td></tr>
+            <tr><td>产品优化与模型改进</td><td>脱敏后的使用数据</td><td>合法权益</td></tr>
+            <tr><td>营销推送（需您同意）</td><td>邮箱、手机号</td><td>用户同意</td></tr>
+          </tbody>
+        </table>
+        <div class="green-box">
+          <strong>关于 AI 训练：</strong>我们不会在未经您明确授权的情况下，将您生成的作品用于第三方 AI 模型训练。您可在账号设置中选择是否参与改进计划。
+        </div>
+      </div>
+    </div>
+
+    <!-- P3 -->
+    <div class="doc-section" id="p3">
+      <h2 class="section-title"><span class="section-num">3</span>信息共享与披露</h2>
+      <div class="section-body">
+        <p><strong>我们不会出售您的个人信息。</strong>仅在以下情形下向第三方共享数据：</p>
+        <ul>
+          <li><strong>服务提供商：</strong>云服务商（数据存储）、支付平台（交易处理）、客服系统供应商——均须签署数据保护协议。</li>
+          <li><strong>法律要求：</strong>依法律法规、司法或行政机关要求披露。</li>
+          <li><strong>安全防护：</strong>为防范欺诈、保护平台和用户安全所必要的数据共享。</li>
+          <li><strong>业务合并：</strong>公司合并、收购等情形下，新主体须承继本政策义务。</li>
+        </ul>
+        <p>我们会要求所有合作方对您的数据保密，并仅为特定目的使用数据。</p>
+      </div>
+    </div>
+
+    <!-- P4 -->
+    <div class="doc-section" id="p4">
+      <h2 class="section-title"><span class="section-num">4</span>Cookie 与追踪技术</h2>
+      <div class="section-body">
+        <p>我们使用 Cookie 和类似技术实现以下功能：</p>
+        <table class="data-table">
+          <thead>
+            <tr><th>类型</th><th>用途</th><th>可关闭</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>必要 Cookie</td><td>登录状态维持、安全验证</td><td>否（关闭将无法使用服务）</td></tr>
+            <tr><td>功能 Cookie</td><td>记住您的语言和偏好设置</td><td>是</td></tr>
+            <tr><td>分析 Cookie</td><td>统计页面访问量、优化产品</td><td>是</td></tr>
+            <tr><td>营销 Cookie</td><td>投放相关广告（如有）</td><td>是</td></tr>
+          </tbody>
+        </table>
+        <p>您可在浏览器设置中管理 Cookie 偏好，或点击页面底部的「Cookie 偏好设置」。</p>
+      </div>
+    </div>
+
+    <!-- P5 -->
+    <div class="doc-section" id="p5">
+      <h2 class="section-title"><span class="section-num">5</span>数据存储与安全</h2>
+      <div class="section-body">
+        <p>您的数据存储在中国大陆境内的服务器（阿里云/腾讯云），受以下措施保护：</p>
+        <ul>
+          <li>传输层：全站 HTTPS / TLS 1.3 加密。</li>
+          <li>存储层：敏感数据（密码、支付凭证）AES-256 加密存储。</li>
+          <li>访问控制：员工权限最小化，操作日志全量留存。</li>
+          <li>数据备份：每日自动备份，异地容灾。</li>
+        </ul>
+        <p><strong>保存期限：</strong>账号数据在注销后 90 天内完成删除（法律要求留存的日志数据除外，保存不超过 3 年）。</p>
+      </div>
+    </div>
+
+    <!-- P6 -->
+    <div class="doc-section" id="p6">
+      <h2 class="section-title"><span class="section-num">6</span>您的数据权利</h2>
+      <div class="section-body">
+        <div class="rights-grid">
+          <div class="right-item">
+            <div class="right-icon">👁️</div>
+            <div class="right-title">查阅权</div>
+            <div class="right-desc">查看我们持有的您的个人信息</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon">✏️</div>
+            <div class="right-title">更正权</div>
+            <div class="right-desc">更正不准确或不完整的信息</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon">🗑️</div>
+            <div class="right-title">删除权</div>
+            <div class="right-desc">申请删除您的账号及相关数据</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon">📤</div>
+            <div class="right-title">可携带权</div>
+            <div class="right-desc">导出您的个人数据（JSON/CSV）</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon">🚫</div>
+            <div class="right-title">撤回同意</div>
+            <div class="right-desc">随时撤回对营销推送等的授权</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon">📋</div>
+            <div class="right-title">申诉权</div>
+            <div class="right-desc">就数据处理向监管机构申诉</div>
+          </div>
+        </div>
+        <p>您可在账号设置页的「隐私与数据」板块行使以上权利，或发邮件至我们的隐私保护专员。我们将在 15 个工作日内响应。</p>
+      </div>
+    </div>
+
+    <!-- P7 -->
+    <div class="doc-section" id="p7">
+      <h2 class="section-title"><span class="section-num">7</span>未成年人保护</h2>
+      <div class="section-body">
+        <p>PixelMind 的服务对象为 14 周岁以上的用户。14 至 18 周岁的未成年人需在监护人知情并同意后方可使用。</p>
+        <p>如果我们发现已收集了 14 周岁以下未成年人的个人信息，将立即删除相关数据并注销对应账号。如您认为我们可能存在此类情形，请立即联系我们。</p>
+      </div>
+    </div>
+
+    <!-- P8 -->
+    <div class="doc-section" id="p8">
+      <h2 class="section-title"><span class="section-num">8</span>跨境数据传输</h2>
+      <div class="section-body">
+        <p>您的核心个人数据（账号信息、创作数据）存储在中国大陆境内，不进行跨境传输。</p>
+        <p>对于使用全球 CDN 加速的内容（如公开作品广场的图片），相关内容可能缓存在境外节点，但该数据为用户主动公开的内容，且不含个人身份信息。</p>
+      </div>
+    </div>
+
+    <!-- P9 -->
+    <div class="doc-section" id="p9">
+      <h2 class="section-title"><span class="section-num">9</span>政策更新</h2>
+      <div class="section-body">
+        <p>我们可能因业务发展或法规变化更新本政策。重大变更将通过以下方式通知您：</p>
+        <ul>
+          <li>平台首页横幅公告（至少提前 7 天）</li>
+          <li>站内消息通知</li>
+          <li>注册邮箱推送</li>
+        </ul>
+        <p>更新后继续使用服务即视为同意新版政策。若您不同意，请停止使用并联系我们处理账号数据。</p>
+      </div>
+    </div>
+
+    <!-- P10 -->
+    <div class="doc-section" id="p10">
+      <h2 class="section-title"><span class="section-num">10</span>联系方式</h2>
+      <div class="contact-card">
+        <div class="contact-title">隐私保护专员联系方式</div>
+        <div class="contact-row"><span class="contact-icon">📧</span><span>邮箱：privacy@pixelmind.ai</span></div>
+        <div class="contact-row"><span class="contact-icon">🏢</span><span>地址：中国 · 上海市浦东新区张江高科技园区（邮编 201210）</span></div>
+        <div class="contact-row"><span class="contact-icon">⏰</span><span>响应时限：15 个工作日内</span></div>
+        <div class="contact-row"><span class="contact-icon">📋</span><span>监管机构：国家互联网信息办公室（www.cac.gov.cn）</span></div>
+      </div>
+    </div>
+
+  </article>
+</div>
+
+<!-- Back to Top -->
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+
+<!-- Footer -->
+<footer>
+  <span>© 2026 PixelMind 科技有限公司. 保留所有权利。</span>
+  <a href="#">关于我们</a>
+  <a href="#">帮助中心</a>
+  <a href="#">服务协议</a>
+  <a href="#">隐私政策</a>
+</footer>
+
+<script>
+  window.addEventListener('scroll',function(){
+    document.getElementById('backTop').classList.toggle('show',window.scrollY > 300);
+  });
+  const sections = document.querySelectorAll('.doc-section');
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const id = entry.target.id;
+        tocLinks.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+id));
+      }
+    });
+  },{rootMargin:'-80px 0px -60% 0px'});
+  sections.forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>

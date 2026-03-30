@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 内容生成平台 — 产品全景地图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --brand-start: #7B5EF0;
+    --brand-end: #4F8EF7;
+    --brand-mid: #6370F3;
+    --bg-base: #0D0D12;
+    --bg-surface: #13131A;
+    --bg-elevated: #1C1C27;
+    --bg-overlay: #252535;
+    --border-subtle: rgba(255,255,255,0.06);
+    --border-default: rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --text-primary: #F0F0F8;
+    --text-secondary: #A0A0B8;
+    --text-tertiary: #606078;
+    --accent-purple: #9B87F5;
+    --accent-teal: #2DD4BF;
+    --accent-amber: #FBBF24;
+    --accent-red: #F87171;
+    --accent-blue: #60A5FA;
+    --shadow-brand: 0 0 20px rgba(123,94,240,0.35);
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Inter', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 顶部背景光晕 */
+  .bg-glow {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-glow-1 {
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(123,94,240,0.15), transparent 70%);
+  }
+  .bg-glow-2 {
+    top: 50%; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,142,247,0.12), transparent 70%);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px 80px;
+  }
+
+  /* 头部 */
+  .header {
+    padding: 60px 0 48px;
+    text-align: center;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(123,94,240,0.15);
+    border: 1px solid rgba(123,94,240,0.3);
+    border-radius: 9999px;
+    font-size: 13px;
+    color: var(--accent-purple);
+    margin-bottom: 20px;
+  }
+
+  .header-badge .dot {
+    width: 6px; height: 6px;
+    background: var(--accent-purple);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .header h1 {
+    font-size: 40px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .header p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+
+  /* 统计信息 */
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 24px 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 56px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  /* 图例 */
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* 层级区块 */
+  .layer {
+    margin-bottom: 40px;
+  }
+
+  .layer-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .layer-header::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .layer-1 .layer-header::before { background: var(--brand-start); }
+  .layer-2 .layer-header::before { background: var(--accent-teal); }
+  .layer-3 .layer-header::before { background: var(--accent-amber); }
+  .layer-4 .layer-header::before { background: var(--accent-blue); }
+  .layer-5 .layer-header::before { background: var(--text-tertiary); }
+
+  .layer-icon {
+    font-size: 24px;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-elevated);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .layer-title {
+    flex: 1;
+  }
+
+  .layer-title h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .layer-title p {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  .layer-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .tag-render-ssg { color: var(--brand-start); border-color: rgba(123,94,240,0.3); background: rgba(123,94,240,0.08); }
+  .tag-render-ssr { color: var(--accent-blue); border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.08); }
+  .tag-render-csr { color: var(--accent-teal); border-color: rgba(45,212,191,0.3); background: rgba(45,212,191,0.08); }
+  .tag-theme-light { color: #FBBF24; border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); }
+  .tag-theme-dark { color: var(--accent-purple); border-color: rgba(155,135,245,0.3); background: rgba(155,135,245,0.08); }
+  .tag-p0 { color: var(--accent-red); border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.1); }
+  .tag-p1 { color: var(--accent-amber); border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.08); }
+  .tag-p2 { color: var(--accent-blue); border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.08); }
+  .tag-p3 { color: var(--text-secondary); border-color: var(--border-default); background: transparent; }
+
+  /* 页面卡片网格 */
+  .pages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .page-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.2s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  .page-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: radial-gradient(ellipse at top left, rgba(123,94,240,0.06), transparent 60%);
+    pointer-events: none;
+  }
+
+  .page-card:hover::after { opacity: 1; }
+
+  .page-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .page-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .page-route {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    background: var(--bg-elevated);
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .page-goal {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 14px;
+    min-height: 40px;
+  }
+
+  .page-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .page-sections-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .page-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .section-item {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    padding: 4px 10px;
+    background: var(--bg-elevated);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-item::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  /* 待确认事项 */
+  .pending-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .pending-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pending-item {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    background: rgba(251,191,36,0.05);
+    border: 1px solid rgba(251,191,36,0.12);
+    border-radius: 6px;
+    line-height: 1.4;
+  }
+
+  /* 用户旅程流 */
+  .journey-section {
+    margin-bottom: 56px;
+  }
+
+  .section-title-big {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+  }
+
+  .journey-flows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .journey-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 14px;
+    padding: 24px;
+  }
+
+  .journey-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .journey-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .journey-step {
+    font-size: 13px;
+    color: var(--text-primary);
+    padding: 6px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  .journey-step.highlight {
+    background: rgba(123,94,240,0.15);
+    border-color: rgba(123,94,240,0.3);
+    color: var(--accent-purple);
+  }
+
+  .journey-arrow {
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+
+  /* 关键决策区 */
+  .decisions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  .decision-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .decision-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .decision-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .decision-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* 待决策汇总 */
+  .pending-summary {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 56px;
+  }
+
+  .pending-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .pending-summary-icon {
+    font-size: 28px;
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(251,191,36,0.1);
+    border-radius: 12px;
+  }
+
+  .pending-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .pending-category {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .pending-category-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-amber);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pending-category-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pending-category-item {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    padding-left: 12px;
+    position: relative;
+  }
+
+  .pending-category-item::before {
+    content: '□';
+    position: absolute;
+    left: 0;
+    color: var(--text-tertiary);
+    font-size: 10px;
+    top: 1px;
+  }
+
+  /* 分隔线 */
+  .divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 56px 0;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .section-heading-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+  }
+
+  .section-heading-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  /* 手风琴展开 */
+  .sections-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    margin-top: 10px;
+    padding: 4px 8px;
+    background: var(--bg-elevated);
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+    width: fit-content;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .sections-toggle:hover {
+    color: var(--text-secondary);
+    border-color: var(--border-default);
+  }
+
+  .sections-content {
+    display: none;
+  }
+
+  .sections-content.open {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 10px;
+  }
+
+  /* footer */
+  .map-footer {
+    padding-top: 40px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .map-footer-left {
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+
+  .map-footer-right {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .footer-link:hover {
+    color: var(--text-primary);
+    border-color: var(--border-default);
+  }
+
+  /* 优先级指示 */
+  .priority-p0 .page-card-top .page-name::after {
+    content: ' P0';
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-red);
+    padding: 2px 5px;
+    background: rgba(248,113,113,0.12);
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  .priority-p1 .page-card-top .page-name::after {
+    content: ' P1';
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-amber);
+    padding: 2px 5px;
+    background: rgba(251,191,36,0.1);
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  @media (max-width: 1100px) {
+    .decisions-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 900px) {
+    .journey-flows { grid-template-columns: 1fr; }
+    .pending-category-grid { grid-template-columns: 1fr; }
+    .pages-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .decisions-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 0 16px 60px; }
+    .stats-row { gap: 24px; }
+    .header h1 { font-size: 28px; }
+    .pages-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<div class="container">
+
+  <!-- 头部 -->
+  <header class="header">
+    <div class="header-badge">
+      <span class="dot"></span>
+      产品设计文档 · 2026-03-25
+    </div>
+    <h1>AI 内容生成平台<br>产品全景地图</h1>
+    <p>基于全部设计文档梳理，覆盖 22 个页面、五大层级，展示用户旅程、核心决策与待确认事项</p>
+  </header>
+
+  <!-- 统计 -->
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-number">22</span>
+      <span class="stat-label">页面总数</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">功能层级</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">9</span>
+      <span class="stat-label">公域获客页</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">2</span>
+      <span class="stat-label">核心产品页</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">Light × 9</span>
+      <span class="stat-label">浅色主题页</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">Dark × 13</span>
+      <span class="stat-label">深色主题页</span>
+    </div>
+  </div>
+
+  <!-- 图例 -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-dot" style="background:var(--brand-start)"></span>SSG 静态生成
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:var(--accent-blue)"></span>SSR 服务端渲染
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:var(--accent-teal)"></span>CSR 客户端渲染
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:#FBBF24"></span>Light 浅色主题
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:var(--accent-purple)"></span>Dark 深色主题
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:var(--accent-red); border-radius:2px;"></span>P0 最高优先
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:var(--accent-amber); border-radius:2px;"></span>P1 次优先
+    </div>
+  </div>
+
+  <!-- ======== 第一层：公域获客层 ======== -->
+  <div class="layer layer-1">
+    <div class="layer-header">
+      <div class="layer-icon">🌐</div>
+      <div class="layer-title">
+        <h2>第一层：公域获客层</h2>
+        <p>SEO 核心战场，面向未登录访客，SSG/SSR 渲染，9 个页面</p>
+      </div>
+      <div class="layer-meta">
+        <span class="tag tag-theme-light">☀ Light Theme</span>
+        <span class="tag tag-render-ssg">SSG / SSR</span>
+      </div>
+    </div>
+
+    <div class="pages-grid">
+
+      <!-- 首页 -->
+      <div class="page-card priority-p0">
+        <div class="page-card-top">
+          <div class="page-name">首页</div>
+          <div class="page-route">/</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG+ISR</span>
+          <span class="tag tag-theme-light">Light</span>
+          <span class="tag tag-p0">P0</span>
+        </div>
+        <div class="page-goal">品牌第一印象 + 工具入口 + 精选案例展示。3秒内让用户明白「这是什么产品」，激发创作欲，引导免费注册。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">Nav 导航 + Hero 主视觉</div>
+          <div class="section-item">Social Proof 数据信任区</div>
+          <div class="section-item">Tools Showcase 工具展示</div>
+          <div class="section-item">Gallery Preview 作品画廊</div>
+          <div class="section-item">Pricing Teaser 定价预告</div>
+          <div class="section-item">CTA Banner + Footer</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">产品名称（当前占位：PixelMind）</div>
+            <div class="pending-item">数据指标真实数值（上线前替换）</div>
+            <div class="pending-item">工具列表是否与最终规划一致</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工具列表页 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">工具列表页</div>
+          <div class="page-route">/tools</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG</span>
+          <span class="tag tag-theme-light">Light</span>
+        </div>
+        <div class="page-goal">SEO 中枢导航页，帮助用户快速发现和选择 AI 工具。服务搜索引擎流量和首页跳转流量。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">Hero 页头（标题+搜索框+统计）</div>
+          <div class="section-item">分类标签过滤栏（6类）</div>
+          <div class="section-item">工具卡片网格（3列）</div>
+          <div class="section-item">精选工具横幅（推广位）</div>
+          <div class="section-item">分页控件</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">工具总数量规划</div>
+            <div class="pending-item">工具图标风格（自定义 or emoji）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工具详情页 -->
+      <div class="page-card priority-p1">
+        <div class="page-card-top">
+          <div class="page-name">工具详情页</div>
+          <div class="page-route">/tools/[slug]</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssr">SSR</span>
+          <span class="tag tag-theme-light">Light</span>
+          <span class="tag tag-p1">P1</span>
+        </div>
+        <div class="page-goal">SEO 长尾关键词核心落地页。10秒内让用户理解工具能力，CTA 点击率目标 &gt;8%，跳出率 &lt;50%。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">Hero 区（左文案+右2×2作品网格）</div>
+          <div class="section-item">功能特点 Features（3×2）</div>
+          <div class="section-item">作品展示 Gallery（瀑布流）</div>
+          <div class="section-item">使用流程 How It Works（3步）</div>
+          <div class="section-item">参数说明 + 工作台深色预览</div>
+          <div class="section-item">用户评价 + 相关工具推荐</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">URL 结构：/tools/slug 还是 /ai/slug</div>
+            <div class="pending-item">SEO 关键词策略优先级排序</div>
+            <div class="pending-item">作品展示图片审核机制</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 作品广场 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">作品广场</div>
+          <div class="page-route">/gallery</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssr">SSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+        </div>
+        <div class="page-goal">激发创作欲望，建立社区归属感，通过 UGC 内容驱动 SEO 和新用户注册转化。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">顶部导航（公域版）</div>
+          <div class="section-item">页头 + 分类过滤 + 排序 + 搜索</div>
+          <div class="section-item">瀑布流图片网格（5列，CSS columns）</div>
+          <div class="section-item">Skeleton 加载态 + 空状态</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">未登录用户可否查看全部内容</div>
+            <div class="pending-item">视频类作品缩略图展示方案</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 作品详情页 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">作品详情页</div>
+          <div class="page-route">/gallery/[id]</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssr">SSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+        </div>
+        <div class="page-goal">沉浸欣赏作品，透明展示生成参数，激励复刻创作。「用同款参数生成」是核心转化路径。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">双栏（左大图 + 右信息区）6:4</div>
+          <div class="section-item">缩略图切换（同批次多图）</div>
+          <div class="section-item">创作者行 + 操作按钮</div>
+          <div class="section-item">生成参数卡（完整透明展示）</div>
+          <div class="section-item">复刻 CTA + 评论区 + 相关推荐</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">OG/Twitter Card meta 标签</div>
+            <div class="pending-item">评论是否支持嵌套回复</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 博客列表 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">博客列表页</div>
+          <div class="page-route">/blog</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG</span>
+          <span class="tag tag-theme-light">Light</span>
+          <span class="tag tag-p3">P3</span>
+        </div>
+        <div class="page-goal">内容营销 + SEO 引流。将内容读者转化为产品用户，建立品牌专业形象。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">博客 Hero（左标题+右精选文章）</div>
+          <div class="section-item">分类 Tab（6类）</div>
+          <div class="section-item">三列文章卡网格</div>
+          <div class="section-item">分页控件（利于 SSG + SEO）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">是否接入 Headless CMS（Sanity/Contentful）</div>
+            <div class="pending-item">多语言博客路由方案</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 博客详情页 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">博客详情页</div>
+          <div class="page-route">/blog/[slug]</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG+ISR</span>
+          <span class="tag tag-theme-light">Light</span>
+          <span class="tag tag-p3">P3</span>
+        </div>
+        <div class="page-goal">舒适阅读 + 转化引导。内嵌 CTA 在文章 1/3 处出现，是博客的核心转化机制。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">文章 Hero（大标题+封面大图）</div>
+          <div class="section-item">正文（680px 黄金宽度）</div>
+          <div class="section-item">右侧固定 TOC 目录</div>
+          <div class="section-item">内嵌产品 CTA 块</div>
+          <div class="section-item">作者卡 + 相关文章推荐</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">TOC 自动生成还是手写</div>
+            <div class="pending-item">内嵌 CTA 文案固定还是可配置</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 定价页 -->
+      <div class="page-card priority-p1">
+        <div class="page-card-top">
+          <div class="page-name">定价页</div>
+          <div class="page-route">/pricing</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG</span>
+          <span class="tag tag-theme-light">Light</span>
+          <span class="tag tag-p1">P1</span>
+        </div>
+        <div class="page-goal">消除价格顾虑，引导选择 Pro 档（视觉高亮），推动进入支付页。变现转化关键页。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">Hero（标题 + 月付/年付切换）</div>
+          <div class="section-item">四档价格卡（L0-L1-L2-L3）</div>
+          <div class="section-item">功能详细对比表</div>
+          <div class="section-item">FAQ 折叠（5个核心问题）</div>
+          <div class="section-item">CTA Banner（底部注册引导）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">四档价格（¥0/29/89/299 占位待核算）</div>
+            <div class="pending-item">积分消耗单价规则</div>
+            <div class="pending-item">旗舰版是否走销售线索</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 活动落地页 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">活动落地页</div>
+          <div class="page-route">/activity/[slug]</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssr">SSG+CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p3">P3</span>
+        </div>
+        <div class="page-goal">限时促销/运营活动专用页，倒计时制造紧迫感，最大化注册和购买转化率。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">活动 Hero（大标题+利益点）</div>
+          <div class="section-item">倒计时模块（天/时/分/秒）</div>
+          <div class="section-item">活动套餐对比区</div>
+          <div class="section-item">用户证言 + FAQ</div>
+          <div class="section-item">底部固定 CTA 栏</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">活动结束后 URL 处理方案</div>
+            <div class="pending-item">是否需要活动分享/邀请码功能</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======== 第二层：核心产品层 ======== -->
+  <div class="layer layer-2" style="margin-top: 40px;">
+    <div class="layer-header">
+      <div class="layer-icon">⚡</div>
+      <div class="layer-title">
+        <h2>第二层：核心产品层</h2>
+        <p>用户登录后的主要使用区域，CSR 渲染，交互优先，2 个页面</p>
+      </div>
+      <div class="layer-meta">
+        <span class="tag tag-theme-dark">🌙 Dark Theme</span>
+        <span class="tag tag-render-csr">CSR</span>
+        <span class="tag tag-p0">P0</span>
+      </div>
+    </div>
+
+    <div class="pages-grid">
+
+      <!-- 工作台 -->
+      <div class="page-card priority-p0">
+        <div class="page-card-top">
+          <div class="page-name">工作台</div>
+          <div class="page-route">/studio</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p0">P0</span>
+        </div>
+        <div class="page-goal">平台核心页，完整创作流程「选场景→填Prompt→配参数→生成→查看结果」。30秒内完成第一次生成。</div>
+        <div class="page-sections-title">布局：左侧面板(340px) + 右侧结果区(flex-1)</div>
+        <div class="page-sections">
+          <div class="section-item">Top Nav（模式切换+积分余额）</div>
+          <div class="section-item">Left：模式Tab / 模型选择 / Prompt区</div>
+          <div class="section-item">Left：Negative Prompt / 比例选择</div>
+          <div class="section-item">Left：高级参数折叠 / 积分预览+生成按钮</div>
+          <div class="section-item">Right：任务卡（生成中，圆形进度环）</div>
+          <div class="section-item">Right：结果卡（完成，hover操作）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">模型列表（名称/渐变色标识/付费限制）</div>
+            <div class="pending-item">积分消耗规则（是否按质量阶梯计费）</div>
+            <div class="pending-item">移动端 MVP 范围（是否支持）</div>
+            <div class="pending-item">「优化」「翻译」按钮是否消耗积分</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 我的作品集 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">我的作品集</div>
+          <div class="page-route">/history</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p2">P2</span>
+        </div>
+        <div class="page-goal">管理历史生成记录。快速找到历史作品、管理公开/私密状态、复用参数继续创作。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">Left 侧边栏（账户系列导航共享）</div>
+          <div class="section-item">页头工具栏（视图切换/筛选/排序/搜索）</div>
+          <div class="section-item">作品网格（含公开状态Toggle/更多菜单）</div>
+          <div class="section-item">批量选择模式 + 空状态引导</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">是否支持「项目/相册」分组归档</div>
+            <div class="pending-item">视频类作品在网格中的展示方案</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======== 第三层：账户与会员层 ======== -->
+  <div class="layer layer-3" style="margin-top: 40px;">
+    <div class="layer-header">
+      <div class="layer-icon">👤</div>
+      <div class="layer-title">
+        <h2>第三层：账户与会员层</h2>
+        <p>用户个人信息与变现路径，CSR 渲染，5 个页面</p>
+      </div>
+      <div class="layer-meta">
+        <span class="tag tag-theme-dark">🌙 Dark Theme</span>
+        <span class="tag tag-render-csr">CSR</span>
+      </div>
+    </div>
+
+    <div class="pages-grid">
+
+      <!-- 个人中心 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">个人中心</div>
+          <div class="page-route">/account</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p2">P2</span>
+        </div>
+        <div class="page-goal">账号信息管理 + 会员权益状态 + 安全设置。引导升级会员。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">个人资料卡（头像/昵称/会员Badge）</div>
+          <div class="section-item">账号信息（邮箱/手机/第三方绑定）</div>
+          <div class="section-item">安全设置（密码/设备管理/2FA）</div>
+          <div class="section-item">通知偏好 Toggle + 账号注销（危险区）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">头像上传格式限制/是否支持裁剪</div>
+            <div class="pending-item">2FA 是 MVP 必须还是后期迭代</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 积分明细 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">积分明细</div>
+          <div class="page-route">/account/points</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p2">P2</span>
+        </div>
+        <div class="page-goal">建立积分系统透明感和计费信任感。分类展示三种积分（赠送/购买/会员），余额不足时引导充值。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">积分概览卡（三类积分+有效期+充值按钮）</div>
+          <div class="section-item">筛选工具栏（时间范围/类型/导出CSV）</div>
+          <div class="section-item">流水记录表格（含预扣/退回状态）</div>
+          <div class="section-item">分页控件</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">预扣时机：提交即预扣 or 开始处理才预扣</div>
+            <div class="pending-item">生成失败是否全额退回积分</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 会员管理 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">会员管理</div>
+          <div class="page-route">/account/membership</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+        </div>
+        <div class="page-goal">展示当前订阅状态与权益用量，减少流失，引导升级续费。进度条接近上限自动变橙色。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">套餐状态卡（套餐名+到期时间+续费按钮）</div>
+          <div class="section-item">权益进度（积分用量/并发/高级模型）</div>
+          <div class="section-item">套餐对比区（当前 vs 下一档）</div>
+          <div class="section-item">订阅记录 + 自动续费管理</div>
+          <div class="section-item">取消订阅（进入挽留流程）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">是否支持升降级（Pro → Basic）</div>
+            <div class="pending-item">发票功能是否 MVP 必须</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 支付页 -->
+      <div class="page-card priority-p1">
+        <div class="page-card-top">
+          <div class="page-name">支付页</div>
+          <div class="page-route">/checkout</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p1">P1</span>
+        </div>
+        <div class="page-goal">降低决策摩擦，建立支付信任感，减少中途放弃。极简导航，聚焦完成付款。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">极简导航（Logo + 安全锁）</div>
+          <div class="section-item">左：订单信息卡（套餐+权益+价格明细）</div>
+          <div class="section-item">右：支付方式（微信/支付宝/信用卡）</div>
+          <div class="section-item">付款按钮 + 协议小字</div>
+          <div class="section-item">支付成功页（彩纸动画+权益确认）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">是否支持境外信用卡（Visa/Mastercard）</div>
+            <div class="pending-item">支付超时时长（是否需要倒计时）</div>
+            <div class="pending-item">发票入口是否 MVP 就需要</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======== 第四层：认证流程 ======== -->
+  <div class="layer layer-4" style="margin-top: 40px;">
+    <div class="layer-header">
+      <div class="layer-icon">🔐</div>
+      <div class="layer-title">
+        <h2>第四层：认证流程</h2>
+        <p>进入产品的门槛，深色主题强化「进入创作空间」的仪式感，3 个页面</p>
+      </div>
+      <div class="layer-meta">
+        <span class="tag tag-theme-dark">🌙 Dark Theme</span>
+        <span class="tag tag-render-csr">CSR</span>
+        <span class="tag tag-p0">P0</span>
+      </div>
+    </div>
+
+    <div class="pages-grid">
+
+      <!-- 登录/注册 -->
+      <div class="page-card priority-p0">
+        <div class="page-card-top">
+          <div class="page-name">登录 / 注册</div>
+          <div class="page-route">/login · /register</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+          <span class="tag tag-p0">P0</span>
+        </div>
+        <div class="page-goal">降低注册/登录摩擦，OAuth 一键授权优先，流程不超过 3 步。左侧视觉面板强化产品价值感。</div>
+        <div class="page-sections-title">布局：左视觉面板(5/11) + 右表单区(6/11)</div>
+        <div class="page-sections">
+          <div class="section-item">左：作品网格 + Slogan + 核心数据</div>
+          <div class="section-item">右：模式 Tab（登录/注册）</div>
+          <div class="section-item">右：OAuth（微信优先 + Google）</div>
+          <div class="section-item">右：邮箱表单（登录/注册不同字段）</div>
+          <div class="section-item">右：密码强度指示器（注册时）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">是否需要手机号登录</div>
+            <div class="pending-item">微信扫码 vs 一键登录（PC/移动区分）</div>
+            <div class="pending-item">注册成功跳转工作台还是新手引导</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 找回密码 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">找回密码</div>
+          <div class="page-route">/reset-password</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-csr">CSR</span>
+          <span class="tag tag-theme-dark">Dark</span>
+        </div>
+        <div class="page-goal">最少步骤帮助用户重获账号访问权。3步指示器减少中途放弃。OTP 格子输入支持自动聚焦和粘贴。</div>
+        <div class="page-sections-title">3步流程</div>
+        <div class="page-sections">
+          <div class="section-item">步骤1：输入邮箱 + 发送验证码</div>
+          <div class="section-item">步骤2：6格 OTP 输入（自动聚焦）</div>
+          <div class="section-item">步骤3：设置新密码（强度指示）</div>
+          <div class="section-item">成功状态（3秒后自动跳转登录）</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">验证码有效期时长</div>
+            <div class="pending-item">是否支持手机短信验证码找回</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======== 第五层：系统通用页 ======== -->
+  <div class="layer layer-5" style="margin-top: 40px;">
+    <div class="layer-header">
+      <div class="layer-icon">📄</div>
+      <div class="layer-title">
+        <h2>第五层：系统通用页</h2>
+        <p>合规必须 + 容错处理，SSG 静态生成，3 个页面</p>
+      </div>
+      <div class="layer-meta">
+        <span class="tag tag-theme-light">☀ Light Theme</span>
+        <span class="tag tag-render-ssg">SSG</span>
+        <span class="tag tag-p3">P3</span>
+      </div>
+    </div>
+
+    <div class="pages-grid">
+
+      <!-- 404 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">404 错误页</div>
+          <div class="page-route">/*</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG</span>
+          <span class="tag tag-theme-light">Light</span>
+        </div>
+        <div class="page-goal">将死路变活路。搜索框 + 热门页面快速导航，帮助用户找到真正想要的内容。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">超大 404 渐变数字（160px）</div>
+          <div class="section-item">搜索框（需确认 MVP 是否实现）</div>
+          <div class="section-item">操作按钮组（回首页 + 返回上页）</div>
+          <div class="section-item">热门页面快速导航（5个）</div>
+        </div>
+      </div>
+
+      <!-- 服务协议 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">服务协议</div>
+          <div class="page-route">/terms</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG</span>
+          <span class="tag tag-theme-light">Light</span>
+        </div>
+        <div class="page-goal">合规必须，良好阅读体验。固定 TOC + 章节编号 + highlight-box，让法律文件可读。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">双栏（左固定TOC + 右正文）</div>
+          <div class="section-item">11 个章节，含表格/高亮块</div>
+          <div class="section-item">联系方式卡片 + 返回顶部按钮</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">需法务审核后方可上线（当前为设计原型）</div>
+            <div class="pending-item">是否需要保留历史版本可查</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 隐私政策 -->
+      <div class="page-card">
+        <div class="page-card-top">
+          <div class="page-name">隐私政策</div>
+          <div class="page-route">/privacy</div>
+        </div>
+        <div class="page-tags">
+          <span class="tag tag-render-ssg">SSG</span>
+          <span class="tag tag-theme-light">Light</span>
+        </div>
+        <div class="page-goal">合规同时传递「认真对待隐私」的信号。特别设计 AI 训练声明块（绿色高亮），用户权利 3×2 卡片网格。</div>
+        <div class="page-sections-title">核心区块</div>
+        <div class="page-sections">
+          <div class="section-item">Hero（左文案+右「4条承诺」卡片）</div>
+          <div class="section-item">双栏（左固定TOC + 右正文 10章）</div>
+          <div class="section-item">AI训练特别声明（green-box）</div>
+          <div class="section-item">用户权利 3×2 卡片 + 监管机构入口</div>
+        </div>
+        <div class="pending-section">
+          <div class="pending-title">⚠ 待确认</div>
+          <div class="pending-list">
+            <div class="pending-item">是否需要中英双语版（GDPR 合规）</div>
+            <div class="pending-item">是否需要 Cookie Consent Banner</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ======== 核心用户旅程 ======== -->
+  <div class="journey-section">
+    <div class="section-heading">
+      <div class="section-heading-text">核心用户旅程</div>
+      <div class="section-heading-line"></div>
+    </div>
+    <div class="section-subtitle" style="margin-top:8px;">四条主线路径 — 对应获客、转化、使用、留存四个核心场景</div>
+
+    <div class="journey-flows">
+      <div class="journey-card">
+        <div class="journey-card-title">🎯 新用户注册转化路径</div>
+        <div class="journey-steps">
+          <span class="journey-step">搜索/广告进入</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">首页 / 工具详情</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">作品广场浏览</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">注册页</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">工作台初次使用</span>
+        </div>
+      </div>
+
+      <div class="journey-card">
+        <div class="journey-card-title">💳 付费转化路径</div>
+        <div class="journey-steps">
+          <span class="journey-step">积分不足 / 权益受限</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">定价页</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">选择套餐</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">支付页</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">支付成功</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">回到工作台</span>
+        </div>
+      </div>
+
+      <div class="journey-card">
+        <div class="journey-card-title">🎨 创作核心路径</div>
+        <div class="journey-steps">
+          <span class="journey-step">登录</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">工作台</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">选模型/填Prompt/配参数</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">SSE实时推送进度</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">结果卡片</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">发布广场 / 下载</span>
+        </div>
+      </div>
+
+      <div class="journey-card">
+        <div class="journey-card-title">🔄 内容复刻路径（社区增长）</div>
+        <div class="journey-steps">
+          <span class="journey-step">作品广场浏览</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">作品详情页</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">查看生成参数</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step">「用同款参数生成」</span>
+          <span class="journey-arrow">→</span>
+          <span class="journey-step highlight">工作台（参数预填）</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 关键架构决策 ======== -->
+  <div style="margin-bottom: 56px;">
+    <div class="section-heading">
+      <div class="section-heading-text">已确认的关键产品决策</div>
+      <div class="section-heading-line"></div>
+    </div>
+    <div style="margin-top: 24px;"></div>
+    <div class="decisions-grid">
+      <div class="decision-card">
+        <div class="decision-label">双主题策略</div>
+        <div class="decision-value">公域页 Light Theme / 产品内页 Dark Theme</div>
+        <div class="decision-note">认证页使用深色，强化「进入产品」仪式感</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">工作台布局</div>
+        <div class="decision-value">左侧表单(340px) + 右侧结果区(flex-1)</div>
+        <div class="decision-note">参考 Leonardo.ai / Midjourney Web 布局范式</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">任务进度展示</div>
+        <div class="decision-value">内嵌右侧结果区，SSE 实时推送</div>
+        <div class="decision-note">不跳转独立页，支持多任务并行占位展示</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">主题渲染策略</div>
+        <div class="decision-value">公域 SSG/SSR（SEO优先）/ 产品 CSR（交互优先）</div>
+        <div class="decision-note">Nuxt 3 混合渲染，精准匹配不同场景需求</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">作品公开机制</div>
+        <div class="decision-value">默认私密，用户主动设为公开后出现广场</div>
+        <div class="decision-note">My Works 页 Toggle 直接操作，无需跳转</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">认证方式</div>
+        <div class="decision-value">微信 OAuth（国内）+ Google OAuth（海外）+ 邮箱</div>
+        <div class="decision-note">兼顾两个市场的登录习惯</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">国际化方案</div>
+        <div class="decision-value">中英文双语，i18n 路由层面支持</div>
+        <div class="decision-note">SEO 元数据双语配置，目标国内+海外市场</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">积分体系</div>
+        <div class="decision-value">三类积分（赠送/购买/会员），分拆显示有效期</div>
+        <div class="decision-note">幂等性三重防线，预扣/冻结状态展示</div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-label">技术栈</div>
+        <div class="decision-value">Vue3 + Nuxt3 / FastAPI / PostgreSQL + Redis</div>
+        <div class="decision-note">Cloudflare R2 + CDN，BullMQ/Celery 任务队列</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 全局待确认事项汇总 ======== -->
+  <div class="pending-summary">
+    <div class="pending-summary-header">
+      <div class="pending-summary-icon">⚠️</div>
+      <div>
+        <div class="section-title-big">全局待确认事项汇总</div>
+        <div style="font-size:14px; color: var(--text-secondary); margin-top:4px;">所有页面 spec 文档中未拍板的关键决策，按类别整理</div>
+      </div>
+    </div>
+
+    <div class="pending-category-grid">
+      <div class="pending-category">
+        <div class="pending-category-title">💰 商业模式 / 定价</div>
+        <div class="pending-category-items">
+          <div class="pending-category-item">四档价格最终定价（¥0/29/89/299 待核算成本）</div>
+          <div class="pending-category-item">积分消耗单价（各工具/质量档位阶梯计费规则）</div>
+          <div class="pending-category-item">旗舰版 L3 是否走线上支付还是销售线索</div>
+          <div class="pending-category-item">年付是否支持 7 天无理由退款</div>
+          <div class="pending-category-item">商业授权的具体范围和法律条款</div>
+          <div class="pending-category-item">积分不清零有效期是否为 12 个月</div>
+        </div>
+      </div>
+
+      <div class="pending-category">
+        <div class="pending-category-title">🛒 支付 / 交易</div>
+        <div class="pending-category-items">
+          <div class="pending-category-item">是否支持境外信用卡（影响 Stripe 集成）</div>
+          <div class="pending-category-item">支付超时时长（是否需要倒计时显示）</div>
+          <div class="pending-category-item">发票功能是否 MVP 必须项</div>
+          <div class="pending-category-item">预扣积分时机（提交即预扣 or 开始处理）</div>
+          <div class="pending-category-item">生成失败是否全额退回积分</div>
+          <div class="pending-category-item">是否支持套餐升降级（Pro 降至 Basic）</div>
+        </div>
+      </div>
+
+      <div class="pending-category">
+        <div class="pending-category-title">🔑 认证 / 账号</div>
+        <div class="pending-category-items">
+          <div class="pending-category-item">是否需要手机号登录（国内用户习惯）</div>
+          <div class="pending-category-item">微信登录：扫码（PC）+ 一键（移动端）两形态</div>
+          <div class="pending-category-item">注册成功跳转工作台 or 新手引导页</div>
+          <div class="pending-category-item">忘记密码：邮件重置 or 手机验证码</div>
+          <div class="pending-category-item">验证码有效期时长和密码强度规则</div>
+          <div class="pending-category-item">2FA 二步验证是否 MVP 必须</div>
+        </div>
+      </div>
+
+      <div class="pending-category">
+        <div class="pending-category-title">🎨 产品功能</div>
+        <div class="pending-category-items">
+          <div class="pending-category-item">产品最终名称（当前占位：PixelMind）</div>
+          <div class="pending-category-item">模型列表（名称/色标/免费/付费限制）</div>
+          <div class="pending-category-item">「优化」「翻译」Prompt 工具是否消耗积分</div>
+          <div class="pending-category-item">移动端工作台是否 MVP 阶段支持</div>
+          <div class="pending-category-item">工具 URL 结构：/tools/slug or /ai/slug</div>
+          <div class="pending-category-item">作品集是否支持「项目/相册」分组归档</div>
+        </div>
+      </div>
+
+      <div class="pending-category">
+        <div class="pending-category-title">🌍 内容 / SEO / 合规</div>
+        <div class="pending-category-items">
+          <div class="pending-category-item">博客是否接入 Headless CMS（Sanity/Contentful）</div>
+          <div class="pending-category-item">服务协议/隐私政策需法务团队审核才上线</div>
+          <div class="pending-category-item">是否需要 Cookie Consent Banner（GDPR 合规）</div>
+          <div class="pending-category-item">海外隐私政策是否需要中英双语版</div>
+          <div class="pending-category-item">SEO 关键词策略优先级（AI文生图等长尾词）</div>
+          <div class="pending-category-item">作品详情 OG/Twitter Card Meta 标签</div>
+        </div>
+      </div>
+
+      <div class="pending-category">
+        <div class="pending-category-title">📦 运营 / 增长</div>
+        <div class="pending-category-items">
+          <div class="pending-category-item">活动落地页：固定路由 or 每次新建 slug</div>
+          <div class="pending-category-item">活动结束后 URL 处理（301 or 已结束页）</div>
+          <div class="pending-category-item">是否需要活动分享功能（微信海报/邀请码）</div>
+          <div class="pending-category-item">未登录用户可否查看广场全部内容</div>
+          <div class="pending-category-item">作品举报功能是否需要在详情页实现</div>
+          <div class="pending-category-item">取消订阅挽留流程是否需要单独设计</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="map-footer">
+    <div class="map-footer-left">
+      AI 内容生成平台 · 产品全景地图 v1.0 · 2026-03-25<br>
+      <span style="color: var(--text-tertiary); font-size: 12px;">基于全部 20 份页面设计说明文档（spec）整合生成</span>
+    </div>
+    <div class="map-footer-right">
+      <span style="font-size:12px; color: var(--text-tertiary); align-self: center;">相关文档：</span>
+      <a class="footer-link" href="pages/homepage-design.html">首页原型</a>
+      <a class="footer-link" href="pages/studio-design.html">工作台原型</a>
+      <a class="footer-link" href="pages/pricing-design.html">定价页原型</a>
+      <a class="footer-link" href="设计规范.md">设计规范</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 简单的展开/收起交互（如果以后需要）
+  document.querySelectorAll('.sections-toggle').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const content = toggle.nextElementSibling;
+      if (content && content.classList.contains('sections-content')) {
+        content.classList.toggle('open');
+        toggle.querySelector('.toggle-text').textContent =
+          content.classList.contains('open') ? '收起' : '查看区块';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

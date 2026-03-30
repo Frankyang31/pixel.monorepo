@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>材质纹理 — PixelMind · AI PBR 材质纹理生成与升频</title>
+  <meta name="description" content="AI 游戏材质纹理生成与升频工具，图生图模式保留原图轮廓注入目标风格，支持 PBR 材质纹理生成和 4K 升频。适合 3D 模型贴图和画风统一。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --c-p1:#7B5EF0; --c-p2:#4F8EF7; --c-p3:#A78BFA;
+      --c-accent:#38BDF8;
+      --grad-brand:linear-gradient(135deg,#7B5EF0,#4F8EF7);
+      --bg-dark:#07070D; --bg-base:#0D0D12; --bg-surface:#13131A; --bg-elevated:#1C1C27;
+      --text-light:#F0F0F8; --text-muted:#A0A0B8; --text-faint:#606078;
+      --font:'Inter','PingFang SC','Noto Sans SC',system-ui,sans-serif;
+      --font-mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font);background:var(--bg-base);color:var(--text-light);line-height:1.6;-webkit-font-smoothing:antialiased;}
+    a{color:inherit;text-decoration:none;}
+    img{display:block;max-width:100%;}
+    button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;}
+    .container{width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+    @media(max-width:768px){.container{padding:0 16px;}}
+
+    .nav{position:fixed;top:0;left:0;right:0;z-index:500;height:64px;display:flex;align-items:center;background:rgba(7,7,13,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);}
+    .nav__inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+    .nav__logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;color:var(--text-light);}
+    .nav__logo-icon{width:32px;height:32px;border-radius:8px;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 4px 16px rgba(123,94,240,0.35);}
+    .nav__links{display:flex;align-items:center;gap:28px;list-style:none;}
+    .nav__links a{font-size:14px;font-weight:500;color:var(--text-muted);transition:color 0.2s;}
+    .nav__links a:hover,.nav__links a.active{color:var(--text-light);}
+    .nav__actions{display:flex;align-items:center;gap:10px;}
+    .btn-ghost{font-size:14px;font-weight:500;color:var(--text-muted);padding:8px 16px;border-radius:8px;transition:all 0.2s;}
+    .btn-ghost:hover{color:var(--text-light);background:rgba(255,255,255,0.05);}
+    .btn-brand{font-size:14px;font-weight:600;color:#fff;padding:9px 20px;border-radius:8px;background:var(--grad-brand);box-shadow:0 4px 16px rgba(123,94,240,0.3);transition:all 0.25s;}
+    .btn-brand:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(123,94,240,0.4);}
+    @media(max-width:768px){.nav__links{display:none;}.nav__inner{padding:0 16px;}}
+
+    .hero{position:relative;padding:160px 0 100px;overflow:hidden;background:var(--bg-base);}
+    .hero__bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(123,94,240,0.08) 0%,transparent 70%);}
+    .hero__grid{position:absolute;inset:0;z-index:1;background-image:radial-gradient(circle,rgba(123,94,240,0.06) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 80%);pointer-events:none;}
+    .hero__content{position:relative;z-index:10;max-width:760px;margin:0 auto;text-align:center;padding:0 20px;}
+    .hero__eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);border-radius:100px;padding:5px 16px;font-size:13px;font-weight:600;color:#38BDF8;margin-bottom:24px;}
+    .hero__title{font-size:clamp(36px,6vw,64px);font-weight:900;line-height:1.1;letter-spacing:-0.04em;color:#fff;margin-bottom:14px;}
+    .hero__title em{font-style:normal;background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero__sub{font-size:18px;color:var(--text-muted);max-width:540px;margin:0 auto 36px;line-height:1.7;}
+    .hero__cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+    .btn-hero{font-size:16px;font-weight:700;color:#fff;padding:14px 36px;border-radius:12px;background:var(--grad-brand);box-shadow:0 8px 24px rgba(123,94,240,0.35);transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;}
+    .btn-hero:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(123,94,240,0.4);}
+    .btn-ghost-hero{font-size:16px;font-weight:600;color:var(--text-muted);padding:14px 32px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:transparent;transition:all 0.25s;}
+    .btn-ghost-hero:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+    .tool-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--text-muted);margin:16px 0 32px;}
+    .tool-badge__dot{width:6px;height:6px;border-radius:50%;background:#38BDF8;}
+
+    .features{padding:96px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .sec-label{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#7B5EF0;margin-bottom:12px;}
+    .sec-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-0.025em;color:#fff;line-height:1.2;margin-bottom:56px;}
+    .features__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+    @media(max-width:900px){.features__grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:560px){.features__grid{grid-template-columns:1fr;}}
+    .feat-card{background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;}
+    .feat-card__icon{width:48px;height:48px;border-radius:12px;background:rgba(56,189,248,0.1);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+    .feat-card__title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+    .feat-card__desc{font-size:14px;color:var(--text-muted);line-height:1.65;}
+
+    .compare{padding:96px 0;background:var(--bg-base);}
+    .compare__row{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center;margin-top:0;}
+    @media(max-width:768px){.compare__row{grid-template-columns:1fr;}}
+    .compare__label{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;margin-bottom:16px;}
+    .compare__img{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);}
+    .compare__img img{width:100%;display:block;}
+    .compare__arrow{font-size:32px;color:var(--text-faint);text-align:center;}
+    .compare__caption{font-size:12px;color:var(--text-faint);text-align:center;margin-top:8px;}
+
+    .gallery-sec{padding:96px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    @media(max-width:900px){.gallery-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:560px){.gallery-grid{grid-template-columns:repeat(2,1fr);}}
+    .gallery-item{border-radius:12px;overflow:hidden;position:relative;cursor:pointer;transition:transform 0.3s;}
+    .gallery-item:hover{transform:scale(1.05);}
+    .gallery-item__img{width:100%;aspect-ratio:1;display:block;}
+    .gallery-item__tag{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,0.6);border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600;color:#fff;backdrop-filter:blur(4px);}
+
+    .prompts{padding:96px 0;background:var(--bg-base);}
+    .prompt-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+    @media(max-width:768px){.prompt-cards{grid-template-columns:1fr;}}
+    .prompt-card{background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;cursor:pointer;transition:all 0.25s;}
+    .prompt-card:hover{border-color:rgba(123,94,240,0.3);transform:translateY(-2px);}
+    .prompt-card__type{font-size:11px;font-weight:700;color:#7B5EF0;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+    .prompt-card__text{font-family:var(--font-mono);font-size:12.5px;line-height:1.7;color:var(--text-muted);background:var(--bg-base);border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,0.06);white-space:pre-wrap;margin-bottom:12px;}
+    .prompt-card__use{font-size:13px;color:#A0A0B8;}
+    .prompt-card__use strong{color:#fff;}
+
+    .quote-sec{padding:80px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .quote-card{max-width:680px;margin:0 auto;text-align:center;background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:40px;}
+    .quote-card__text{font-size:18px;line-height:1.75;color:var(--text-muted);font-style:italic;margin-bottom:20px;}
+    .quote-card__author{display:flex;align-items:center;justify-content:center;gap:12px;}
+    .quote-card__avatar{width:40px;height:40px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;}
+    .quote-card__name{font-size:14px;font-weight:600;color:#fff;}
+    .quote-card__role{font-size:12px;color:var(--text-faint);}
+
+    .cta{padding:96px 0;background:var(--grad-brand);position:relative;overflow:hidden;}
+    .cta::before,.cta::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);}
+    .cta::before{width:500px;height:500px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(255,255,255,0.2),transparent 70%);}
+    .cta::after{width:400px;height:400px;bottom:-100px;right:-60px;background:radial-gradient(circle,rgba(255,255,255,0.15),transparent 70%);}
+    .cta__inner{position:relative;z-index:10;text-align:center;}
+    .cta__title{font-size:clamp(28px,4.5vw,48px);font-weight:900;letter-spacing:-0.03em;color:#fff;margin-bottom:16px;}
+    .cta__sub{font-size:17px;color:rgba(255,255,255,0.8);max-width:440px;margin:0 auto 36px;line-height:1.7;}
+    .cta__btn{font-size:16px;font-weight:700;color:#7B5EF0;padding:15px 40px;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);transition:all 0.25s;display:inline-block;}
+    .cta__btn:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.2);}
+    .cta__note{font-size:13px;color:rgba(255,255,255,0.65);margin-top:16px;}
+
+    .footer{background:var(--bg-surface);padding:48px 0;border-top:1px solid rgba(255,255,255,0.05);}
+    .footer__inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .footer__copy{font-size:13px;color:var(--text-faint);}
+    .footer__links{display:flex;gap:20px;list-style:none;}
+    .footer__links a{font-size:13px;color:var(--text-faint);transition:color 0.2s;}
+    .footer__links a:hover{color:var(--text-muted);}
+
+    @media(prefers-reduced-motion:no-preference){
+      .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s cubic-bezier(0,0,0.2,1);}
+      .reveal.in{opacity:1;transform:translateY(0);}
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav" role="banner">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo" aria-label="PixelMind 首页"><div class="nav__logo-icon" aria-hidden="true">✦</div>PixelMind</a>
+    <nav aria-label="主导航">
+      <ul class="nav__links">
+        <li><a href="/tools" class="active">工具</a></li>
+        <li><a href="/gallery">作品广场</a></li>
+        <li><a href="/pricing">定价</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <a href="/login" class="btn-ghost">登录</a>
+      <a href="/register" class="btn-brand">免费开始</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="hero__grid" aria-hidden="true"></div>
+  <div class="hero__content">
+    <div class="hero__eyebrow"><span aria-hidden="true">🎨</span> 材质纹理与升频专用工具</div>
+    <h1 class="hero__title" id="hero-title">图生图风格注入<br/><em>材质升频两不误</em></h1>
+    <p class="hero__sub">
+      保留原图轮廓注入目标风格，PBR 材质纹理生成、低分辨率资产升频到 4K、画风统一化——一次输入，多重输出，直接可用于游戏生产管线。
+    </p>
+    <div class="hero__cta">
+      <a href="/studio?tool=texture-generator" class="btn-hero">✦ 上传图像生成</a>
+      <a href="/gallery?tool=texture-generator" class="btn-ghost-hero">查看示例 →</a>
+    </div>
+    <div class="tool-badge">
+      <span class="tool-badge__dot" aria-hidden="true"></span>
+      消耗 3–5 积分 / 次 · 4K 输出 · PBR 材质可选 · 透明背景支持
+    </div>
+  </div>
+</section>
+
+<section class="features" aria-labelledby="features-title">
+  <div class="container">
+    <p class="sec-label reveal">核心能力</p>
+    <h2 class="sec-title reveal" id="features-title">为游戏生产管线设计的纹理工具</h2>
+    <div class="features__grid">
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🔄</div>
+        <h3 class="feat-card__title">轮廓保留风格注入</h3>
+        <p class="feat-card__desc">图生图模式下，AI 精确识别原图轮廓和结构，在保持物体形状不变的前提下注入目标画风，不是生成新图，而是"换皮"。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">📈</div>
+        <h3 class="feat-card__title">4K 智能升频</h3>
+        <p class="feat-card__desc">低分辨率素材（512px / 1024px）一键升至 4K，AI 在放大同时智能补全细节纹理，不出现传统升频的模糊和锯齿问题。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🧱</div>
+        <h3 class="feat-card__title">PBR 材质生成</h3>
+        <p class="feat-card__desc">输入一张漫反射贴图，AI 自动生成法线、高光、AO 等 PBR 材质通道贴图，支持导出为标准游戏引擎格式（Unity / Unreal）。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🎭</div>
+        <h3 class="feat-card__title">画风批量统一</h3>
+        <p class="feat-card__desc">同一场景的多个资产（角色、道具、场景）画风不统一时，可批量处理为一致的艺术风格，解决美术外包风格差异问题。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🔍</div>
+        <h3 class="feat-card__title">平铺纹理循环</h3>
+        <p class="feat-card__desc">生成的纹理可自动处理边缘循环，确保平铺时接缝自然，适合地板、墙面、草地等需要无缝平铺的游戏资产。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">💾</div>
+        <h3 class="feat-card__title">PNG / TGA 多格式</h3>
+        <p class="feat-card__desc">输出 PNG（透明背景）或 TGA（支持 Alpha 通道）格式，满足不同游戏引擎的纹理导入需求。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="compare">
+  <div class="container">
+    <p class="sec-label reveal" style="text-align:center">升频效果对比</p>
+    <h2 class="sec-title reveal" style="text-align:center" id="compare-title">低分辨率 → 4K 细节智能补全</h2>
+    <div class="compare__row reveal">
+      <div>
+        <div class="compare__label">升频前（512px）</div>
+        <div class="compare__img" style="aspect-ratio:1;background:linear-gradient(135deg,#1a1a1a,#3a3a3a,#1a1a1a);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:14px;border-radius:12px;height:240px">原始素材</div>
+        <div class="compare__caption">512 × 512 · 模糊、有锯齿</div>
+      </div>
+      <div class="compare__arrow" aria-hidden="true">→</div>
+      <div>
+        <div class="compare__label">升频后（4K）</div>
+        <div class="compare__img" style="aspect-ratio:1;background:linear-gradient(135deg,#2a2a3a,#4a4a5a,#2a2a3a);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:14px;border-radius:12px;height:240px">AI 升频后</div>
+        <div class="compare__caption">4096 × 4096 · 细节清晰、纹理完整</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="gallery-sec" aria-labelledby="gallery-title">
+  <div class="container">
+    <p class="sec-label reveal">生成示例</p>
+    <h2 class="sec-title reveal" id="gallery-title">各类游戏材质的纹理应用</h2>
+    <div class="gallery-grid reveal">
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#5a3a1a,#8a5a2a,#3a1a0a)"></div><span class="gallery-item__tag">木质纹理</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#2a2a2a,#5a5a5a,#1a1a1a)"></div><span class="gallery-item__tag">金属锈蚀</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#1a3a2a,#2d6a4a,#0a1a14)"></div><span class="gallery-item__tag">草地地表</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#3a1a2a,#6a3a5a,#2a0a1a)"></div><span class="gallery-item__tag">宝石晶体</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#1a1a3a,#3a3a7a,#0a0a2d)"></div><span class="gallery-item__tag">岩石地表</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#3a2a1a,#7a5a3a,#2a1a0a)"></div><span class="gallery-item__tag">皮革布料</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#1a2a3a,#2d5a7a,#0a1a2d)"></div><span class="gallery-item__tag">水面波纹</span></div>
+      <div class="gallery-item"><div class="gallery-item__img" style="background:linear-gradient(135deg,#3a3a1a,#7a7a3a,#1a1a0a)"></div><span class="gallery-item__tag">砖墙砌体</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="prompts" aria-labelledby="prompts-title">
+  <div class="container">
+    <p class="sec-label reveal">Prompt 模板</p>
+    <h2 class="sec-title reveal" id="prompts-title">不同场景的纹理 Prompt 示例</h2>
+    <div class="prompt-cards">
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">低分辨率升频</div>
+        <div class="prompt-card__text">Input: [Low-res texture image]
+Style: Photorealistic stone wall, PBR material, 4K detail, subtle surface cracks, moss growing in crevices, physically based rendering quality, seamless tileable texture</div>
+        <p class="prompt-card__use">适用：<strong>将 512px 素材升频到 4K</strong>，同时补全纹理细节，适合石墙、砖墙、岩石等地表材质</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">画风统一</div>
+        <div class="prompt-card__text">Input: [Existing game asset image]
+Style: Maintain original silhouette and structure, apply cel-shaded anime art style with clean outlines, vibrant colors, game-ready texture, consistent with [reference style]</div>
+        <p class="prompt-card__use">适用：<strong>统一外包资产的画风</strong>，将写实风格转换为卡通/赛璐璐风格，保持轮廓不变</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">PBR 材质生成</div>
+        <div class="prompt-card__text">Input: [Diffuse/albedo map image]
+Generate: Normal map, roughness map, ambient occlusion map, metallic map
+Style: Game engine ready PBR texture set, consistent with input diffuse colors, physically accurate surface properties</div>
+        <p class="prompt-card__use">适用：<strong>为漫反射贴图生成完整 PBR 贴图集</strong>，支持 Unity HDRP / URP 和 Unreal Engine</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">二游材质升频</div>
+        <div class="prompt-card__text">Input: [Anime game character texture, 1024px]
+Style: Anime game character texture upscaled to 4K, preserve anime art style and color palette, enhanced fabric texture and skin shading details, clean linework, game-ready</div>
+        <p class="prompt-card__use">适用：<strong>二次元游戏的角色贴图升频</strong>，保持二游风格同时提升分辨率，适合卡牌、立绘等素材</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="quote-sec">
+  <div class="container">
+    <div class="quote-card reveal">
+      <p class="quote-card__text">"我们有大量外包的低分辨率 2D 资产，用 PixelMind 的材质纹理工具升频后可以直接进管线，省去了重新手绘的成本和时间。"</p>
+      <div class="quote-card__author">
+        <div class="quote-card__avatar" aria-hidden="true">张</div>
+        <div>
+          <div class="quote-card__name">张晓晨</div>
+          <div class="quote-card__role">独立游戏《光明纪元》技术美术</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="cta-title">
+  <div class="cta__inner">
+    <h2 class="cta__title" id="cta-title">让低分辨率素材重获新生</h2>
+    <p class="cta__sub">升频仅需 3–5 积分，4K 输出直接进游戏引擎，无需重新制作。</p>
+    <a href="/register" class="cta__btn">免费开始升频</a>
+    <p class="cta__note">无需信用卡 · 30 秒完成注册 · 随时可取消</p>
+  </div>
+</section>
+
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer__inner">
+      <p class="footer__copy">© 2026 PixelMind. All rights reserved.</p>
+      <ul class="footer__links">
+        <li><a href="/tools">工具</a></li>
+        <li><a href="/gallery">作品广场</a></li>
+        <li><a href="/pricing">定价</a></li>
+        <li><a href="/terms">服务协议</a></li>
+        <li><a href="/privacy">隐私政策</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }});
+  }, {threshold:0.08});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transitionDelay=(i%4)*60+'ms'; obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 / 注册 — PixelMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       Design Tokens — Dark Theme
+       ============================================= */
+    :root {
+      --color-brand-start: #7B5EF0;
+      --color-brand-end:   #4F8EF7;
+      --color-brand-mid:   #6370F3;
+      --gradient-brand: linear-gradient(135deg, #7B5EF0, #4F8EF7);
+
+      --color-accent-purple: #9B87F5;
+      --color-accent-blue:   #60A5FA;
+      --color-accent-teal:   #2DD4BF;
+      --color-accent-amber:  #FBBF24;
+      --color-accent-red:    #F87171;
+
+      /* Dark Backgrounds */
+      --bg-base:     #0D0D12;
+      --bg-surface:  #13131A;
+      --bg-elevated: #1C1C27;
+      --bg-overlay:  #252535;
+
+      /* Borders */
+      --border-subtle:  rgba(255,255,255,0.05);
+      --border-default: rgba(255,255,255,0.09);
+      --border-strong:  rgba(255,255,255,0.16);
+      --border-brand:   rgba(123,94,240,0.50);
+
+      /* Text */
+      --text-primary:   #F0F0F8;
+      --text-secondary: #A0A0B8;
+      --text-tertiary:  #606078;
+      --text-disabled:  #404058;
+      --text-on-brand:  #FFFFFF;
+
+      /* Shadows */
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg:    0 8px 32px rgba(0,0,0,0.6);
+      --shadow-brand: 0 0 20px rgba(123,94,240,0.35);
+      --shadow-glow:  0 0 60px rgba(123,94,240,0.15);
+
+      /* Spacing */
+      --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;
+      --s6:24px;--s8:32px;--s10:40px;--s12:48px;--s16:64px;
+
+      /* Radius */
+      --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-2xl:24px;--r-full:9999px;
+
+      /* Font */
+      --font-sans: 'Inter','PingFang SC','Noto Sans SC',system-ui,sans-serif;
+
+      /* Transitions */
+      --t-fast:   100ms ease;
+      --t-normal: 200ms ease;
+      --t-slow:   300ms cubic-bezier(0,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* =============================================
+       Layout — Full Screen Split
+       ============================================= */
+    .auth-layout {
+      display: grid;
+      grid-template-columns: 5fr 6fr;
+      min-height: 100vh;
+    }
+
+    /* =============================================
+       Left Panel — Visual / Brand
+       ============================================= */
+    .visual-panel {
+      position: relative;
+      background: var(--bg-surface);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: var(--s8);
+    }
+
+    /* Gradient background */
+    .visual-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(123,94,240,0.25) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(79,142,247,0.20) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Grid noise overlay */
+    .visual-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .visual-logo {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+    }
+
+    .visual-logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-md);
+      background: var(--gradient-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .visual-logo-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      background: var(--gradient-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Gallery cards */
+    .visual-gallery {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--s8) 0;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: var(--s3);
+      width: 100%;
+      max-width: 360px;
+      height: 420px;
+    }
+
+    .gallery-card {
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      position: relative;
+      transition: transform var(--t-slow), box-shadow var(--t-slow);
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .gallery-card:nth-child(1) {
+      grid-row: 1 / 3;
+      background: linear-gradient(145deg, #2D1B69, #1a1040);
+    }
+    .gallery-card:nth-child(2) {
+      background: linear-gradient(145deg, #0f2a4a, #1a3a6b);
+    }
+    .gallery-card:nth-child(3) {
+      background: linear-gradient(145deg, #1a3a2a, #0d2a1a);
+    }
+    .gallery-card:nth-child(4) {
+      grid-column: 1 / 3;
+      background: linear-gradient(145deg, #3a1a3a, #1a0d2a);
+    }
+    .gallery-card:nth-child(5) {
+      background: linear-gradient(145deg, #2a2a1a, #1a1a0d);
+    }
+
+    /* Floating content in cards */
+    .gallery-card-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--s3);
+      background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%);
+    }
+
+    .gallery-card-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: rgba(123,94,240,0.3);
+      border: 1px solid rgba(123,94,240,0.4);
+      border-radius: var(--r-full);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--color-accent-purple);
+      width: fit-content;
+    }
+
+    /* Abstract art inside cards using CSS */
+    .gallery-card:nth-child(1)::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 15%;
+      width: 70%;
+      height: 50%;
+      background: radial-gradient(ellipse, rgba(155,135,245,0.6) 0%, rgba(99,112,243,0.3) 40%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(15px);
+    }
+    .gallery-card:nth-child(2)::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      right: 10%;
+      bottom: 10%;
+      background: radial-gradient(ellipse at 30% 30%, rgba(96,165,250,0.7) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 70%, rgba(45,212,191,0.5) 0%, transparent 50%);
+      filter: blur(8px);
+    }
+    .gallery-card:nth-child(3)::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(45,212,191,0.5) 0%, rgba(16,185,129,0.3) 40%, transparent 70%);
+      filter: blur(10px);
+    }
+    .gallery-card:nth-child(4)::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(251,191,36,0.4) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 50%, rgba(248,113,113,0.35) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(123,94,240,0.3) 0%, transparent 50%);
+      filter: blur(12px);
+    }
+    .gallery-card:nth-child(5)::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(251,191,36,0.5) 0%, rgba(245,158,11,0.3) 40%, transparent 70%);
+      filter: blur(8px);
+    }
+
+    /* Bottom branding */
+    .visual-bottom {
+      position: relative;
+      z-index: 1;
+    }
+
+    .visual-quote {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .visual-quote strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--s2);
+    }
+
+    .visual-stats {
+      display: flex;
+      gap: var(--s6);
+      margin-top: var(--s4);
+      padding-top: var(--s4);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-num {
+      font-size: 18px;
+      font-weight: 700;
+      background: var(--gradient-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* =============================================
+       Right Panel — Auth Form
+       ============================================= */
+    .form-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: var(--s12) var(--s10);
+      background: var(--bg-base);
+      position: relative;
+    }
+
+    /* Back to home link */
+    .back-link {
+      position: absolute;
+      top: var(--s6);
+      right: var(--s8);
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: color var(--t-fast);
+    }
+
+    .back-link:hover { color: var(--text-primary); }
+
+    .back-link svg { width: 14px; height: 14px; }
+
+    .auth-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Header */
+    .auth-header {
+      margin-bottom: var(--s8);
+    }
+
+    .auth-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      margin-bottom: var(--s2);
+    }
+
+    .auth-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .auth-subtitle a {
+      color: var(--color-accent-purple);
+      font-weight: 500;
+      transition: color var(--t-fast);
+    }
+
+    .auth-subtitle a:hover { color: var(--text-primary); }
+
+    /* Mode Tab */
+    .auth-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg-elevated);
+      border-radius: var(--r-lg);
+      padding: 3px;
+      margin-bottom: var(--s6);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: var(--s2) var(--s4);
+      border-radius: calc(var(--r-lg) - 2px);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+      text-align: center;
+      border: none;
+      background: none;
+    }
+
+    .auth-tab.active {
+      background: var(--bg-overlay);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* OAuth Buttons */
+    .oauth-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s3);
+      margin-bottom: var(--s6);
+    }
+
+    .oauth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s3);
+      width: 100%;
+      padding: 11px var(--s4);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+
+    .oauth-btn:hover {
+      background: var(--bg-overlay);
+      border-color: var(--border-strong);
+    }
+
+    .oauth-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      margin-bottom: var(--s6);
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .divider-text {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+
+    /* Form Fields */
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s4);
+      margin-bottom: var(--s5);
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .field-input-wrap {
+      position: relative;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 11px var(--s4);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      font-size: 14px;
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      outline: none;
+      transition: all var(--t-normal);
+    }
+
+    .field-input::placeholder { color: var(--text-disabled); }
+
+    .field-input:focus {
+      border-color: var(--border-brand);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px rgba(123,94,240,0.15);
+    }
+
+    .field-input.has-icon { padding-right: 44px; }
+
+    /* Password toggle */
+    .field-icon-btn {
+      position: absolute;
+      right: var(--s3);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      padding: var(--s1);
+      transition: color var(--t-fast);
+      display: flex;
+      align-items: center;
+    }
+
+    .field-icon-btn:hover { color: var(--text-secondary); }
+    .field-icon-btn svg { width: 16px; height: 16px; }
+
+    /* Field error state */
+    .field-input.error {
+      border-color: rgba(248,113,113,0.6);
+      background: rgba(248,113,113,0.05);
+    }
+
+    .field-error {
+      font-size: 12px;
+      color: var(--color-accent-red);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Forgot password */
+    .field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .forgot-link {
+      font-size: 12px;
+      color: var(--color-accent-purple);
+      transition: color var(--t-fast);
+    }
+
+    .forgot-link:hover { color: var(--text-primary); }
+
+    /* Terms checkbox */
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--s3);
+    }
+
+    .terms-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-sm);
+      background: var(--bg-elevated);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+      appearance: none;
+      -webkit-appearance: none;
+      position: relative;
+      transition: all var(--t-fast);
+    }
+
+    .terms-checkbox:checked {
+      background: var(--gradient-brand);
+      border-color: transparent;
+    }
+
+    .terms-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 5px;
+      width: 4px;
+      height: 7px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .terms-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .terms-text a {
+      color: var(--color-accent-purple);
+      transition: color var(--t-fast);
+    }
+
+    .terms-text a:hover { color: var(--text-primary); }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 13px var(--s4);
+      background: var(--gradient-brand);
+      border: none;
+      border-radius: var(--r-lg);
+      font-size: 15px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      color: white;
+      cursor: pointer;
+      transition: all var(--t-normal);
+      box-shadow: 0 4px 16px rgba(123,94,240,0.3);
+      margin-top: var(--s2);
+      letter-spacing: 0.1px;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(123,94,240,0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Loading state */
+    .submit-btn.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .submit-btn.loading::after {
+      content: '';
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-left: var(--s2);
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Footer note */
+    .auth-footer-note {
+      margin-top: var(--s6);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+    }
+
+    .auth-footer-note a {
+      color: var(--text-secondary);
+      transition: color var(--t-fast);
+    }
+
+    .auth-footer-note a:hover { color: var(--text-primary); }
+
+    /* =============================================
+       Password Strength Indicator (Register only)
+       ============================================= */
+    .password-strength {
+      display: flex;
+      gap: 4px;
+      margin-top: var(--s2);
+    }
+
+    .strength-bar {
+      flex: 1;
+      height: 3px;
+      border-radius: var(--r-full);
+      background: var(--border-subtle);
+      transition: background var(--t-normal);
+    }
+
+    .strength-bar.weak   { background: var(--color-accent-red); }
+    .strength-bar.fair   { background: var(--color-accent-amber); }
+    .strength-bar.strong { background: var(--color-accent-teal); }
+
+    .strength-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* =============================================
+       Toast notification (success/error feedback)
+       ============================================= */
+    .toast {
+      position: fixed;
+      top: var(--s6);
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      padding: var(--s3) var(--s5);
+      font-size: 13px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      box-shadow: var(--shadow-lg);
+      transition: transform var(--t-slow);
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--color-accent-teal);
+      flex-shrink: 0;
+    }
+
+    /* =============================================
+       Responsive — Mobile
+       ============================================= */
+    @media (max-width: 768px) {
+      .auth-layout {
+        grid-template-columns: 1fr;
+      }
+      .visual-panel {
+        display: none;
+      }
+      .form-panel {
+        padding: var(--s8) var(--s6);
+        justify-content: flex-start;
+        padding-top: var(--s16);
+      }
+      .auth-box {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastMsg">操作成功</span>
+</div>
+
+<div class="auth-layout">
+
+  <!-- ===== Left: Visual Panel ===== -->
+  <aside class="visual-panel">
+    <!-- Logo -->
+    <div class="visual-logo">
+      <div class="visual-logo-mark">✦</div>
+      <span class="visual-logo-name">PixelMind</span>
+    </div>
+
+    <!-- Gallery grid -->
+    <div class="visual-gallery">
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <div class="gallery-card-inner">
+            <span class="gallery-card-tag">✦ 文生图</span>
+          </div>
+        </div>
+        <div class="gallery-card">
+          <div class="gallery-card-inner">
+            <span class="gallery-card-tag">▶ 图生视频</span>
+          </div>
+        </div>
+        <div class="gallery-card">
+          <div class="gallery-card-inner">
+            <span class="gallery-card-tag">◈ 风格迁移</span>
+          </div>
+        </div>
+        <div class="gallery-card">
+          <div class="gallery-card-inner">
+            <span class="gallery-card-tag">✦ 文生图</span>
+          </div>
+        </div>
+        <div class="gallery-card">
+          <div class="gallery-card-inner">
+            <span class="gallery-card-tag">⬡ 超分辨率</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom quote & stats -->
+    <div class="visual-bottom">
+      <div class="visual-quote">
+        <strong>把创意交给 AI，把时间留给更重要的事</strong>
+        用 AI 生成令人惊叹的图片与视频，从 Prompt 到作品，只需几秒。
+      </div>
+      <div class="visual-stats">
+        <div class="stat-item">
+          <span class="stat-num">50万+</span>
+          <span class="stat-label">创作者</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">2000万+</span>
+          <span class="stat-label">作品已生成</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">免费</span>
+          <span class="stat-label">起步无门槛</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Right: Form Panel ===== -->
+  <main class="form-panel">
+    <!-- Back to home -->
+    <a href="#" class="back-link">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M10 3L5 8l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      返回首页
+    </a>
+
+    <div class="auth-box">
+
+      <!-- Header -->
+      <div class="auth-header">
+        <h1 class="auth-title" id="authTitle">欢迎回来</h1>
+        <p class="auth-subtitle" id="authSubtitle">
+          还没有账号？<a href="#" id="switchLink" onclick="switchMode(); return false;">免费注册</a>
+        </p>
+      </div>
+
+      <!-- Mode Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">登录</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">注册</button>
+      </div>
+
+      <!-- OAuth Section -->
+      <div class="oauth-section">
+        <!-- WeChat OAuth -->
+        <button class="oauth-btn" onclick="handleOAuth('wechat')">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M8.5 11.5C9.33 11.5 10 10.83 10 10s-.67-1.5-1.5-1.5S7 9.17 7 10s.67 1.5 1.5 1.5z" fill="#07C160"/>
+            <path d="M14.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S13 9.17 13 10s.67 1.5 1.5 1.5z" fill="#07C160"/>
+            <path d="M12 2C6.48 2 2 6.03 2 11c0 2.83 1.35 5.35 3.46 7.03L4.5 21l3.1-1.55C8.95 19.79 10.44 20 12 20c5.52 0 10-4.03 10-9S17.52 2 12 2zm0 16c-1.47 0-2.88-.35-4.12-.97l-.28-.14-2.9 1.45.74-2.75-.2-.25C3.6 14.03 2.5 12.6 2.5 11 2.5 6.31 6.69 2.5 12 2.5s9.5 3.81 9.5 8.5S17.31 18 12 18z" fill="#07C160"/>
+          </svg>
+          使用微信登录
+        </button>
+
+        <!-- Google OAuth -->
+        <button class="oauth-btn" onclick="handleOAuth('google')">
+          <svg viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          使用 Google 登录
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">或使用邮箱</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Form: Login -->
+      <div id="formLogin">
+        <div class="form-fields">
+          <div class="field-group">
+            <label class="field-label" for="loginEmail">邮箱地址</label>
+            <div class="field-input-wrap">
+              <input
+                class="field-input"
+                type="email"
+                id="loginEmail"
+                placeholder="your@email.com"
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div class="field-row">
+              <label class="field-label" for="loginPassword">密码</label>
+              <a href="#" class="forgot-link">忘记密码？</a>
+            </div>
+            <div class="field-input-wrap">
+              <input
+                class="field-input has-icon"
+                type="password"
+                id="loginPassword"
+                placeholder="输入密码"
+                autocomplete="current-password"
+              />
+              <button class="field-icon-btn" onclick="togglePassword('loginPassword', this)" type="button" aria-label="显示/隐藏密码">
+                <svg id="eyeLogin" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke-linecap="round"/>
+                  <circle cx="8" cy="8" r="2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="handleSubmit('login')">登录</button>
+      </div>
+
+      <!-- Form: Register (hidden by default) -->
+      <div id="formRegister" style="display:none;">
+        <div class="form-fields">
+          <div class="field-group">
+            <label class="field-label" for="regEmail">邮箱地址</label>
+            <div class="field-input-wrap">
+              <input
+                class="field-input"
+                type="email"
+                id="regEmail"
+                placeholder="your@email.com"
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="regPassword">设置密码</label>
+            <div class="field-input-wrap">
+              <input
+                class="field-input has-icon"
+                type="password"
+                id="regPassword"
+                placeholder="至少 8 位，含字母和数字"
+                autocomplete="new-password"
+                oninput="checkPasswordStrength(this.value)"
+              />
+              <button class="field-icon-btn" onclick="togglePassword('regPassword', this)" type="button" aria-label="显示/隐藏密码">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke-linecap="round"/>
+                  <circle cx="8" cy="8" r="2"/>
+                </svg>
+              </button>
+            </div>
+            <!-- Password strength -->
+            <div class="password-strength" id="strengthBars">
+              <div class="strength-bar" id="bar1"></div>
+              <div class="strength-bar" id="bar2"></div>
+              <div class="strength-bar" id="bar3"></div>
+              <div class="strength-bar" id="bar4"></div>
+            </div>
+            <div class="strength-label" id="strengthLabel">输入密码后显示强度</div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="regConfirm">确认密码</label>
+            <div class="field-input-wrap">
+              <input
+                class="field-input has-icon"
+                type="password"
+                id="regConfirm"
+                placeholder="再次输入密码"
+                autocomplete="new-password"
+              />
+              <button class="field-icon-btn" onclick="togglePassword('regConfirm', this)" type="button" aria-label="显示/隐藏密码">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke-linecap="round"/>
+                  <circle cx="8" cy="8" r="2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="terms-row">
+            <input type="checkbox" class="terms-checkbox" id="termsCheck" />
+            <label class="terms-text" for="termsCheck">
+              我已阅读并同意 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a>，并授权平台使用我的创作数据用于服务改进
+            </label>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="handleSubmit('register')">免费注册</button>
+      </div>
+
+      <!-- Footer note -->
+      <p class="auth-footer-note">
+        登录即代表同意 <a href="#">服务条款</a> · <a href="#">隐私政策</a><br/>
+        遇到问题？<a href="#">联系客服</a>
+      </p>
+
+    </div><!-- /.auth-box -->
+  </main>
+
+</div><!-- /.auth-layout -->
+
+<script>
+  let currentMode = 'login';
+
+  // Tab switching
+  function switchTab(mode) {
+    currentMode = mode;
+    const isLogin = mode === 'login';
+
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('formLogin').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('formRegister').style.display = isLogin ? 'none' : 'block';
+
+    document.getElementById('authTitle').textContent = isLogin ? '欢迎回来' : '创建账号';
+    document.getElementById('authSubtitle').innerHTML = isLogin
+      ? '还没有账号？<a href="#" id="switchLink" onclick="switchMode(); return false;">免费注册</a>'
+      : '已有账号？<a href="#" id="switchLink" onclick="switchMode(); return false;">立即登录</a>';
+  }
+
+  function switchMode() {
+    switchTab(currentMode === 'login' ? 'register' : 'login');
+  }
+
+  // Password visibility toggle
+  function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.querySelector('svg').innerHTML = isHidden
+      ? `<path d="M13.4 13.4L2.6 2.6M6.2 6.2A3 3 0 0 0 9.8 9.8M4.1 4.1C2.5 5.3 1 8 1 8s2.5 5 7 5c1.4 0 2.6-.4 3.6-1M9 3.1C8.3 3 7.7 3 7 3c-4.5 0-7 5-7 5s.7 1.4 2 2.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`
+      : `<path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>`;
+  }
+
+  // Password strength checker
+  function checkPasswordStrength(val) {
+    const bars = ['bar1','bar2','bar3','bar4'];
+    const label = document.getElementById('strengthLabel');
+    let strength = 0;
+
+    if (val.length >= 8) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+    const configs = [
+      { class: '', text: '输入密码后显示强度' },
+      { class: 'weak',   text: '强度：弱' },
+      { class: 'weak',   text: '强度：弱' },
+      { class: 'fair',   text: '强度：中等' },
+      { class: 'strong', text: '强度：强' },
+    ];
+
+    bars.forEach((id, i) => {
+      const bar = document.getElementById(id);
+      bar.className = 'strength-bar';
+      if (val.length > 0 && i < strength) {
+        bar.classList.add(configs[strength].class);
+      }
+    });
+
+    label.textContent = val.length === 0 ? '输入密码后显示强度' : configs[strength].text;
+    label.style.color = {
+      '': 'var(--text-tertiary)',
+      'weak': 'var(--color-accent-red)',
+      'fair': 'var(--color-accent-amber)',
+      'strong': 'var(--color-accent-teal)',
+    }[configs[strength].class] || 'var(--text-tertiary)';
+  }
+
+  // OAuth handlers (demo)
+  function handleOAuth(provider) {
+    const names = { wechat: '微信', google: 'Google' };
+    showToast(`正在跳转到 ${names[provider]} 授权页…`);
+  }
+
+  // Form submit (demo)
+  function handleSubmit(mode) {
+    const btn = document.querySelector(`#form${mode.charAt(0).toUpperCase() + mode.slice(1)} .submit-btn`);
+    btn.classList.add('loading');
+    btn.textContent = mode === 'login' ? '登录中' : '注册中';
+
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.textContent = mode === 'login' ? '登录' : '免费注册';
+      showToast(mode === 'login' ? '登录成功，正在跳转工作台…' : '注册成功！欢迎加入 PixelMind');
+    }, 1800);
+  }
+
+  // Toast
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

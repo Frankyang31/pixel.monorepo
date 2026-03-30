@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>动画预览 — PixelMind · AI 游戏动画视频生成</title>
+  <meta name="description" content="AI 游戏角色动画预览生成工具，输入角色立绘图和动作描述，生成 2–8 秒游戏动画短视频。用于动作验证和概念预演。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --c-p1:#7B5EF0; --c-p2:#4F8EF7; --c-p3:#A78BFA;
+      --c-accent:#F472B6;
+      --grad-brand:linear-gradient(135deg,#7B5EF0,#4F8EF7);
+      --bg-dark:#07070D; --bg-base:#0D0D12; --bg-surface:#13131A; --bg-elevated:#1C1C27;
+      --text-light:#F0F0F8; --text-muted:#A0A0B8; --text-faint:#606078;
+      --font:'Inter','PingFang SC','Noto Sans SC',system-ui,sans-serif;
+      --font-mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font);background:var(--bg-base);color:var(--text-light);line-height:1.6;-webkit-font-smoothing:antialiased;}
+    a{color:inherit;text-decoration:none;}
+    img{display:block;max-width:100%;}
+    button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;}
+    .container{width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+    @media(max-width:768px){.container{padding:0 16px;}}
+
+    .nav{position:fixed;top:0;left:0;right:0;z-index:500;height:64px;display:flex;align-items:center;background:rgba(7,7,13,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);}
+    .nav__inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+    .nav__logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;color:var(--text-light);}
+    .nav__logo-icon{width:32px;height:32px;border-radius:8px;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 4px 16px rgba(123,94,240,0.35);}
+    .nav__links{display:flex;align-items:center;gap:28px;list-style:none;}
+    .nav__links a{font-size:14px;font-weight:500;color:var(--text-muted);transition:color 0.2s;}
+    .nav__links a:hover,.nav__links a.active{color:var(--text-light);}
+    .nav__actions{display:flex;align-items:center;gap:10px;}
+    .btn-ghost{font-size:14px;font-weight:500;color:var(--text-muted);padding:8px 16px;border-radius:8px;transition:all 0.2s;}
+    .btn-ghost:hover{color:var(--text-light);background:rgba(255,255,255,0.05);}
+    .btn-brand{font-size:14px;font-weight:600;color:#fff;padding:9px 20px;border-radius:8px;background:var(--grad-brand);box-shadow:0 4px 16px rgba(123,94,240,0.3);transition:all 0.25s;}
+    .btn-brand:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(123,94,240,0.4);}
+    @media(max-width:768px){.nav__links{display:none;}.nav__inner{padding:0 16px;}}
+
+    .hero{position:relative;padding:160px 0 100px;overflow:hidden;background:var(--bg-base);}
+    .hero__bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(123,94,240,0.08) 0%,transparent 70%);}
+    .hero__grid{position:absolute;inset:0;z-index:1;background-image:radial-gradient(circle,rgba(123,94,240,0.06) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 80%);pointer-events:none;}
+    .hero__content{position:relative;z-index:10;max-width:760px;margin:0 auto;text-align:center;padding:0 20px;}
+    .hero__eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.25);border-radius:100px;padding:5px 16px;font-size:13px;font-weight:600;color:#F472B6;margin-bottom:24px;}
+    .hero__title{font-size:clamp(36px,6vw,64px);font-weight:900;line-height:1.1;letter-spacing:-0.04em;color:#fff;margin-bottom:14px;}
+    .hero__title em{font-style:normal;background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero__sub{font-size:18px;color:var(--text-muted);max-width:540px;margin:0 auto 36px;line-height:1.7;}
+    .hero__cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+    .btn-hero{font-size:16px;font-weight:700;color:#fff;padding:14px 36px;border-radius:12px;background:var(--grad-brand);box-shadow:0 8px 24px rgba(123,94,240,0.35);transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;}
+    .btn-hero:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(123,94,240,0.4);}
+    .btn-ghost-hero{font-size:16px;font-weight:600;color:var(--text-muted);padding:14px 32px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:transparent;transition:all 0.25s;}
+    .btn-ghost-hero:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+    .tool-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--text-muted);margin:16px 0 32px;}
+    .tool-badge__dot{width:6px;height:6px;border-radius:50%;background:#F472B6;}
+
+    .features{padding:96px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .sec-label{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#7B5EF0;margin-bottom:12px;}
+    .sec-title{font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-0.025em;color:#fff;line-height:1.2;margin-bottom:56px;}
+    .features__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+    @media(max-width:900px){.features__grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:560px){.features__grid{grid-template-columns:1fr;}}
+    .feat-card{background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px;}
+    .feat-card__icon{width:48px;height:48px;border-radius:12px;background:rgba(244,114,182,0.1);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+    .feat-card__title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+    .feat-card__desc{font-size:14px;color:var(--text-muted);line-height:1.65;}
+
+    .gallery-sec{padding:96px 0;background:var(--bg-base);}
+    .gallery-tabs{display:flex;gap:8px;margin-bottom:40px;flex-wrap:wrap;}
+    .gallery-tab{padding:7px 18px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+    .gallery-tab:hover{color:#fff;border-color:rgba(255,255,255,0.18);}
+    .gallery-tab.active{background:rgba(244,114,182,0.18);border-color:rgba(244,114,182,0.35);color:#F9A8D4;}
+    .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    @media(max-width:900px){.gallery-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:560px){.gallery-grid{grid-template-columns:repeat(2,1fr);}}
+    .gallery-item{border-radius:12px;overflow:hidden;position:relative;cursor:pointer;transition:transform 0.3s;}
+    .gallery-item:hover{transform:scale(1.05);}
+    .gallery-item__img{width:100%;aspect-ratio:16/9;display:block;position:relative;}
+    .gallery-item__play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;opacity:0.7;}
+    .gallery-item__ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%);display:flex;align-items:flex-end;padding:12px;}
+    .gallery-item__meta{color:#fff;font-size:12px;}
+    .gallery-item__badge{display:inline-block;background:rgba(244,114,182,0.8);border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600;margin-bottom:4px;}
+
+    .prompts{padding:96px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .prompt-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+    @media(max-width:768px){.prompt-cards{grid-template-columns:1fr;}}
+    .prompt-card{background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;cursor:pointer;transition:all 0.25s;}
+    .prompt-card:hover{border-color:rgba(123,94,240,0.3);transform:translateY(-2px);}
+    .prompt-card__type{font-size:11px;font-weight:700;color:#7B5EF0;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+    .prompt-card__text{font-family:var(--font-mono);font-size:12.5px;line-height:1.7;color:var(--text-muted);background:var(--bg-base);border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,0.06);white-space:pre-wrap;margin-bottom:12px;}
+    .prompt-card__use{font-size:13px;color:#A0A0B8;}
+    .prompt-card__use strong{color:#fff;}
+
+    .quote-sec{padding:80px 0;background:var(--bg-surface);border-top:1px solid rgba(255,255,255,0.05);}
+    .quote-card{max-width:680px;margin:0 auto;text-align:center;background:var(--bg-elevated);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:40px;}
+    .quote-card__text{font-size:18px;line-height:1.75;color:var(--text-muted);font-style:italic;margin-bottom:20px;}
+    .quote-card__author{display:flex;align-items:center;justify-content:center;gap:12px;}
+    .quote-card__avatar{width:40px;height:40px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;}
+    .quote-card__name{font-size:14px;font-weight:600;color:#fff;}
+    .quote-card__role{font-size:12px;color:var(--text-faint);}
+
+    .cta{padding:96px 0;background:var(--grad-brand);position:relative;overflow:hidden;}
+    .cta::before,.cta::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);}
+    .cta::before{width:500px;height:500px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(255,255,255,0.2),transparent 70%);}
+    .cta::after{width:400px;height:400px;bottom:-100px;right:-60px;background:radial-gradient(circle,rgba(255,255,255,0.15),transparent 70%);}
+    .cta__inner{position:relative;z-index:10;text-align:center;}
+    .cta__title{font-size:clamp(28px,4.5vw,48px);font-weight:900;letter-spacing:-0.03em;color:#fff;margin-bottom:16px;}
+    .cta__sub{font-size:17px;color:rgba(255,255,255,0.8);max-width:440px;margin:0 auto 36px;line-height:1.7;}
+    .cta__btn{font-size:16px;font-weight:700;color:#7B5EF0;padding:15px 40px;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);transition:all 0.25s;display:inline-block;}
+    .cta__btn:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.2);}
+    .cta__note{font-size:13px;color:rgba(255,255,255,0.65);margin-top:16px;}
+
+    .footer{background:var(--bg-surface);padding:48px 0;border-top:1px solid rgba(255,255,255,0.05);}
+    .footer__inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .footer__copy{font-size:13px;color:var(--text-faint);}
+    .footer__links{display:flex;gap:20px;list-style:none;}
+    .footer__links a{font-size:13px;color:var(--text-faint);transition:color 0.2s;}
+    .footer__links a:hover{color:var(--text-muted);}
+
+    @media(prefers-reduced-motion:no-preference){
+      .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s cubic-bezier(0,0,0.2,1);}
+      .reveal.in{opacity:1;transform:translateY(0);}
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav" role="banner">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo" aria-label="PixelMind 首页"><div class="nav__logo-icon" aria-hidden="true">✦</div>PixelMind</a>
+    <nav aria-label="主导航">
+      <ul class="nav__links">
+        <li><a href="/tools" class="active">工具</a></li>
+        <li><a href="/gallery">作品广场</a></li>
+        <li><a href="/pricing">定价</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <a href="/login" class="btn-ghost">登录</a>
+      <a href="/register" class="btn-brand">免费开始</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="hero__grid" aria-hidden="true"></div>
+  <div class="hero__content">
+    <div class="hero__eyebrow"><span aria-hidden="true">🎬</span> 游戏动画预演专用工具</div>
+    <h1 class="hero__title" id="hero-title">角色立绘图<br/><em>秒变动画短片</em></h1>
+    <p class="hero__sub">
+      上传角色立绘图，输入动作描述，AI 生成 2–8 秒游戏动画预览。无需绑定动画师，快速验证动作节奏和特效观感，让策划沟通效率翻倍。
+    </p>
+    <div class="hero__cta">
+      <a href="/studio?tool=motion-preview" class="btn-hero">✦ 立即生成动画</a>
+      <a href="/gallery?tool=motion-preview" class="btn-ghost-hero">查看示例 →</a>
+    </div>
+    <div class="tool-badge">
+      <span class="tool-badge__dot" aria-hidden="true"></span>
+      消耗 15–25 积分 / 次 · 2–8 秒时长 · MP4 / WebM 输出
+    </div>
+  </div>
+</section>
+
+<section class="features" aria-labelledby="features-title">
+  <div class="container">
+    <p class="sec-label reveal">核心能力</p>
+    <h2 class="sec-title reveal" id="features-title">让策划和美术用动画快速沟通</h2>
+    <div class="features__grid">
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">📤</div>
+        <h3 class="feat-card__title">角色立绘直出动画</h3>
+        <p class="feat-card__desc">上传用 PixelMind 角色立绘工具生成的角色图，或任何已有的角色设计图，AI 自动识别角色并生成对应动画。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">⚡</div>
+        <h3 class="feat-card__title">2–8 秒可调时长</h3>
+        <p class="feat-card__desc">根据用途自由调整动画时长：待机循环 3 秒、攻击动作 2 秒、技能特效 5–8 秒，精确匹配不同验证场景。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🎯</div>
+        <h3 class="feat-card__title">运镜控制</h3>
+        <p class="feat-card__desc">描述镜头运动（推近、拉远、环绕、俯视），AI 在生成动画时同步执行运镜指令，产出具有电影感的预演片段。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">💫</div>
+        <h3 class="feat-card__title">技能特效叠加</h3>
+        <p class="feat-card__desc">角色动作描述中可附加特效关键词（如"火焰剑挥砍"、"冰刺穿刺"），AI 在角色动画上叠加对应粒子特效。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">🎮</div>
+        <h3 class="feat-card__title">游戏风格保持</h3>
+        <p class="feat-card__desc">动画输出与原角色立绘风格一致，不出现写实与卡通混搭的违和感，保持二游/SLG 等各类型游戏的美术统一性。</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-card__icon" aria-hidden="true">📹</div>
+        <h3 class="feat-card__title">MP4 / WebM 双格式</h3>
+        <p class="feat-card__desc">支持 MP4 和 WebM 两种格式导出，WebM 适合网页内嵌展示，MP4 方便在团队内部工具中直接使用。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="gallery-sec" aria-labelledby="gallery-title">
+  <div class="container">
+    <p class="sec-label reveal">动画示例</p>
+    <h2 class="sec-title reveal" id="gallery-title">不同游戏类型的动画应用场景</h2>
+    <div class="gallery-tabs reveal">
+      <button class="gallery-tab active">全部</button>
+      <button class="gallery-tab">RPG / 动作</button>
+      <button class="gallery-tab">二游 / 卡牌</button>
+      <button class="gallery-tab">SLG / 策略</button>
+      <button class="gallery-tab">像素游戏</button>
+    </div>
+    <div class="gallery-grid reveal">
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#2d0a3a,#7a1a8a,#1a0a2d)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">RPG</span><br/>剑士攻击三连斩</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#0a1a3a,#1a3a8a,#0a0a2d)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">二游</span><br/>法师冰晶技能</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#1a2a0a,#4a6a1a,#0a1a0a)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">SLG</span><br/>英雄待机循环</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#2d1a0a,#7a4a1a,#1a0a00)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">像素</span><br/>战士跳跃攻击</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#1a0a2d,#4a1a7a,#0a0a2d)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">二游</span><br/>召唤兽出场动画</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#1a1a1a,#3a3a3a,#0a0a0a)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">RPG</span><br/>Boss 登场特写</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#0a2d2d,#1a7a7a,#0a1a1a)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">像素</span><br/>农民采集动作</div></div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-item__img" style="background:linear-gradient(160deg,#2d2d00,#7a7a00,#1a1a00)">
+          <div class="gallery-item__play">▶</div>
+        </div>
+        <div class="gallery-item__ov"><div class="gallery-item__meta"><span class="gallery-item__badge">二游</span><br/>光翼展开特效</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prompts" aria-labelledby="prompts-title">
+  <div class="container">
+    <p class="sec-label reveal">Prompt 模板</p>
+    <h2 class="sec-title reveal" id="prompts-title">不同游戏类型的动画 Prompt 示例</h2>
+    <div class="prompt-cards">
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">RPG / 动作游戏</div>
+        <div class="prompt-card__text">Input: [Character art of warrior]
+Motion: Warrior performs a three-hit sword combo, raising blade overhead for final strike with dramatic pause at apex, powerful downward slash, return to idle stance
+Duration: 3 seconds
+Style: Cinematic game animation, dynamic camera zoom on final hit</div>
+        <p class="prompt-card__use">适用：<strong>ARPG、战斗类游戏</strong>的角色技能动画预演</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">二游 / 卡牌游戏</div>
+        <div class="prompt-card__text">Input: [Character art of anime mage]
+Motion: Gentle floating idle animation with flowing hair, subtle particle effects around hands, gradual camera push-in to portrait angle
+Duration: 4 seconds
+Style: Anime game character animation, soft glow effects, gacha reveal style</div>
+        <p class="prompt-card__use">适用：<strong>二次元卡牌、角色收集类</strong>游戏的抽卡动画和角色展示</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">像素游戏</div>
+        <div class="prompt-card__text">Input: [Pixel art character sprite]
+Motion: Character performs a jumping attack, sprite faces right, 16-bit style animation loop with 3 frame anticipation
+Duration: 2 seconds
+Style: Authentic 16-bit game feel, limited animation frames, retro combat action</div>
+        <p class="prompt-card__use">适用：<strong>像素独立游戏、复古横版</strong>的角色动作预演</p>
+      </div>
+      <div class="prompt-card reveal">
+        <div class="prompt-card__type">SLG / 策略游戏</div>
+        <div class="prompt-card__text">Input: [Character art of knight commander]
+Motion: Hero stands at attention, draws sword in ceremonial manner, holds pose with cape flowing in wind, slight camera orbit around character
+Duration: 5 seconds
+Style: Strategy game hero introduction, epic music sync, cinematic commander reveal</div>
+        <p class="prompt-card__use">适用：<strong>SLG、城建类游戏</strong>的英雄登场和技能预演动画</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="quote-sec">
+  <div class="container">
+    <div class="quote-card reveal">
+      <p class="quote-card__text">"过去和动画师沟通一个攻击动作，要反复口头描述+参考视频，周期很长。现在用动画预览工具，5 分钟就能拿到一个直观的效果 GIF，沟通效率完全不在一个层次。"</p>
+      <div class="quote-card__author">
+        <div class="quote-card__avatar" aria-hidden="true">王</div>
+        <div>
+          <div class="quote-card__name">王志远</div>
+          <div class="quote-card__role">手游《龙之谷：异界》策划总监</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="cta-title">
+  <div class="cta__inner">
+    <h2 class="cta__title" id="cta-title">在绑定动画师之前，先让动作"动"起来</h2>
+    <p class="cta__sub">每次动画预览仅需 15–25 积分，在正式制作前验证动作节奏，大幅减少返工。</p>
+    <a href="/register" class="cta__btn">免费开始生成动画</a>
+    <p class="cta__note">无需信用卡 · 30 秒完成注册 · 随时可取消</p>
+  </div>
+</section>
+
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer__inner">
+      <p class="footer__copy">© 2026 PixelMind. All rights reserved.</p>
+      <ul class="footer__links">
+        <li><a href="/tools">工具</a></li>
+        <li><a href="/gallery">作品广场</a></li>
+        <li><a href="/pricing">定价</a></li>
+        <li><a href="/terms">服务协议</a></li>
+        <li><a href="/privacy">隐私政策</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }});
+  }, {threshold:0.08});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transitionDelay=(i%4)*60+'ms'; obs.observe(el); });
+})();
+document.querySelectorAll('.gallery-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.gallery-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
