@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select — 组件预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    .select-group { display: flex; flex-direction: column; gap: var(--spacing-1); }
+    .select-label { font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--text-secondary); }
+    .select-wrapper { position: relative; }
+    .select {
+      width: 100%; height: 40px; padding: 0 36px 0 var(--spacing-3);
+      font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-primary);
+      background: var(--bg-overlay); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+      appearance: none; -webkit-appearance: none; cursor: pointer;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .select:hover:not(:disabled) { border-color: var(--border-strong); }
+    .select:focus { outline: none; border-color: var(--border-brand); box-shadow: 0 0 0 3px rgba(123,94,240,0.12); }
+    [data-theme="dark"] .select:focus { box-shadow: 0 0 20px rgba(123,94,240,0.15); }
+    .select:disabled { opacity: 0.5; cursor: not-allowed; }
+    .select--sm { height: 32px; font-size: var(--text-xs); }
+    .select--lg { height: 48px; font-size: var(--text-base); }
+    .select.is-error { border-color: var(--color-error); }
+    .select__chevron { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-tertiary); pointer-events: none; }
+    .select-hint { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--spacing-1); }
+    body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); margin: 0; padding: var(--spacing-8); }
+    .demo-section { margin-bottom: var(--spacing-12); }
+    .demo-title { font-size: var(--text-lg); font-weight: var(--font-semibold); margin-bottom: var(--spacing-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--spacing-2); }
+    .demo-row { display: flex; gap: var(--spacing-6); flex-wrap: wrap; margin-bottom: var(--spacing-4); }
+    .demo-col { flex: 1; min-width: 220px; max-width: 320px; }
+    .theme-switch { position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100; display: flex; gap: var(--spacing-2); }
+    .theme-btn { padding: var(--spacing-2) var(--spacing-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; font-size: var(--text-sm); font-family: var(--font-sans); }
+    .theme-btn.active { border-color: var(--color-brand-mid); color: var(--color-brand-mid); }
+    h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); margin-bottom: var(--spacing-2); }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-base); margin-bottom: var(--spacing-8); }
+  </style>
+</head>
+<body>
+  <div class="theme-switch"><button class="theme-btn active" onclick="setTheme('light')">Light</button><button class="theme-btn" onclick="setTheme('dark')">Dark</button></div>
+  <h1>Select 下拉选择</h1>
+  <p class="subtitle">从预设选项中选择值，保持与 Input 一致的视觉语言。</p>
+
+  <div class="demo-section">
+    <div class="demo-title">基础选择</div>
+    <div class="demo-row">
+      <div class="demo-col">
+        <div class="select-group">
+          <label class="select-label" for="style">风格预设</label>
+          <div class="select-wrapper">
+            <select class="select" id="style">
+              <option value="">选择风格预设</option>
+              <option value="fantasy-rpg">奇幻 RPG</option>
+              <option value="anime">二次元</option>
+              <option value="pixel">像素风</option>
+              <option value="realistic">写实</option>
+              <option value="cyberpunk">赛博朋克</option>
+            </select>
+            <svg class="select__chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="select-group">
+          <label class="select-label" for="res">分辨率</label>
+          <div class="select-wrapper">
+            <select class="select" id="res">
+              <option value="1024x1024">1024 x 1024</option>
+              <option value="1024x1536">1024 x 1536</option>
+              <option value="1536x1024">1536 x 1024</option>
+              <option value="2048x2048">2048 x 2048</option>
+            </select>
+            <svg class="select__chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="select-hint">更高分辨率需要更多积分</span>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="select-group">
+          <label class="select-label" for="model">模型</label>
+          <div class="select-wrapper">
+            <select class="select" id="model">
+              <option value="stable-diffusion-xl">SDXL（推荐）</option>
+              <option value="stable-diffusion-3">SD 3.5</option>
+              <option value="midjourney">Midjourney v6</option>
+            </select>
+            <svg class="select__chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-title">尺寸</div>
+    <div class="demo-row" style="align-items:flex-end">
+      <div><div class="select-label" style="margin-bottom:4px">SM 32px</div><div class="select-wrapper"><select class="select select--sm"><option>Small</option></select><svg class="select__chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div><div class="select-label" style="margin-bottom:4px">MD 40px</div><div class="select-wrapper"><select class="select"><option>Medium</option></select><svg class="select__chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div><div class="select-label" style="margin-bottom:4px">LG 48px</div><div class="select-wrapper"><select class="select select--lg"><option>Large</option></select><svg class="select__chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-title">状态</div>
+    <div class="demo-row">
+      <div class="demo-col">
+        <div class="select-group">
+          <label class="select-label">正常</label>
+          <div class="select-wrapper"><select class="select"><option>已选择</option></select><svg class="select__chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="select-group">
+          <label class="select-label">错误</label>
+          <div class="select-wrapper"><select class="select is-error"><option value="">请选择</option></select><svg class="select__chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="select-hint" style="color:var(--color-error)">请选择一个选项</span>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="select-group">
+          <label class="select-label">禁用</label>
+          <div class="select-wrapper"><select class="select" disabled><option>不可选</option></select><svg class="select__chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===t));}</script>
+</body>
+</html>

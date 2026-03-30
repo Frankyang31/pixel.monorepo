@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Textarea — 组件预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    .textarea-group { display: flex; flex-direction: column; gap: var(--spacing-1); }
+    .textarea-label { font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--text-secondary); }
+    .textarea { width: 100%; padding: var(--spacing-3) var(--spacing-4); font-family: var(--font-sans); font-size: var(--text-sm); color: var(--text-primary); background: var(--bg-overlay); border: 1px solid var(--border-default); border-radius: var(--radius-md); resize: vertical; min-height: 100px; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+    .textarea::placeholder { color: var(--text-tertiary); }
+    .textarea:hover:not(:disabled) { border-color: var(--border-strong); }
+    .textarea:focus { outline: none; border-color: var(--border-brand); box-shadow: 0 0 0 3px rgba(123,94,240,0.12); }
+    [data-theme="dark"] .textarea:focus { box-shadow: 0 0 20px rgba(123,94,240,0.15); }
+    .textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+    .textarea--sm { font-size: var(--text-xs); padding: var(--spacing-2) var(--spacing-3); min-height: 72px; }
+    .textarea--lg { font-size: var(--text-base); padding: var(--spacing-4); min-height: 160px; }
+    .textarea--prompt { font-family: var(--font-mono); min-height: 120px; max-height: 400px; line-height: 1.7; letter-spacing: 0.01em; }
+    .textarea--no-resize { resize: none; }
+    .textarea.is-error { border-color: var(--color-error); }
+    .textarea.is-error:focus { box-shadow: 0 0 0 3px rgba(248,113,113,0.12); }
+    .textarea-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-1); }
+    .textarea-hint { font-size: var(--text-xs); color: var(--text-tertiary); }
+    .textarea-counter { font-size: var(--text-xs); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+    .textarea-counter.is-limit { color: var(--color-error); }
+
+    /* Demo */
+    body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); margin: 0; padding: var(--spacing-8); transition: background-color var(--transition-normal), color var(--transition-normal); }
+    .demo-section { margin-bottom: var(--spacing-12); }
+    .demo-title { font-size: var(--text-lg); font-weight: var(--font-semibold); margin-bottom: var(--spacing-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--spacing-2); }
+    .demo-row { display: flex; gap: var(--spacing-6); flex-wrap: wrap; margin-bottom: var(--spacing-4); }
+    .demo-col { flex: 1; min-width: 280px; max-width: 440px; }
+    .theme-switch { position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100; display: flex; gap: var(--spacing-2); }
+    .theme-btn { padding: var(--spacing-2) var(--spacing-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; font-size: var(--text-sm); font-family: var(--font-sans); }
+    .theme-btn.active { border-color: var(--color-brand-mid); color: var(--color-brand-mid); }
+    h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); margin-bottom: var(--spacing-2); }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-base); margin-bottom: var(--spacing-8); }
+  </style>
+</head>
+<body>
+  <div class="theme-switch">
+    <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <h1>Textarea 文本域</h1>
+  <p class="subtitle">多行文本输入，核心场景为 AI Prompt 输入。支持 mono 字体模式。</p>
+
+  <!-- 基础 -->
+  <div class="demo-section">
+    <div class="demo-title">基础文本域 Basic</div>
+    <div class="demo-row">
+      <div class="demo-col">
+        <div class="textarea-group">
+          <label class="textarea-label" for="desc">作品描述</label>
+          <textarea class="textarea" id="desc" rows="3" placeholder="描述你想要生成的作品风格..."></textarea>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="textarea-group">
+          <label class="textarea-label" for="bio">个人简介</label>
+          <textarea class="textarea" id="bio" rows="3" placeholder="介绍一下你自己..." disabled>这是一段禁用的文本内容</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt 模式 -->
+  <div class="demo-section">
+    <div class="demo-title">Prompt 输入模式</div>
+    <div class="demo-row">
+      <div class="demo-col" style="max-width:560px">
+        <div class="textarea-group">
+          <label class="textarea-label" for="prompt">描述你想生成的角色</label>
+          <textarea class="textarea textarea--prompt" id="prompt" rows="5" maxlength="2000" placeholder="A female elven ranger with silver hair, wearing ornate leather armor, standing in a misty forest, cinematic lighting, detailed face, 8k quality"></textarea>
+          <div class="textarea-footer">
+            <span class="textarea-hint">支持中英文描述，推荐使用英文获得更好效果</span>
+            <span class="textarea-counter" aria-live="polite">82 / 2000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 尺寸 -->
+  <div class="demo-section">
+    <div class="demo-title">尺寸 Sizes</div>
+    <div class="demo-row">
+      <div class="demo-col">
+        <div class="textarea-group">
+          <label class="textarea-label">SM 小型</label>
+          <textarea class="textarea textarea--sm" rows="2" placeholder="Small textarea..."></textarea>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="textarea-group">
+          <label class="textarea-label">MD 中型（默认）</label>
+          <textarea class="textarea" rows="4" placeholder="Medium textarea..."></textarea>
+        </div>
+      </div>
+      <div class="demo-col">
+        <div class="textarea-group">
+          <label class="textarea-label">LG 大型</label>
+          <textarea class="textarea textarea--lg" rows="3" placeholder="Large textarea..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 状态 -->
+  <div class="demo-section">
+    <div class="demo-title">错误状态 Error</div>
+    <div class="demo-row">
+      <div class="demo-col" style="max-width:400px">
+        <div class="textarea-group">
+          <label class="textarea-label" for="err-prompt">Prompt</label>
+          <textarea class="textarea textarea--prompt is-error" id="err-prompt" rows="3" aria-invalid="true"></textarea>
+          <div class="textarea-footer">
+            <span class="textarea-hint" style="color:var(--color-error)">请输入至少 10 个字符的描述</span>
+            <span class="textarea-counter is-limit" aria-live="polite">8 / 2000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase() === theme));
+    }
+    document.querySelectorAll('.textarea[maxlength]').forEach(el => {
+      const counter = el.closest('.textarea-group').querySelector('.textarea-counter');
+      if (!counter) return;
+      const update = () => { counter.textContent = `${el.value.length} / ${el.maxLength}`; counter.classList.toggle('is-limit', el.value.length > el.maxLength * 0.9); };
+      el.addEventListener('input', update);
+    });
+  </script>
+</body>
+</html>

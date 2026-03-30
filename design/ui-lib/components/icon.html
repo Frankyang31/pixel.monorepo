@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon — 组件预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    .icon { display: inline-block; vertical-align: middle; }
+    .icon--xs { width: 12px; height: 12px; }
+    .icon--sm { width: 16px; height: 16px; }
+    .icon--md { width: 20px; height: 20px; }
+    .icon--lg { width: 24px; height: 24px; }
+    .icon--xl { width: 32px; height: 32px; }
+
+    body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); margin: 0; padding: var(--spacing-8); transition: background-color var(--transition-normal), color var(--transition-normal); }
+    .demo-section { margin-bottom: var(--spacing-12); }
+    .demo-title { font-size: var(--text-lg); font-weight: var(--font-semibold); margin-bottom: var(--spacing-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--spacing-2); }
+    .demo-grid { display: flex; flex-wrap: wrap; gap: var(--spacing-6); }
+    .icon-item { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-2); min-width: 80px; }
+    .icon-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-surface); border: 1px solid var(--border-subtle); transition: all var(--transition-fast); }
+    .icon-box:hover { border-color: var(--border-brand); box-shadow: 0 0 12px rgba(123,94,240,0.15); }
+    .icon-name { font-size: var(--text-xs); color: var(--text-tertiary); }
+    .demo-row { display: flex; align-items: center; gap: var(--spacing-6); flex-wrap: wrap; margin-bottom: var(--spacing-4); }
+    .demo-label { font-size: var(--text-xs); color: var(--text-tertiary); min-width: 80px; font-weight: var(--font-medium); }
+    .theme-switch { position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100; display: flex; gap: var(--spacing-2); }
+    .theme-btn { padding: var(--spacing-2) var(--spacing-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; font-size: var(--text-sm); font-family: var(--font-sans); }
+    .theme-btn.active { border-color: var(--color-brand-mid); color: var(--color-brand-mid); }
+    h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); margin-bottom: var(--spacing-2); }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-base); margin-bottom: var(--spacing-8); }
+  </style>
+</head>
+<body>
+  <div class="theme-switch">
+    <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <h1>Icon 图标</h1>
+  <p class="subtitle">线性描边风格图标系统，颜色继承 currentColor。</p>
+
+  <!-- 导航类 -->
+  <div class="demo-section">
+    <div class="demo-title">导航类 Navigation</div>
+    <div class="demo-grid">
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10l7-7 7 7M5 8.5v8a1 1 0 001 1h3v-5h2v5h3a1 1 0 001-1v-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">home</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M11 2L9.5 5H3a1 1 0 00-1 1v11a1 1 0 001 1h14a1 1 0 001-1V6a1 1 0 00-1-1h-5L11 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">gallery</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a4 4 0 014 4v1h3a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1h3V6a4 4 0 014-4z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">profile</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8.5 1.5L8 3.5l-1.8.5L4.5 2.5l-2 2 1.5 1.8-.5 1.7-2 .5v2l2 .5.5 1.8-1.5 1.7 2 2 1.8-1.5 1.7.5.5 2h2l.5-2 1.8-.5 1.7 1.5 2-2-1.5-1.8.5-1.7 2-.5v-2l-2-.5-.5-1.8 1.5-1.7-2-2-1.8 1.5-1.7-.5-.5-2h-2zM10 13a3 3 0 110-6 3 3 0 010 6z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">settings</span></div>
+    </div>
+  </div>
+
+  <!-- 操作类 -->
+  <div class="demo-section">
+    <div class="demo-title">操作类 Actions</div>
+    <div class="demo-grid">
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="icon-name">plus</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="icon-name">search</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h14M10 3v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="icon-name">add</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5v15M6 5.5l4-3 4 3M4 15.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">upload</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5v12M6 9l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14.5v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">download</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10l2 2 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">check</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="icon-name">close</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6.5v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="icon-name">clock</span></div>
+      <div class="icon-item"><div class="icon-box"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M13 2.5l-1 3.5-3 1-1-3.5M7 2.5l1 3.5 3 1 1-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15.5l3-6h6l3 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 18.5h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><span class="icon-name">credits</span></div>
+    </div>
+  </div>
+
+  <!-- 尺寸 -->
+  <div class="demo-section">
+    <div class="demo-title">尺寸 Sizes</div>
+    <div class="demo-row" style="align-items:flex-end">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon icon--xs" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="icon-name">12px</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon icon--sm" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="icon-name">16px</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon icon--md" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="icon-name">20px</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon icon--lg" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span class="icon-name">24px</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon icon--xl" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg><span class="icon-name">32px</span></div>
+    </div>
+  </div>
+
+  <!-- 颜色 -->
+  <div class="demo-section">
+    <div class="demo-title">颜色 Colors</div>
+    <div class="demo-row">
+      <span class="demo-label">Primary</span>
+      <svg class="icon icon--lg" viewBox="0 0 20 20" fill="none" style="color:var(--color-brand-mid)" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="demo-label">Success</span>
+      <svg class="icon icon--lg" viewBox="0 0 20 20" fill="none" style="color:var(--color-success)" aria-hidden="true"><path d="M5 10l2 2 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="demo-label">Warning</span>
+      <svg class="icon icon--lg" viewBox="0 0 20 20" fill="none" style="color:var(--color-warning)" aria-hidden="true"><path d="M10 2L1 18h18L10 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 7.5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="14.5" r="0.5" fill="currentColor"/></svg>
+      <span class="demo-label">Error</span>
+      <svg class="icon icon--lg" viewBox="0 0 20 20" fill="none" style="color:var(--color-error)" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 7l6 6M13 7l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="demo-label">Tertiary</span>
+      <svg class="icon icon--lg" viewBox="0 0 20 20" fill="none" style="color:var(--text-tertiary)" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+  </div>
+
+  <script>function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===t));}</script>
+</body>
+</html>

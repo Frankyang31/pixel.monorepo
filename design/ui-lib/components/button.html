@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Button — 深夜工作室 v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* ================================================================
+       BUTTON v3 — 从零重新设计
+       
+       设计理念：
+       1. 组件有自己的"物理质感" — 不是平面色块，而是有厚度、有材质的实体
+       2. 状态过渡像"物体在空间中运动" — 不是 CSS 属性切换，而是物理模拟
+       3. Primary 按钮是"发光体" — 像工作室里一盏点亮的灯，hover 时光线增强
+       4. Secondary/Ghost 是"玻璃片" — 半透明、有折射感、边界在光线下若隐若现
+       5. 按下是"按压进材质" — 不是 translateY 而是内阴影 + 微缩 + 材质密度变化
+       6. 去掉所有"装饰性特效" — conic-gradient 旋转边框、额外动画全部移除
+       ================================================================ */
+
+    /* ---------- 令牌补充（临时，后续合入 tokens.css） ---------- */
+    :root {
+      /* 按钮材质 */
+      --btn-surface-raised: rgba(255,255,255,0.06);
+      --btn-surface-pressed: rgba(255,255,255,0.03);
+      --btn-inner-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+      --btn-inner-shadow-pressed: inset 0 2px 4px rgba(0,0,0,0.3);
+      /* 按钮光晕 — 从内部向外自然溢出 */
+      --btn-glow-primary: 0 0 0 1px rgba(123,94,240,0.0),
+                           0 4px 16px -4px rgba(123,94,240,0.0),
+                           0 8px 32px -8px rgba(79,142,247,0.0);
+      --btn-glow-primary-hover: 0 0 0 1px rgba(123,94,240,0.15),
+                                 0 4px 16px -4px rgba(123,94,240,0.25),
+                                 0 8px 32px -8px rgba(79,142,247,0.15);
+      --btn-glow-primary-active: 0 0 0 1px rgba(123,94,240,0.25),
+                                  0 2px 8px -2px rgba(123,94,240,0.30);
+      /* 按钮过渡 — 每个属性有不同的物理节奏 */
+      --btn-ease-shadow: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --btn-ease-transform: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --btn-ease-surface: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="light"] {
+      --btn-surface-raised: rgba(0,0,0,0.04);
+      --btn-surface-pressed: rgba(0,0,0,0.08);
+      --btn-inner-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+      --btn-inner-shadow-pressed: inset 0 1px 3px rgba(0,0,0,0.12);
+      --btn-glow-primary: 0 1px 3px rgba(123,94,240,0.15);
+      --btn-glow-primary-hover: 0 2px 8px rgba(123,94,240,0.25), 0 4px 16px -4px rgba(79,142,247,0.15);
+      --btn-glow-primary-active: 0 1px 4px rgba(123,94,240,0.30);
+    }
+
+    /* ================================================================
+       BASE — 按钮的基础物理属性
+       ================================================================ */
+    .btn {
+      /* 布局 */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      /* 字体 */
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+      /* 外观 — 默认是"玻璃片"材质 */
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      /* 内阴影模拟凸起感 */
+      box-shadow: var(--btn-inner-shadow);
+      /* 过渡编排 — 阴影最慢(自然扩散)，表面和变换较快 */
+      transition:
+        box-shadow 320ms var(--btn-ease-shadow),
+        transform 180ms var(--btn-ease-transform),
+        background 200ms var(--btn-ease-surface),
+        border-color 200ms var(--btn-ease-surface),
+        color 200ms var(--btn-ease-surface);
+    }
+
+    /* 焦点 — 简洁的品牌色光环，不做花哨的发光 */
+    .btn:focus-visible {
+      outline: 2px solid var(--color-brand-mid);
+      outline-offset: 2px;
+    }
+    .btn:focus:not(:focus-visible) { outline: none; }
+
+    /* 禁用 — 降低不透明度 + 移除所有交互反馈 */
+    .btn:disabled, .btn[aria-disabled="true"] {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ================================================================
+       SIZES
+       间距更宽松，高度更舒适
+       ================================================================ */
+    .btn--sm {
+      height: 32px;
+      padding: 0 12px;
+      font-size: 12px;
+      border-radius: 8px;
+      gap: 6px;
+    }
+    .btn--md {
+      height: 40px;
+      padding: 0 18px;
+    }
+    .btn--lg {
+      height: 46px;
+      padding: 0 22px;
+      font-size: 14px;
+      border-radius: 12px;
+    }
+    .btn--xl {
+      height: 52px;
+      padding: 0 28px;
+      font-size: 15px;
+      border-radius: 14px;
+      gap: 10px;
+    }
+
+    /* ================================================================
+       PRIMARY — "发光体"
+       
+       设计思路：
+       - 不是简单的渐变背景，而是一个"有光源的物体"
+       - 默认态有微弱内发光(内阴影)，给人"灯已点亮但很安静"的感觉
+       - hover 时光线向外扩散：box-shadow 从内发光变为外发光
+       - active 时光线被"压回去"：内阴影加深，外发光收缩
+       - 不使用 translateY，因为按钮不是在移动，是在被按压
+       ================================================================ */
+    .btn--primary {
+      background: var(--color-brand-gradient);
+      color: #FFFFFF;
+      border-color: transparent;
+      /* 内高光 — 模拟光泽质感 */
+      box-shadow:
+        var(--btn-inner-shadow),
+        var(--btn-glow-primary);
+    }
+
+    .btn--primary:hover:not(:disabled) {
+      /* 光线从内部向外扩散 — 这就是"hover 感"的物理来源 */
+      box-shadow:
+        var(--btn-inner-shadow),
+        var(--btn-glow-primary-hover);
+      /* 极轻微的上浮 — 不是位移，是阴影变化带来的视觉上浮 */
+      transform: translateY(-0.5px);
+    }
+
+    .btn--primary:active:not(:disabled) {
+      /* 按压：光线被压回去，材质密度增加 */
+      box-shadow:
+        var(--btn-inner-shadow-pressed),
+        var(--btn-glow-primary-active);
+      transform: scale(0.985);
+      transition-duration: 80ms;
+    }
+
+    /* ================================================================
+       SECONDARY — "磨砂玻璃片"
+       
+       设计思路：
+       - 背景是极淡的磨砂质感，有微弱的内部层次
+       - 边框是半透明的，在深色下若隐若现
+       - hover 时边框变亮 + 背景微微亮起 — 像光线扫过玻璃
+       - active 时内阴影加深 — 按压进玻璃
+       - 与 ghost 的区别：secondary 有明确的边界（边框），ghost 没有
+       ================================================================ */
+    .btn--secondary {
+      background: var(--btn-surface-raised);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: var(--text-secondary);
+      border-color: var(--border-default);
+      box-shadow: var(--btn-inner-shadow);
+    }
+
+    .btn--secondary:hover:not(:disabled) {
+      background: rgba(255,255,255,0.10);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+      /* 微弱的品牌色光晕从边缘渗出 */
+      box-shadow:
+        var(--btn-inner-shadow),
+        0 0 12px -4px rgba(123,94,240,0.12);
+    }
+
+    .btn--secondary:active:not(:disabled) {
+      background: var(--btn-surface-pressed);
+      border-color: var(--border-brand);
+      box-shadow: var(--btn-inner-shadow-pressed);
+      transform: scale(0.985);
+      transition-duration: 80ms;
+    }
+
+    /* ================================================================
+       GHOST — "透明层"
+       
+       设计思路：
+       - 完全透明背景，只有文字
+       - hover 时才出现极淡的表面 — 像手指触摸玻璃后留下的痕迹
+       - 适合密集使用场景（表格操作列、标签栏等）
+       ================================================================ */
+    .btn--ghost {
+      background: transparent;
+      color: var(--text-tertiary);
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    .btn--ghost:hover:not(:disabled) {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+    }
+
+    .btn--ghost:active:not(:disabled) {
+      background: rgba(255,255,255,0.08);
+      transform: scale(0.985);
+      transition-duration: 80ms;
+    }
+
+    /* ================================================================
+       DANGER — "警告灯"
+       ================================================================ */
+    .btn--danger {
+      background: var(--color-error);
+      color: #FFFFFF;
+      border-color: transparent;
+      box-shadow:
+        var(--btn-inner-shadow),
+        0 2px 8px rgba(248,113,113,0.12);
+    }
+
+    .btn--danger:hover:not(:disabled) {
+      box-shadow:
+        var(--btn-inner-shadow),
+        0 4px 16px rgba(248,113,113,0.25);
+      transform: translateY(-0.5px);
+    }
+
+    .btn--danger:active:not(:disabled) {
+      box-shadow: var(--btn-inner-shadow-pressed);
+      transform: scale(0.985);
+      transition-duration: 80ms;
+    }
+
+    /* ================================================================
+       TEXT — 纯文字链接样式
+       ================================================================ */
+    .btn--text {
+      background: transparent;
+      color: var(--color-brand-mid);
+      border-color: transparent;
+      box-shadow: none;
+      padding-left: 8px;
+      padding-right: 8px;
+      height: auto;
+      border-radius: 6px;
+    }
+    .btn--text:hover:not(:disabled) {
+      background: rgba(123,94,240,0.06);
+    }
+    .btn--text:active:not(:disabled) {
+      transform: scale(0.97);
+      transition-duration: 80ms;
+    }
+
+    /* ================================================================
+       ICON ONLY
+       ================================================================ */
+    .btn--icon {
+      padding: 0;
+    }
+    .btn--icon.btn--sm { width: 32px; height: 32px; }
+    .btn--icon.btn--md { width: 40px; height: 40px; }
+    .btn--icon.btn--lg { width: 46px; height: 46px; }
+    .btn__icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+    .btn--lg .btn__icon { width: 18px; height: 18px; }
+
+    /* ================================================================
+       LOADING — 替换内容为 spinner
+       
+       设计思路：
+       - 不改变按钮外观，只是内容被 spinner 替换
+       - spinner 用品牌色，与按钮底色和谐
+       - 无需渐变旋转边框 — 简洁就是美
+       ================================================================ */
+    .btn.is-loading {
+      cursor: wait;
+      pointer-events: none;
+    }
+    .btn.is-loading .btn__text { opacity: 0; }
+    .btn.is-loading .btn__icon:not(.btn__spinner-icon) { opacity: 0; }
+    
+    .btn__spinner {
+      display: none;
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #FFFFFF;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+    .btn.is-loading .btn__spinner { display: block; }
+
+    .btn--secondary .btn__spinner,
+    .btn--ghost .btn__spinner {
+      border-color: rgba(123,94,240,0.2);
+      border-top-color: var(--color-brand-mid);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ================================================================
+       DEMO LAYOUT
+       ================================================================ */
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 48px 48px 120px;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .demo-header {
+      margin-bottom: 56px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .demo-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.03em;
+    }
+    .demo-header .subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+    .demo-header .design-notes {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: var(--btn-surface-raised);
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .design-notes strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .demo-section {
+      margin-bottom: 48px;
+    }
+    .demo-section > .section-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+    }
+    .demo-section > .section-desc {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-top: -12px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .demo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .demo-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .demo-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      letter-spacing: -0.02em;
+      font-weight: 500;
+    }
+
+    .demo-stage {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    /* 主题切换 */
+    .theme-switch {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      display: flex;
+      gap: 4px;
+      background: var(--btn-surface-raised);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 3px;
+    }
+    .theme-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: all 150ms ease;
+    }
+    .theme-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="theme-switch">
+    <button class="theme-btn" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn active" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <div class="demo-header">
+    <h1>Button 按钮</h1>
+    <p class="subtitle">
+      不是平面色块，而是有厚度、有材质的实体。每个状态过渡模拟物理运动 — 光线扩散、材质按压、表面折射。
+    </p>
+    <div class="design-notes">
+      <strong>与 v2 的根本区别：</strong>去掉 conic-gradient 旋转边框和所有装饰性动画。
+      Primary 是"发光体"而非"渐变色块" — 内发光 → hover 外扩散 → active 压回。
+      Secondary/Ghost 是"磨砂玻璃" — 半透明材质而非平面描边。
+      Active 统一用 <code>scale(0.985)</code> + 内阴影加深模拟"按压进材质"。
+    </div>
+  </div>
+
+  <!-- ===== 核心变体 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Variants 核心变体</span>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <button class="btn btn--primary btn--md">开始生成</button>
+        <button class="btn btn--secondary btn--md">取消</button>
+        <button class="btn btn--ghost btn--md">更多选项</button>
+        <button class="btn btn--danger btn--md">删除作品</button>
+        <button class="btn btn--text btn--md">查看详情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Primary 的三种状态对比 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Primary 物理状态</span>
+    <div class="section-desc">
+      默认态：内高光安静发光 → Hover：光线向外扩散，微弱上浮 → Active：光线被压回，材质密度增加
+    </div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <button class="btn btn--primary btn--lg" id="stateDefault">默认态</button>
+        <button class="btn btn--primary btn--lg" id="stateHover" 
+                style="box-shadow: var(--btn-inner-shadow), var(--btn-glow-primary-hover); transform: translateY(-0.5px);">Hover 态</button>
+        <button class="btn btn--primary btn--lg" id="stateActive"
+                style="box-shadow: var(--btn-inner-shadow-pressed), var(--btn-glow-primary-active); transform: scale(0.985);">Active 态</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 尺寸 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Sizes 尺寸</span>
+    <div class="demo-row" style="align-items: flex-end;">
+      <div class="demo-col">
+        <span class="demo-label">sm / 32px</span>
+        <button class="btn btn--primary btn--sm">Small</button>
+      </div>
+      <div class="demo-col">
+        <span class="demo-label">md / 40px</span>
+        <button class="btn btn--primary btn--md">Medium</button>
+      </div>
+      <div class="demo-col">
+        <span class="demo-label">lg / 46px</span>
+        <button class="btn btn--primary btn--lg">Large</button>
+      </div>
+      <div class="demo-col">
+        <span class="demo-label">xl / 52px</span>
+        <button class="btn btn--primary btn--xl">XLarge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 带图标 ===== -->
+  <div class="demo-section">
+    <span class="section-label">With Icons 图标</span>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <button class="btn btn--primary btn--md">
+          <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          新建任务
+        </button>
+        <button class="btn btn--secondary btn--md">
+          上传文件
+          <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v10M4 5.5l4-4 4 4M2 12.5v1.5h12v-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="demo-row" style="margin-top: 14px;">
+        <button class="btn btn--ghost btn--icon btn--sm" aria-label="关闭">
+          <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="btn btn--ghost btn--icon btn--md" aria-label="设置">
+          <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.2v1.8M8 13v1.8M1.2 8h1.8M13 8h1.8M2.9 2.9l1.3 1.3M11.8 11.8l1.3 1.3M2.9 13.1l1.3-1.3M11.8 4.2l1.3-1.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <button class="btn btn--ghost btn--icon btn--lg" aria-label="搜索">
+          <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Loading ===== -->
+  <div class="demo-section">
+    <span class="section-label">Loading 加载</span>
+    <div class="stage-desc">内容淡出，spinner 淡入。不改变按钮外观 — 按钮仍然是"同一个物体"。</div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <button class="btn btn--primary btn--md is-loading" aria-busy="true">
+          <span class="btn__spinner" role="status"><span class="sr-only">加载中</span></span>
+          <span class="btn__text">生成中...</span>
+        </button>
+        <button class="btn btn--secondary btn--md is-loading" aria-busy="true">
+          <span class="btn__spinner" role="status"><span class="sr-only">加载中</span></span>
+          <span class="btn__text">处理中...</span>
+        </button>
+        <button class="btn btn--ghost btn--md is-loading" aria-busy="true">
+          <span class="btn__spinner" role="status"><span class="sr-only">加载中</span></span>
+          <span class="btn__text">加载中...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Disabled ===== -->
+  <div class="demo-section">
+    <span class="section-label">Disabled 禁用态</span>
+    <div class="demo-row">
+      <button class="btn btn--primary btn--md" disabled>不可点击</button>
+      <button class="btn btn--secondary btn--md" disabled>不可点击</button>
+      <button class="btn btn--ghost btn--md" disabled>不可点击</button>
+    </div>
+  </div>
+
+  <!-- ===== 按钮组合 — 实际使用场景 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Context 使用场景</span>
+    <div class="demo-stage">
+      <div style="margin-bottom: 20px;">
+        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; font-weight: 500;">表单操作</div>
+        <div class="demo-row">
+          <div style="flex:1"></div>
+          <button class="btn btn--ghost btn--md">取消</button>
+          <button class="btn btn--primary btn--md">确认生成</button>
+        </div>
+      </div>
+      <div style="margin-bottom: 20px;">
+        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; font-weight: 500;">危险操作</div>
+        <div class="demo-row">
+          <div style="flex:1"></div>
+          <button class="btn btn--ghost btn--md">返回</button>
+          <button class="btn btn--danger btn--md">删除此作品</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; font-weight: 500;">步骤导航</div>
+        <div class="demo-row">
+          <button class="btn btn--secondary btn--md">
+            <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            上一步
+          </button>
+          <button class="btn btn--primary btn--md">
+            下一步
+            <svg class="btn__icon" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === theme);
+      });
+    }
+  </script>
+</body>
+</html>

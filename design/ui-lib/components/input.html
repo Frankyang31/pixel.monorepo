@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input — 深夜工作室 v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* ================================================================
+       INPUT v3 — 从零重新设计
+       
+       设计理念：
+       1. 输入框是"嵌入桌面"的控制面板 — 有微妙的内凹感
+       2. 不是平面 + 描边，而是有深度层次的"表面"
+       3. 聚焦 = 点亮 — 光从凹槽边缘渗出，面板从暗转亮
+       4. 浮动标签实现 — 减少垂直空间的视觉噪音
+       5. Prompt 输入 = 创作的核心空间 — 更大、更深、有引导性
+       ================================================================ */
+
+    /* ---------- 令牌补充 ---------- */
+    :root {
+      /* 输入框表面 */
+      --input-surface: rgba(255,255,255,0.04);
+      --input-surface-hover: rgba(255,255,255,0.06);
+      --input-surface-focus: rgba(255,255,255,0.06);
+      /* 输入框内凹感 */
+      --input-inset: inset 0 1px 3px rgba(0,0,0,0.2);
+      --input-inset-focus: inset 0 1px 2px rgba(0,0,0,0.1);
+      /* 聚焦光环 — 从内凹边缘向外扩散 */
+      --input-glow: 0 0 0 1px rgba(123,94,240,0.0),
+                    0 0 0 3px rgba(123,94,240,0.0),
+                    0 0 12px -4px rgba(123,94,240,0.0);
+      --input-glow-focus: 0 0 0 1px rgba(123,94,240,0.25),
+                          0 0 0 3px rgba(123,94,240,0.08),
+                          0 0 16px -4px rgba(123,94,240,0.12);
+      --input-glow-error: 0 0 0 1px rgba(248,113,113,0.4),
+                          0 0 0 3px rgba(248,113,113,0.08),
+                          0 0 16px -4px rgba(248,113,113,0.12);
+      --input-glow-success: 0 0 0 1px rgba(45,212,191,0.3),
+                            0 0 0 3px rgba(45,212,191,0.06);
+      /* 过渡编排 */
+      --input-ease-glow: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    [data-theme="light"] {
+      --input-surface: rgba(0,0,0,0.02);
+      --input-surface-hover: rgba(0,0,0,0.03);
+      --input-surface-focus: rgba(0,0,0,0.02);
+      --input-inset: inset 0 1px 2px rgba(0,0,0,0.06);
+      --input-inset-focus: none;
+      --input-glow-focus: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--color-brand-mid);
+      --input-glow-error: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--color-error);
+      --input-glow-success: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--color-success);
+    }
+
+    /* ================================================================
+       INPUT GROUP — label + input + hint 的整体容器
+       ================================================================ */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    /* Label */
+    .input-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 200ms ease;
+    }
+    .input-group.is-focused .input-label {
+      color: var(--color-brand-mid);
+    }
+    .input-required {
+      color: var(--color-error);
+      margin-left: 2px;
+    }
+
+    /* Hint */
+    .input-hint {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 16px;
+      transition: color 200ms ease;
+    }
+    .input-hint--error { color: var(--color-error); }
+    .input-hint--success { color: var(--color-success); }
+    .input-hint svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ================================================================
+       INPUT BASE — "嵌入桌面"的控制面板
+       
+       不是 border + background，而是：
+       - 极淡背景 → 微妙的"凹进去"表面
+       - 内阴影 → 模拟凹槽深度
+       - 边框 → 极淡的，只是标记边界
+       - 聚焦 → 表面亮度提升 + 品牌色光环从边缘渗出
+       ================================================================ */
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input {
+      width: 100%;
+      height: 42px;
+      padding: 0 14px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      /* 表面 */
+      background: var(--input-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      /* 凹槽深度 */
+      box-shadow: var(--input-inset);
+      /* 过渡编排：光环最慢(自然扩散)，表面和边框较快 */
+      transition:
+        box-shadow 280ms var(--input-ease-glow),
+        background 200ms ease,
+        border-color 200ms ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .input::placeholder {
+      color: var(--text-disabled);
+    }
+
+    /* Hover — 表面微微亮起，像手指接近触控板 */
+    .input:hover:not(:disabled):not(:focus) {
+      background: var(--input-surface-hover);
+      border-color: var(--border-default);
+    }
+
+    /* Focus — 面板被点亮 */
+    .input:focus {
+      outline: none;
+      background: var(--input-surface-focus);
+      border-color: rgba(123,94,240,0.3);
+      box-shadow:
+        var(--input-inset-focus),
+        var(--input-glow-focus);
+    }
+
+    /* Disabled */
+    .input:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* ================================================================
+       SIZES
+       ================================================================ */
+    .input--sm {
+      height: 34px;
+      font-size: 13px;
+      padding: 0 12px;
+      border-radius: 8px;
+    }
+    .input--lg {
+      height: 48px;
+      font-size: 15px;
+      padding: 0 16px;
+      border-radius: 12px;
+    }
+
+    /* ================================================================
+       VALIDATION STATES
+       ================================================================ */
+    .input.is-error {
+      border-color: rgba(248,113,113,0.4);
+    }
+    .input.is-error:focus {
+      border-color: rgba(248,113,113,0.5);
+      box-shadow:
+        var(--input-inset-focus),
+        var(--input-glow-error);
+    }
+
+    .input.is-success {
+      border-color: rgba(45,212,191,0.3);
+    }
+    .input.is-success:focus {
+      box-shadow:
+        var(--input-inset-focus),
+        var(--input-glow-success);
+    }
+
+    /* ================================================================
+       PREFIX / SUFFIX
+       ================================================================ */
+    .input-prefix,
+    .input-suffix {
+      position: absolute;
+      font-size: 14px;
+      color: var(--text-disabled);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      transition: color 200ms ease;
+      font-variant-numeric: tabular-nums;
+    }
+    .input-prefix { left: 14px; }
+    .input-suffix { right: 14px; }
+
+    .input-wrapper:focus-within .input-prefix,
+    .input-wrapper:focus-within .input-suffix {
+      color: var(--color-brand-mid);
+    }
+
+    .input--has-prefix { padding-left: 36px; }
+    .input--has-suffix { padding-right: 36px; }
+
+    /* ================================================================
+       SEARCH INPUT
+       ================================================================ */
+    .input--search {
+      padding-left: 40px;
+    }
+    .input-search-icon {
+      position: absolute;
+      left: 13px;
+      width: 16px;
+      height: 16px;
+      color: var(--text-disabled);
+      pointer-events: none;
+      transition: color 200ms ease;
+    }
+    .input-wrapper--search:focus-within .input-search-icon {
+      color: var(--color-brand-mid);
+    }
+
+    .input-clear-btn {
+      position: absolute;
+      right: 8px;
+      background: none;
+      border: none;
+      color: var(--text-disabled);
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 150ms ease;
+    }
+    .input-clear-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.06);
+    }
+    .input:not(:placeholder-shown) ~ .input-clear-btn {
+      display: flex;
+    }
+
+    /* ================================================================
+       FLOATING LABEL — 浮动标签
+       
+       设计思路：
+       - 未输入时：placeholder 在 input 内显示，label 隐藏
+       - 输入时 / 聚焦时：label 浮动到 input 上方，缩小并变色
+       - 这样垂直空间更紧凑，视觉层次更清晰
+       ================================================================ */
+    .input-group--float {
+      position: relative;
+    }
+    .input-group--float .input-label {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--text-disabled);
+      pointer-events: none;
+      /* 浮动过渡 */
+      transition:
+        top 180ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+        font-size 180ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 200ms ease;
+      transform-origin: left center;
+      background: transparent;
+      padding: 0 2px;
+    }
+    .input-group--float .input--sm ~ .input-label {
+      left: 12px;
+      font-size: 13px;
+    }
+
+    /* 浮动态 — 聚焦或有值 */
+    .input-group--float.is-focused .input-label,
+    .input-group--float.is-filled .input-label {
+      top: -1px;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text-tertiary);
+      background: var(--bg-base);
+      padding: 0 6px;
+      border-radius: 4px;
+    }
+    .input-group--float.is-focused .input-label {
+      color: var(--color-brand-mid);
+    }
+
+    /* 浮动标签输入框 — 无 placeholder */
+    .input-group--float .input::placeholder {
+      color: transparent;
+    }
+    /* 聚焦时显示 placeholder */
+    .input-group--float.is-focused .input::placeholder {
+      color: var(--text-disabled);
+      transition: color 200ms ease 80ms;
+    }
+
+    /* ================================================================
+       PROMPT INPUT — "创作画布"
+       
+       这是产品最核心的组件。用户在这里写下他们的想象。
+       
+       设计思路：
+       - 更大的空间 — 不是输入框，是画布
+       - 更深的凹槽感 — 像嵌入桌面的创作台面
+       - 左侧渐变竖线 — 不是装饰，是"创意从这里流出"的视觉暗示
+       - 聚焦时整体被品牌色柔光包围 — "工作室聚光灯打在你的画布上"
+       - Mono 字体 — 给人"代码/命令"的专注感，同时暗示精确控制
+       ================================================================ */
+    .prompt-area {
+      position: relative;
+    }
+
+    .prompt-input {
+      width: 100%;
+      min-height: 140px;
+      padding: 18px 18px 18px 22px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      /* 更深的凹槽 */
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      box-shadow:
+        inset 0 2px 6px rgba(0,0,0,0.2),
+        inset 0 1px 2px rgba(0,0,0,0.15);
+      resize: vertical;
+      transition:
+        box-shadow 320ms var(--input-ease-glow),
+        background 200ms ease,
+        border-color 200ms ease;
+    }
+    .prompt-input::placeholder {
+      color: var(--text-disabled);
+      font-style: italic;
+    }
+
+    .prompt-input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(123,94,240,0.3);
+      box-shadow:
+        inset 0 1px 3px rgba(0,0,0,0.1),
+        0 0 0 1px rgba(123,94,240,0.2),
+        0 0 0 4px rgba(123,94,240,0.06),
+        0 0 24px -8px rgba(123,94,240,0.15);
+    }
+
+    /* 左侧渐变竖线 — "创意从这里流出" */
+    .prompt-area::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 20px;
+      bottom: 20px;
+      width: 3px;
+      background: linear-gradient(
+        180deg,
+        var(--color-brand-start),
+        var(--color-brand-end) 60%,
+        transparent
+      );
+      border-radius: 2px;
+      opacity: 0.25;
+      transition: opacity 320ms ease, height 320ms ease;
+      z-index: 1;
+    }
+    .prompt-area:focus-within::before {
+      opacity: 0.6;
+    }
+
+    /* 底部工具栏 */
+    .prompt-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      padding: 0 4px;
+    }
+
+    .prompt-count {
+      font-size: 11px;
+      color: var(--text-disabled);
+      font-family: var(--font-mono);
+      letter-spacing: -0.02em;
+      transition: color 200ms ease;
+    }
+    .prompt-count.is-near-limit { color: var(--color-warning); }
+    .prompt-count.is-over-limit { color: var(--color-error); }
+
+    .prompt-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .prompt-action-btn {
+      padding: 4px 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-disabled);
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: all 150ms ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .prompt-action-btn:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-secondary);
+    }
+    .prompt-action-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ================================================================
+       DEMO LAYOUT
+       ================================================================ */
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 48px 48px 120px;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .demo-header {
+      margin-bottom: 56px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .demo-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.03em;
+    }
+    .demo-header .subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+    .demo-header .design-notes {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .design-notes strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .demo-section { margin-bottom: 48px; }
+    .demo-section > .section-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+    }
+    .demo-section > .section-desc {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-top: -12px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .demo-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .demo-col {
+      flex: 1;
+      min-width: 220px;
+      max-width: 320px;
+    }
+
+    .demo-stage {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .demo-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      letter-spacing: -0.02em;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    /* 主题切换 */
+    .theme-switch {
+      position: fixed; top: 16px; right: 16px; z-index: 100;
+      display: flex; gap: 4px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle); border-radius: 10px; padding: 3px;
+    }
+    .theme-btn {
+      padding: 6px 14px; border-radius: 8px; border: none;
+      background: transparent; color: var(--text-tertiary); cursor: pointer;
+      font-size: 12px; font-family: var(--font-sans); font-weight: 500;
+      transition: all 150ms ease;
+    }
+    .theme-btn.active {
+      background: var(--bg-surface); color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="theme-switch">
+    <button class="theme-btn" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn active" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <div class="demo-header">
+    <h1>Input 输入框</h1>
+    <p class="subtitle">
+      不是"带边框的方框"，而是嵌入桌面的控制面板。有深度、有材质、有温度。聚焦时面板被点亮，像工作室的聚光灯打在你的工具上。
+    </p>
+    <div class="design-notes">
+      <strong>与 v2 的根本区别：</strong>不是 border + box-shadow 的标准组合。
+      输入框有内凹感（inset shadow），hover 时表面微亮（像触控板感应到手指），
+      focus 时品牌色光环从边缘自然扩散（三层 box-shadow 渐变过渡）。
+      新增浮动标签（floating label）和 Prompt 创作画布模式。
+    </div>
+  </div>
+
+  <!-- ===== 基础输入 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Basic 基础输入</span>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <div class="demo-col">
+          <div class="input-group" id="group-basic">
+            <label class="input-label" for="basic">用户名 <span class="input-required">*</span></label>
+            <div class="input-wrapper">
+              <input class="input" id="basic" type="text" placeholder="请输入用户名" required
+                     onfocus="document.getElementById('group-basic').classList.add('is-focused')"
+                     onblur="document.getElementById('group-basic').classList.remove('is-focused')">
+            </div>
+          </div>
+        </div>
+        <div class="demo-col">
+          <div class="input-group" id="group-email">
+            <label class="input-label" for="email">邮箱</label>
+            <div class="input-wrapper">
+              <input class="input" id="email" type="email" placeholder="your@email.com"
+                     onfocus="document.getElementById('group-email').classList.add('is-focused')"
+                     onblur="document.getElementById('group-email').classList.remove('is-focused')">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 浮动标签 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Floating Label 浮动标签</span>
+    <div class="section-desc">未输入时隐藏标签，聚焦或有值时标签浮起到边框上方。更紧凑，视觉更干净。</div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <div class="demo-col">
+          <div class="input-group--float" id="float-name">
+            <input class="input" id="floatName" type="text"
+                   oninput="this.parentElement.classList.toggle('is-filled', this.value.length > 0)"
+                   onfocus="this.parentElement.classList.add('is-focused')"
+                   onblur="this.parentElement.classList.remove('is-focused')">
+            <label class="input-label" for="floatName">角色名称</label>
+          </div>
+        </div>
+        <div class="demo-col">
+          <div class="input-group--float" id="float-prompt">
+            <input class="input" id="floatPrompt" type="text" value="银发精灵游侠"
+                   oninput="this.parentElement.classList.toggle('is-filled', this.value.length > 0)"
+                   onfocus="this.parentElement.classList.add('is-focused')"
+                   onblur="this.parentElement.classList.remove('is-focused')">
+            <label class="input-label" for="floatPrompt">角色描述</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 搜索框 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Search 搜索</span>
+    <div class="demo-stage">
+      <div style="max-width: 480px">
+        <div class="input-wrapper input-wrapper--search">
+          <svg class="input-search-icon" viewBox="0 0 16 16" fill="none">
+            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 10l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input class="input input--search" type="search" placeholder="搜索作品、角色、场景..." aria-label="搜索">
+          <button class="input-clear-btn" aria-label="清除搜索">&times;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 前缀 / 后缀 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Prefix & Suffix 前缀 / 后缀</span>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <div class="demo-col">
+          <div class="input-group">
+            <label class="input-label">价格</label>
+            <div class="input-wrapper">
+              <span class="input-prefix">&yen;</span>
+              <input class="input input--has-prefix" type="number" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        <div class="demo-col">
+          <div class="input-group">
+            <label class="input-label">宽度</label>
+            <div class="input-wrapper">
+              <input class="input input--has-suffix" type="number" placeholder="1024">
+              <span class="input-suffix">px</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-col">
+          <div class="input-group">
+            <label class="input-label">比例</label>
+            <div class="input-wrapper">
+              <span class="input-prefix">16:</span>
+              <input class="input input--has-prefix" type="number" placeholder="9">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 尺寸 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Sizes 尺寸</span>
+    <div class="demo-row" style="align-items: flex-end;">
+      <div>
+        <div class="demo-label">sm / 34px</div>
+        <input class="input input--sm" type="text" placeholder="Small" style="width:180px">
+      </div>
+      <div>
+        <div class="demo-label">md / 42px</div>
+        <input class="input" type="text" placeholder="Medium (默认)" style="width:200px">
+      </div>
+      <div>
+        <div class="demo-label">lg / 48px</div>
+        <input class="input input--lg" type="text" placeholder="Large" style="width:220px">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 验证状态 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Validation 验证</span>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <div class="demo-col">
+          <div class="input-group">
+            <label class="input-label">错误</label>
+            <input class="input is-error" type="email" value="invalid@" aria-invalid="true" aria-describedby="err-msg">
+            <span class="input-hint input-hint--error" id="err-msg">
+              <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              请输入有效的邮箱地址
+            </span>
+          </div>
+        </div>
+        <div class="demo-col">
+          <div class="input-group">
+            <label class="input-label">成功</label>
+            <input class="input is-success" type="text" value="username_2024">
+            <span class="input-hint input-hint--success">
+              <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 7l2 2 3-3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              用户名可用
+            </span>
+          </div>
+        </div>
+        <div class="demo-col">
+          <div class="input-group">
+            <label class="input-label">禁用</label>
+            <input class="input" type="text" value="不可编辑" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Prompt 创作画布 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Prompt Input 创作画布</span>
+    <div class="section-desc">
+      产品核心输入组件。更深的凹槽感，左侧渐变竖线暗示"创意流出"，
+      聚焦时品牌色柔光包围整个画布。Mono 字体营造精确控制的专注感。
+    </div>
+    <div class="demo-stage">
+      <div class="prompt-area">
+        <textarea class="prompt-input" id="promptInput"
+                  placeholder="描述你想要生成的角色...&#10;&#10;示例：一位银发精灵游侠，穿着精致的皮革铠甲，手持长弓，站在迷雾森林的入口处，奇幻 RPG 风格"
+                  maxlength="2000" oninput="updatePromptCount()"></textarea>
+      </div>
+      <div class="prompt-toolbar">
+        <span class="prompt-count" id="promptCount">0 / 2000</span>
+        <div class="prompt-actions">
+          <button class="prompt-action-btn" title="插入随机灵感">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            灵感
+          </button>
+          <button class="prompt-action-btn" title="翻译为英文">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M1 10l3-6h1l3 6M2 8h5M9 4h4M11 4v8M9 8h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            翻译
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 聚焦状态对比 ===== -->
+  <div class="demo-section">
+    <span class="section-label">Focus 对比 — 默认 vs 聚焦</span>
+    <div class="section-desc">对比默认态和聚焦态的光影差异。聚焦时三层 box-shadow 从内到外：内凹阴影减弱 → 品牌色描边 → 柔和光环扩散。</div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <div class="demo-col">
+          <div class="demo-label">Default 默认态</div>
+          <input class="input" type="text" value="安静的凹槽" readonly
+                 style="cursor:default;">
+        </div>
+        <div class="demo-col">
+          <div class="demo-label">Hover 悬停态</div>
+          <input class="input" type="text" value="表面微亮" readonly
+                 style="cursor:default; background:var(--input-surface-hover); border-color:var(--border-default);">
+        </div>
+        <div class="demo-col">
+          <div class="demo-label">Focus 聚焦态</div>
+          <input class="input" type="text" value="面板被点亮" readonly
+                 style="cursor:default; background:var(--input-surface-focus); border-color:rgba(123,94,240,0.3); box-shadow:var(--input-inset-focus), var(--input-glow-focus);">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === theme);
+      });
+    }
+
+    function updatePromptCount() {
+      const el = document.getElementById('promptInput');
+      const count = document.getElementById('promptCount');
+      const len = el.value.length;
+      const max = 2000;
+      count.textContent = `${len} / ${max}`;
+      count.classList.toggle('is-near-limit', len > max * 0.85 && len <= max);
+      count.classList.toggle('is-over-limit', len > max);
+    }
+  </script>
+</body>
+</html>

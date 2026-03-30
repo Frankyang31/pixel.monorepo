@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modal — 深夜工作室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* ================================================================
+       MODAL — "画布上的浮窗"
+       遮罩模糊化底层内容。面板本身是玻璃态材质。
+       顶部有一条极淡的品牌色渐变光线，模拟"光从窗口上方洒入"。
+       ================================================================ */
+
+    /* --- Overlay --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay-backdrop);
+      backdrop-filter: var(--overlay-blur);
+      -webkit-backdrop-filter: var(--overlay-blur);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: var(--z-modal);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-slow), visibility var(--transition-slow);
+      padding: var(--spacing-4);
+    }
+    .modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* --- Panel --- */
+    .modal {
+      position: relative;
+      background: var(--glass-bg-strong);
+      backdrop-filter: var(--glass-blur-heavy);
+      -webkit-backdrop-filter: var(--glass-blur-heavy);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      max-width: 480px;
+      width: 100%;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      /* 进入动画 */
+      transform: translateY(12px) scale(0.97);
+      opacity: 0;
+      transition:
+        transform var(--transition-slow),
+        opacity var(--transition-slow);
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-overlay.is-open .modal {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    /* --- 顶部光线（品牌渐变） --- */
+    .modal::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: var(--color-brand-gradient);
+      opacity: 0.5;
+      border-radius: 0 0 1px 1px;
+    }
+
+    /* --- Header --- */
+    .modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-5) var(--spacing-6) 0;
+    }
+    .modal__title {
+      font-size: var(--text-lg);
+      font-weight: var(--font-semibold);
+      color: var(--text-primary);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    /* --- Close Button --- */
+    .modal__close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: background-color var(--transition-fast), color var(--transition-fast);
+    }
+    .modal__close:hover {
+      background: var(--glass-bg);
+      color: var(--text-primary);
+    }
+    .modal__close svg { width: 16px; height: 16px; }
+
+    /* --- Body --- */
+    .modal__body {
+      padding: var(--spacing-4) var(--spacing-6) var(--spacing-6);
+      overflow-y: auto;
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+    }
+
+    /* --- Footer --- */
+    .modal__footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-3);
+      padding: var(--spacing-4) var(--spacing-6) var(--spacing-5);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* --- Danger Modal --- */
+    .modal--danger::before {
+      background: linear-gradient(90deg, var(--color-error), var(--color-accent-amber));
+    }
+    .modal--danger .modal__close:hover {
+      background: rgba(248, 113, 113, 0.08);
+      color: var(--color-error);
+    }
+
+    /* ================================================================
+       按钮复用（简化版）
+       ================================================================ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-2);
+      font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--font-semibold);
+      line-height: 1; white-space: nowrap; cursor: pointer; border: none;
+      border-radius: var(--radius-md); position: relative; overflow: hidden; user-select: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-normal), background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    }
+    .btn--md { height: 40px; padding: var(--spacing-3) var(--spacing-5); }
+    .btn--primary { background: var(--color-brand-gradient); color: #FFFFFF; box-shadow: 0 2px 8px rgba(123,94,240,0.15); }
+    .btn--primary:hover { box-shadow: var(--glow-brand-md); transform: translateY(-1px); }
+    .btn--secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); }
+    .btn--secondary:hover { border-color: var(--border-brand); color: var(--text-primary); background: rgba(123,94,240,0.06); }
+    .btn--danger { background: var(--color-error); color: #FFFFFF; box-shadow: 0 2px 8px rgba(248,113,113,0.15); }
+    .btn--danger:hover { box-shadow: var(--glow-error); transform: translateY(-1px); }
+    .btn--ghost { background: transparent; color: var(--text-secondary); }
+    .btn--ghost:hover { background: var(--glass-bg); color: var(--text-primary); }
+
+    /* ================================================================
+       DEMO
+       ================================================================ */
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      margin: 0;
+      padding: var(--spacing-8) var(--spacing-8) var(--spacing-20);
+      max-width: 960px;
+      margin-left: auto; margin-right: auto;
+      transition: background-color var(--transition-slow), color var(--transition-slow);
+    }
+    .demo-header { margin-bottom: var(--spacing-10); padding-bottom: var(--spacing-6); border-bottom: 1px solid var(--border-subtle); }
+    h1 { font-size: var(--text-2xl); font-weight: var(--font-bold); margin: 0 0 var(--spacing-1) 0; letter-spacing: -0.02em; }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-sm); margin: 0; line-height: 1.6; }
+    .demo-section { margin-bottom: var(--spacing-10); }
+    .demo-title { font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--spacing-4); }
+    .demo-row { display: flex; gap: var(--spacing-3); flex-wrap: wrap; }
+    .demo-stage {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: var(--spacing-6);
+    }
+    .theme-switch {
+      position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100;
+      display: flex; gap: var(--spacing-2);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius-full); padding: 3px;
+    }
+    .theme-btn {
+      padding: var(--spacing-1) var(--spacing-3); border-radius: var(--radius-full); border: none;
+      background: transparent; color: var(--text-tertiary); cursor: pointer;
+      font-size: var(--text-xs); font-family: var(--font-sans); font-weight: var(--font-medium);
+      transition: all var(--transition-fast);
+    }
+    .theme-btn.active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+  </style>
+</head>
+<body>
+
+  <div class="theme-switch">
+    <button class="theme-btn" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn active" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <div class="demo-header">
+    <h1>Modal 弹窗</h1>
+    <p class="subtitle">画布上的浮窗 — 遮罩模糊化底层内容。面板是玻璃态材质，顶部有一条极淡的品牌色光线，模拟"光从窗口上方洒入"。</p>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-title">Trigger 打开弹窗</div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <button class="btn btn--primary btn--md" onclick="openModal('standard')">标准弹窗</button>
+        <button class="btn btn--danger btn--md" onclick="openModal('danger')">危险操作弹窗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 标准弹窗 ===== -->
+  <div class="modal-overlay" id="modal-standard" onclick="closeModalOverlay(event, 'standard')">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-standard-title">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-standard-title">确认生成</h2>
+        <button class="modal__close" onclick="closeModal('standard')" aria-label="关闭">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <p>即将生成一张 <strong style="color:var(--text-primary)">角色立绘</strong>，消耗 <strong style="color:var(--color-accent-purple)">3 积分</strong>。当前剩余积分：<strong style="color:var(--text-primary)">86</strong></p>
+        <div style="margin-top: var(--spacing-4); padding: var(--spacing-3) var(--spacing-4); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--glass-border); font-size: var(--text-xs); color: var(--text-tertiary);">
+          参数：奇幻 RPG 风格 · 1024x1024 · 高质量 · DPM++ 2M
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--ghost btn--md" onclick="closeModal('standard')">取消</button>
+        <button class="btn btn--primary btn--md" onclick="closeModal('standard')">确认生成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 危险操作弹窗 ===== -->
+  <div class="modal-overlay" id="modal-danger" onclick="closeModalOverlay(event, 'danger')">
+    <div class="modal modal--danger" role="dialog" aria-modal="true" aria-labelledby="modal-danger-title">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-danger-title">删除作品</h2>
+        <button class="modal__close" onclick="closeModal('danger')" aria-label="关闭">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <p>确定要删除 <strong style="color:var(--text-primary)">「银发精灵游侠」</strong> 吗？此操作不可撤销，作品将永久移除。</p>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--ghost btn--md" onclick="closeModal('danger')">取消</button>
+        <button class="btn btn--danger btn--md" onclick="closeModal('danger')">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase() === theme));
+    }
+
+    function openModal(id) {
+      document.getElementById('modal-' + id).classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById('modal-' + id).classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOverlay(event, id) {
+      if (event.target === event.currentTarget) closeModal(id);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.is-open').forEach(overlay => {
+          overlay.classList.remove('is-open');
+        });
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>

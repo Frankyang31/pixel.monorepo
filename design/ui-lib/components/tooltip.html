@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tooltip — 组件预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    .btn { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--font-semibold); height: 40px; padding: var(--spacing-3) var(--spacing-4); border: none; border-radius: var(--radius-md); cursor: pointer; }
+    .btn--ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); }
+    .btn--ghost:hover { background: var(--bg-overlay); color: var(--text-primary); }
+    .btn--icon { padding: 0; width: 40px; height: 40px; }
+
+    .tooltip-wrapper { position: relative; display: inline-block; }
+    .tooltip { position: absolute; background: var(--bg-elevated); color: var(--text-primary); font-size: var(--text-xs); padding: 6px 10px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); white-space: nowrap; z-index: 700; opacity: 0; visibility: hidden; transition: opacity 150ms var(--ease-default), visibility 150ms; pointer-events: none; }
+    .tooltip::after { content: ''; position: absolute; border: 6px solid transparent; }
+    /* Top (default) */
+    .tooltip--top { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+    .tooltip--top::after { top: 100%; left: 50%; transform: translateX(-50%); border-top-color: var(--bg-elevated); }
+    /* Bottom */
+    .tooltip--bottom { top: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+    .tooltip--bottom::after { bottom: 100%; left: 50%; transform: translateX(-50%); border-bottom-color: var(--bg-elevated); }
+    /* Left */
+    .tooltip--left { right: calc(100% + 8px); top: 50%; transform: translateY(-50%); }
+    .tooltip--left::after { left: 100%; top: 50%; transform: translateY(-50%); border-left-color: var(--bg-elevated); }
+    /* Right */
+    .tooltip--right { left: calc(100% + 8px); top: 50%; transform: translateY(-50%); }
+    .tooltip--right::after { right: 100%; top: 50%; transform: translateY(-50%); border-right-color: var(--bg-elevated); }
+    .tooltip-wrapper:hover .tooltip, .tooltip-wrapper:focus-within .tooltip { opacity: 1; visibility: visible; }
+
+    body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); margin: 0; padding: var(--spacing-8); }
+    .demo-section { margin-bottom: var(--spacing-12); }
+    .demo-title { font-size: var(--text-lg); font-weight: var(--font-semibold); margin-bottom: var(--spacing-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--spacing-2); }
+    .demo-row { display: flex; align-items: center; gap: var(--spacing-6); flex-wrap: wrap; margin-bottom: var(--spacing-6); }
+    .demo-label { font-size: var(--text-xs); color: var(--text-tertiary); min-width: 80px; font-weight: var(--font-medium); }
+    .theme-switch { position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100; display: flex; gap: var(--spacing-2); }
+    .theme-btn { padding: var(--spacing-2) var(--spacing-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; font-size: var(--text-sm); font-family: var(--font-sans); }
+    .theme-btn.active { border-color: var(--color-brand-mid); color: var(--color-brand-mid); }
+    h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); margin-bottom: var(--spacing-2); }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-base); margin-bottom: var(--spacing-8); }
+    .demo-center { display: flex; justify-content: center; padding: var(--spacing-16) 0; }
+  </style>
+</head>
+<body>
+  <div class="theme-switch"><button class="theme-btn active" onclick="setTheme('light')">Light</button><button class="theme-btn" onclick="setTheme('dark')">Dark</button></div>
+  <h1>Tooltip 提示气泡</h1>
+  <p class="subtitle">悬浮/聚焦时显示的上下文辅助信息。Hover 按钮查看效果。</p>
+
+  <div class="demo-section">
+    <div class="demo-title">方向 Direction</div>
+    <div class="demo-center">
+      <div class="demo-row" style="gap:32px">
+        <div class="tooltip-wrapper">
+          <button class="btn btn--ghost" aria-describedby="t-top">上方提示</button>
+          <div class="tooltip tooltip--top" id="t-top" role="tooltip">这是上方提示 (Top)</div>
+        </div>
+        <div class="tooltip-wrapper">
+          <button class="btn btn--ghost" aria-describedby="t-bottom">下方提示</button>
+          <div class="tooltip tooltip--bottom" id="t-bottom" role="tooltip">这是下方提示 (Bottom)</div>
+        </div>
+        <div class="tooltip-wrapper">
+          <button class="btn btn--ghost" aria-describedby="t-left">左侧提示</button>
+          <div class="tooltip tooltip--left" id="t-left" role="tooltip">左侧提示 (Left)</div>
+        </div>
+        <div class="tooltip-wrapper">
+          <button class="btn btn--ghost" aria-describedby="t-right">右侧提示</button>
+          <div class="tooltip tooltip--right" id="t-right" role="tooltip">右侧提示 (Right)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-title">图标按钮 Tooltip</div>
+    <div class="demo-row">
+      <div class="tooltip-wrapper">
+        <button class="btn btn--ghost btn--icon" aria-describedby="ti1"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v13M4 5.5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14.5h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <div class="tooltip tooltip--top" id="ti1" role="tooltip">下载高清原图</div>
+      </div>
+      <div class="tooltip-wrapper">
+        <button class="btn btn--ghost btn--icon" aria-describedby="ti2"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 10l2 2 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="tooltip tooltip--top" id="ti2" role="tooltip">添加到收藏</div>
+      </div>
+      <div class="tooltip-wrapper">
+        <button class="btn btn--ghost btn--icon" aria-describedby="ti3"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.5v3M8 5.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <div class="tooltip tooltip--top" id="ti3" role="tooltip">查看生成参数</div>
+      </div>
+      <div class="tooltip-wrapper">
+        <button class="btn btn--ghost btn--icon" aria-describedby="ti4"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 1.5L8 4H3a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V6a1 1 0 00-1-1h-2l-2-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="tooltip tooltip--top" id="ti4" role="tooltip">分享作品</div>
+      </div>
+    </div>
+  </div>
+
+  <script>function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===t));}</script>
+</body>
+</html>

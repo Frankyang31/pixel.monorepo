@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toast — 深夜工作室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../tokens.css">
+  <style>
+    /* ================================================================
+       TOAST — "滑入的光条"
+       玻璃态卡片 + 左侧品牌渐变色条作为状态指示。
+       进入时从右侧滑入 + 淡入，退出时滑出 + 淡出。
+       ================================================================ */
+
+    /* --- Container --- */
+    .toast-container {
+      position: fixed;
+      top: var(--spacing-4);
+      right: var(--spacing-4);
+      z-index: var(--z-toast);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-3);
+      pointer-events: none;
+    }
+
+    /* --- Base --- */
+    .toast {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-3);
+      min-width: 320px;
+      max-width: 420px;
+      padding: var(--spacing-4) var(--spacing-4) var(--spacing-4) var(--spacing-5);
+      background: var(--glass-bg-strong);
+      backdrop-filter: var(--glass-blur-heavy);
+      -webkit-backdrop-filter: var(--glass-blur-heavy);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      pointer-events: auto;
+      position: relative;
+      overflow: hidden;
+      /* 初始状态 */
+      transform: translateX(120%);
+      opacity: 0;
+      /* 进入动画 */
+      animation: toast-in var(--duration-slow) var(--ease-out) forwards;
+    }
+    /* 退出动画 */
+    .toast.is-exiting {
+      animation: toast-out var(--duration-normal) var(--ease-in) forwards;
+    }
+
+    /* --- 左侧色条 --- */
+    .toast::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      border-radius: 3px 0 0 3px;
+    }
+    .toast--success::before { background: var(--color-success); box-shadow: var(--glow-success); }
+    .toast--error::before { background: var(--color-error); box-shadow: var(--glow-error); }
+    .toast--warning::before { background: var(--color-warning); }
+    .toast--info::before { background: var(--color-brand-gradient); }
+
+    @keyframes toast-in {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toast-out {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(120%); opacity: 0; }
+    }
+
+    /* --- Icon --- */
+    .toast__icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+    }
+    .toast--success .toast__icon { color: var(--color-success); }
+    .toast--error .toast__icon { color: var(--color-error); }
+    .toast--warning .toast__icon { color: var(--color-warning); }
+    .toast--info .toast__icon { color: var(--color-brand-mid); }
+
+    /* --- Content --- */
+    .toast__content { flex: 1; min-width: 0; }
+    .toast__title {
+      font-size: var(--text-sm);
+      font-weight: var(--font-semibold);
+      color: var(--text-primary);
+      margin: 0 0 2px 0;
+    }
+    .toast__message {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* --- Close Button --- */
+    .toast__close {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: background-color var(--transition-fast), color var(--transition-fast);
+      margin-top: -2px;
+    }
+    .toast__close:hover {
+      background: var(--glass-bg);
+      color: var(--text-primary);
+    }
+    .toast__close svg { width: 12px; height: 12px; }
+
+    /* --- Progress (auto-dismiss) --- */
+    .toast__progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      background: var(--color-brand-gradient);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      animation: toast-progress 5s linear forwards;
+    }
+    @keyframes toast-progress {
+      from { width: 100%; }
+      to { width: 0; }
+    }
+
+    /* ================================================================
+       DEMO BUTTON
+       ================================================================ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-2);
+      font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--font-semibold);
+      line-height: 1; white-space: nowrap; cursor: pointer; border: none;
+      border-radius: var(--radius-md); user-select: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-normal), background-color var(--transition-fast);
+    }
+    .btn--md { height: 40px; padding: var(--spacing-3) var(--spacing-5); }
+    .btn--secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); }
+    .btn--secondary:hover { border-color: var(--border-brand); color: var(--text-primary); }
+
+    /* ================================================================
+       DEMO LAYOUT
+       ================================================================ */
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      margin: 0;
+      padding: var(--spacing-8) var(--spacing-8) var(--spacing-20);
+      max-width: 960px;
+      margin-left: auto; margin-right: auto;
+      transition: background-color var(--transition-slow), color var(--transition-slow);
+    }
+    .demo-header { margin-bottom: var(--spacing-10); padding-bottom: var(--spacing-6); border-bottom: 1px solid var(--border-subtle); }
+    h1 { font-size: var(--text-2xl); font-weight: var(--font-bold); margin: 0 0 var(--spacing-1) 0; letter-spacing: -0.02em; }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-sm); margin: 0; line-height: 1.6; }
+    .demo-section { margin-bottom: var(--spacing-10); }
+    .demo-title { font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--spacing-4); }
+    .demo-row { display: flex; gap: var(--spacing-3); flex-wrap: wrap; }
+    .demo-stage {
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: var(--spacing-6);
+    }
+    .theme-switch {
+      position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100;
+      display: flex; gap: var(--spacing-2);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius-full); padding: 3px;
+    }
+    .theme-btn {
+      padding: var(--spacing-1) var(--spacing-3); border-radius: var(--radius-full); border: none;
+      background: transparent; color: var(--text-tertiary); cursor: pointer;
+      font-size: var(--text-xs); font-family: var(--font-sans); font-weight: var(--font-medium);
+      transition: all var(--transition-fast);
+    }
+    .theme-btn.active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+  </style>
+</head>
+<body>
+
+  <div class="theme-switch">
+    <button class="theme-btn" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn active" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="demo-header">
+    <h1>Toast 通知</h1>
+    <p class="subtitle">滑入的光条 — 玻璃态卡片 + 左侧渐变色条作为状态指示。进入时从右侧滑入，支持自动消失。</p>
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-title">Trigger 触发通知</div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <button class="btn btn--secondary btn--md" onclick="showToast('success')">
+          成功通知
+        </button>
+        <button class="btn btn--secondary btn--md" onclick="showToast('error')">
+          错误通知
+        </button>
+        <button class="btn btn--secondary btn--md" onclick="showToast('warning')">
+          警告通知
+        </button>
+        <button class="btn btn--secondary btn--md" onclick="showToast('info')">
+          信息通知
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // SVG 图标
+    const icons = {
+      success: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.3"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      error: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.3"/><path d="M10 7v4M10 13.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+      warning: '<svg viewBox="0 0 20 20" fill="none"><path d="M10 3L2 17h16L10 3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 8v4M10 14v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+      info: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.3"/><path d="M10 9v5M10 7v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
+    };
+
+    const messages = {
+      success: { title: '生成完成', msg: '角色立绘已成功生成，消耗 3 积分。' },
+      error: { title: '生成失败', msg: '服务暂时不可用，请稍后重试。' },
+      warning: { title: '积分不足', msg: '当前剩余 2 积分，本次操作需要 3 积分。' },
+      info: { title: '新功能上线', msg: 'AI 精修工具已发布，支持局部修改和放大。' }
+    };
+
+    function showToast(type) {
+      const container = document.getElementById('toastContainer');
+      const { title, msg } = messages[type];
+      const toast = document.createElement('div');
+      toast.className = `toast toast--${type}`;
+      toast.innerHTML = `
+        <span class="toast__icon">${icons[type]}</span>
+        <div class="toast__content">
+          <div class="toast__title">${title}</div>
+          <div class="toast__message">${msg}</div>
+        </div>
+        <button class="toast__close" onclick="dismissToast(this.parentElement)" aria-label="关闭">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="toast__progress"></div>
+      `;
+      container.appendChild(toast);
+
+      // 5秒后自动消失
+      setTimeout(() => dismissToast(toast), 5200);
+    }
+
+    function dismissToast(el) {
+      if (!el || el.classList.contains('is-exiting')) return;
+      el.classList.add('is-exiting');
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase() === theme));
+    }
+  </script>
+</body>
+</html>
