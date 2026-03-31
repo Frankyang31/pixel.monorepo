@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UI Library — 深夜工作室</title>
+  <title>UI Library — 深夜工作室 v3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="tokens.css">
@@ -83,13 +83,19 @@
       position: relative;
     }
     .lib-card:hover {
-      border-color: var(--border-default);
-      box-shadow: var(--glow-brand-sm);
-      transform: translateY(-3px);
+      border-color: rgba(123,94,240,0.15);
+      box-shadow:
+        0 0 0 1px rgba(123,94,240,0.08),
+        0 4px 16px -4px rgba(123,94,240,0.12),
+        0 8px 32px -8px rgba(79,142,247,0.08);
+      transform: translateY(-4px);
     }
     .lib-card:active {
-      transform: translateY(-1px) scale(0.99);
-      transition-duration: 80ms;
+      transform: translateY(-1px) scale(0.985);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition:
+        transform 100ms cubic-bezier(0.4, 0, 0.6, 1),
+        box-shadow 100ms cubic-bezier(0.4, 0, 0.6, 1);
     }
     .lib-card:focus-visible {
       outline: none;
@@ -172,7 +178,7 @@
   <div class="lib-header">
     <h1><span>深夜工作室</span> 组件库</h1>
     <p class="subtitle">面向 AI 创作工具的设计系统。发光替代投影，玻璃态营造层次，渐变即品牌。每一个组件都传递"深夜工作室"的沉浸氛围。</p>
-    <div class="version">v2.0 · Design Tokens v2.0 · 8 核心组件</div>
+    <div class="version">v3.0 · 物理材质体系 · 11 核心组件全部升级</div>
   </div>
 
   <div class="lib-grid">
@@ -180,50 +186,71 @@
     <a class="lib-card" href="components/button.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="14" height="8" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 10h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
       <div class="lib-card__name">Button 按钮</div>
-      <p class="lib-card__desc">发光的行动召唤。渐变光晕、弹性按压、渐变边框旋转、进度条按钮。</p>
-      <span class="lib-card__tag">5 Variants + Glow Border</span>
+      <p class="lib-card__desc">物理材质发光体。Primary 有内高光，hover 三层光晕扩散，active 按压进材质感。</p>
+      <span class="lib-card__tag">v3 · 物理材质</span>
     </a>
 
     <a class="lib-card" href="components/input.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 9h4M6 12h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
       <div class="lib-card__name">Input 输入框</div>
-      <p class="lib-card__desc">安静的画框。玻璃态背景、品牌色聚焦光晕、AI Prompt 创作画布模式。</p>
-      <span class="lib-card__tag">Prompt Mode + Glow Focus</span>
+      <p class="lib-card__desc">嵌入桌面的控制面板。内凹质感、浮动标签、三层聚焦光环、Prompt 创作画布。</p>
+      <span class="lib-card__tag">v3 · 内凹材质</span>
+    </a>
+
+    <a class="lib-card" href="components/select.html" tabindex="0">
+      <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13 9l2 2 2-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="lib-card__name">Select 下拉选择</div>
+      <p class="lib-card__desc">Input 的配套组件。同样的内凹质感，箭头聚焦时旋转，自定义面板玻璃态入场。</p>
+      <span class="lib-card__tag">v3 · 与 Input 统一</span>
+    </a>
+
+    <a class="lib-card" href="components/checkbox.html" tabindex="0">
+      <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 10l2.5 2.5 4-4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="lib-card__name">Checkbox 复选框</div>
+      <p class="lib-card__desc">等待激活的凹槽。选中时渐变点亮，勾号弹性弹出，支持卡片式复选框变体。</p>
+      <span class="lib-card__tag">v3 · 弹性印章动画</span>
+    </a>
+
+    <a class="lib-card" href="components/switch.html" tabindex="0">
+      <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="7" width="16" height="6" rx="3" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="10" r="2.5" fill="currentColor"/></svg></div>
+      <div class="lib-card__name">Switch 开关</div>
+      <p class="lib-card__desc">凹槽中的球体。Thumb 带物理材质感，滑动时先超越再弹回，图标变体支持深色模式切换。</p>
+      <span class="lib-card__tag">v3 · 物理滑动感</span>
     </a>
 
     <a class="lib-card" href="components/card.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M3 7h14" stroke="currentColor" stroke-width="1.3"/></svg></div>
       <div class="lib-card__name">Card 卡片</div>
-      <p class="lib-card__desc">漂浮的画框。渐变选中边框、画廊蒙版、渐变数字统计。</p>
-      <span class="lib-card__tag">Gallery + Gradient Selection</span>
+      <p class="lib-card__desc">漂浮的画框。Hover 三层光晕扩散，选中渐变边框 + 外发光更自然，Gallery 覆盖蒙版更深。</p>
+      <span class="lib-card__tag">v3 精修 · 光影升级</span>
     </a>
 
     <a class="lib-card" href="components/tabs.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M2 8h16" stroke="currentColor" stroke-width="1.3"/><path d="M7 3v14" stroke="currentColor" stroke-width="1.3"/></svg></div>
       <div class="lib-card__name">Tabs 选项卡</div>
-      <p class="lib-card__desc">安静的导航灯。渐变指示器、活跃项渐变文字、玻璃态 Pill/Segment。</p>
-      <span class="lib-card__tag">Gradient Indicator</span>
+      <p class="lib-card__desc">安静的导航灯。指示器用 spring 弹性过渡，Pill 活跃项内高光，Segment 材质感对齐。</p>
+      <span class="lib-card__tag">v3 精修 · 物理曲线</span>
     </a>
 
     <a class="lib-card" href="components/badge.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2L3 7v6l7 5 7-5V7l-7-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
       <div class="lib-card__name">Badge 徽章</div>
-      <p class="lib-card__desc">发光的标签。玻璃态功能色、脉冲圆点、渐变文字标签、计数角标。</p>
-      <span class="lib-card__tag">Pulse Dot + Gradient Text</span>
+      <p class="lib-card__desc">发光的标签。渐变 Badge 增加内高光，计数角标光晕增强，脉冲圆点持续有效。</p>
+      <span class="lib-card__tag">v3 精修 · 内高光</span>
     </a>
 
     <a class="lib-card" href="components/modal.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 8h16" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
       <div class="lib-card__name">Modal 弹窗</div>
-      <p class="lib-card__desc">画布上的浮窗。模糊遮罩、玻璃态面板、顶部品牌色光线。</p>
-      <span class="lib-card__tag">Glass Panel + Blur Overlay</span>
+      <p class="lib-card__desc">画布上的浮窗。Spring 弹性入场，顶部光线扩大扩散，关闭按钮 active 微缩。</p>
+      <span class="lib-card__tag">v3 精修 · Spring 入场</span>
     </a>
 
     <a class="lib-card" href="components/toast.html" tabindex="0">
       <div class="lib-card__icon"><svg viewBox="0 0 20 20" fill="none"><path d="M10 2a7 7 0 017 7c0 3-1.5 5-2.5 6.5H5.5C4.5 14 3 12 3 9a7 7 0 017-7z" stroke="currentColor" stroke-width="1.3"/><path d="M7 18h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
       <div class="lib-card__name">Toast 通知</div>
-      <p class="lib-card__desc">滑入的光条。玻璃态卡片、左侧渐变色条、自动消失进度条。</p>
-      <span class="lib-card__tag">Glass Card + Auto-dismiss</span>
+      <p class="lib-card__desc">滑入的光条。Spring 弹入 + 微缩出场，左侧色条加宽 + 对应颜色发光。</p>
+      <span class="lib-card__tag">v3 精修 · Spring 动效</span>
     </a>
 
     <a class="lib-card" href="DESIGN-PHILOSOPHY.md" tabindex="0">
@@ -236,7 +263,7 @@
   </div>
 
   <div class="lib-footer">
-    AI 创作平台 UI Library v2.0 · <a href="DESIGN-PHILOSOPHY.md">设计理念</a> · <a href="tokens.css">Design Tokens</a>
+    AI 创作平台 UI Library v3.0 · <a href="DESIGN-PHILOSOPHY.md">设计理念</a> · <a href="tokens.css">Design Tokens</a>
   </div>
 
   <script>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Badge — 深夜工作室</title>
+  <title>Badge — 深夜工作室 v3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../tokens.css">
@@ -40,11 +40,12 @@
       background: rgba(123, 94, 240, 0.18);
     }
 
-    /* --- Gradient — 渐变填充（最醒目） --- */
+    /* --- Gradient — 渐变填充（最醒目） + 内高光 --- */
     .badge--gradient {
       background: var(--color-brand-gradient);
       color: #FFFFFF;
-      box-shadow: 0 2px 8px rgba(123, 94, 240, 0.20);
+      box-shadow: 0 2px 8px rgba(123, 94, 240, 0.20),
+                  inset 0 1px 0 rgba(255,255,255,0.12);
     }
 
     /* --- Success --- */
@@ -121,7 +122,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--glow-brand-sm);
+      box-shadow: 0 2px 8px rgba(123,94,240,0.25),
+                  inset 0 1px 0 rgba(255,255,255,0.12);
     }
 
     /* ================================================================

@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tabs — 深夜工作室</title>
+  <title>Tabs — 深夜工作室 v3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* ================================================================
-       TABS — "安静的导航灯"
-       指示器不是简单实线，而是品牌渐变色。
-       活跃 Tab 的文字也带渐变——视觉焦点自然流动。
+       TABS v3 — "安静的导航灯"精修版
+       
+       v3 变化：
+       1. hover 增加背景微亮（rgba white 0.04），不只是文字色变化
+       2. Underline 指示器：height 2px → 2.5px，scaleX 过渡使用 spring
+       3. Pill 活跃项：增加内高光 inset 0 1px 0 rgba(255,255,255,0.12)
+       4. Segment 活跃项：对齐 Button v3 material feel
+       5. 所有 transition 使用统一的物理曲线体系
        ================================================================ */
 
     /* --- Base --- */
@@ -34,18 +39,30 @@
       padding: 0 var(--spacing-4);
       height: 40px;
       font-size: var(--text-sm);
-      transition: color var(--transition-normal);
+      border-radius: var(--radius-sm);
+      transition:
+        color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        background 200ms cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
     }
-    .tabs__item:focus-visible { outline: 2px solid var(--color-brand-mid); outline-offset: 2px; border-radius: var(--radius-sm); }
+    .tabs__item:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--color-brand-mid);
+    }
     .tabs__item:focus:not(:focus-visible) { outline: none; }
     .tabs__item:disabled { opacity: 0.3; cursor: not-allowed; }
     .tabs__item svg { width: 16px; height: 16px; flex-shrink: 0; }
-    .tabs__item:hover:not(:disabled) { color: var(--text-primary); }
+    /* hover：文字升亮 + 微背景 */
+    .tabs__item:hover:not(:disabled):not(.is-active) {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.04);
+    }
+    [data-theme="light"] .tabs__item:hover:not(:disabled):not(.is-active) {
+      background: rgba(0,0,0,0.04);
+    }
 
     /* ------------------------------------------------------------------
-       UNDERLINE — 渐变指示器
-       指示器是 2px 渐变色条，活跃 Tab 文字带渐变色
+       UNDERLINE — 渐变指示器（精修：高度 2.5px，spring 过渡）
        ------------------------------------------------------------------ */
     .tabs--underline .tabs__item::after {
       content: '';
@@ -53,12 +70,12 @@
       bottom: 0;
       left: var(--spacing-4);
       right: var(--spacing-4);
-      height: 2px;
+      height: 2.5px;
       background: var(--color-brand-gradient-h);
-      border-radius: 1px;
+      border-radius: 2px 2px 0 0;
       transform: scaleX(0);
       transform-origin: center;
-      transition: transform var(--transition-slow);
+      transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .tabs--underline .tabs__item.is-active::after { transform: scaleX(1); }
     .tabs--underline .tabs__item.is-active {
@@ -72,8 +89,7 @@
     .tabs--underline .tabs__item.is-active { color: var(--text-gradient-color); }
 
     /* ------------------------------------------------------------------
-       PILL — 玻璃态容器
-       容器用极淡玻璃态，活跃项渐变填充 + 发光
+       PILL — 玻璃态容器（精修：活跃项内高光）
        ------------------------------------------------------------------ */
     .tabs--pill {
       background: var(--glass-bg);
@@ -91,19 +107,24 @@
       font-size: var(--text-xs);
     }
     .tabs--pill .tabs__item:hover:not(.is-active) {
-      background: var(--glass-bg);
+      background: rgba(255,255,255,0.06);
       color: var(--text-primary);
+    }
+    [data-theme="light"] .tabs--pill .tabs__item:hover:not(.is-active) {
+      background: rgba(0,0,0,0.05);
     }
     .tabs--pill .tabs__item.is-active {
       background: var(--color-brand-gradient);
       color: #FFFFFF;
       font-weight: var(--font-semibold);
-      box-shadow: var(--glow-brand-sm);
+      /* 内高光 — 像 Primary Button 的发光体 */
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12),
+                  0 0 0 1px rgba(123,94,240,0.1),
+                  0 2px 8px -2px rgba(123,94,240,0.25);
     }
 
     /* ------------------------------------------------------------------
-       SEGMENT — 玻璃态分段
-       活跃项带品牌色渐变边框
+       SEGMENT — 玻璃态分段（精修：active 内高光）
        ------------------------------------------------------------------ */
     .tabs--segment {
       background: var(--glass-bg);
@@ -129,7 +150,15 @@
       /* 渐变边框 */
       border: 1px solid transparent;
       background-clip: padding-box;
-      box-shadow: var(--glow-brand-sm);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 0 1px rgba(123,94,240,0.12),
+        0 2px 8px -2px rgba(123,94,240,0.1);
+    }
+    [data-theme="light"] .tabs--segment .tabs__item.is-active {
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.7),
+        0 1px 4px rgba(0,0,0,0.1);
     }
     .tabs--segment .tabs__item.is-active::before {
       content: '';

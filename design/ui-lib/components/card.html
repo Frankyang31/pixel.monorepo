@@ -3,16 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Card — 深夜工作室</title>
+  <title>Card — 深夜工作室 v3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../tokens.css">
   <style>
     /* ================================================================
-       CARD — "漂浮的画框"
-       深色主题下，卡片不是用投影表达层次，而是用发光。
-       选中态用渐变边框表达"选中了这个作品"。
+       CARD v3 — "漂浮的画框"精修版
+       
+       v3 变化：
+       1. hover 光影：3 层 box-shadow 分别以不同速度扩散（对齐 Button v3 物理感）
+       2. 过渡编排：border 150ms → shadow 320ms(shadow-ease) → transform 300ms(spring)
+       3. active 用 scale(0.985) + 内阴影，不是 translateY（与 Button 一致）
+       4. selected 渐变边框已有，但新增外发光扩散效果
+       5. Gallery overlay：渐变更真实，从 rgba(0,0,0,0.8) 到 transparent
        ================================================================ */
+
+    /* ---------- 材质令牌 ---------- */
+    :root {
+      --card-glow-hover:
+        0 0 0 1px rgba(123,94,240,0.08),
+        0 4px 16px -4px rgba(123,94,240,0.12),
+        0 8px 32px -8px rgba(79,142,247,0.08);
+      --card-glow-selected:
+        0 0 0 1px rgba(123,94,240,0.2),
+        0 4px 24px -8px rgba(123,94,240,0.25),
+        0 12px 48px -12px rgba(79,142,247,0.12);
+      --card-ease-shadow: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --card-ease-transform: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    [data-theme="light"] {
+      --card-glow-hover:
+        0 2px 8px rgba(123,94,240,0.08),
+        0 4px 16px -4px rgba(123,94,240,0.06);
+      --card-glow-selected:
+        0 0 0 2px var(--color-brand-mid),
+        0 4px 16px -4px rgba(123,94,240,0.15);
+    }
 
     /* --- Base --- */
     .card {
@@ -23,41 +51,46 @@
       border-radius: var(--radius-lg);
       overflow: hidden;
       position: relative;
-      /* 编排过渡：边框 → 阴影 → transform */
+      /* 编排过渡：边框最快，阴影有物理扩散感，位移用弹性 */
       transition:
-        border-color var(--transition-fast),
-        box-shadow var(--transition-normal),
-        transform var(--transition-slow);
+        border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     /* --- Interactive (可点击) --- */
     .card--interactive { cursor: pointer; }
     .card--interactive:hover {
-      border-color: var(--border-default);
-      box-shadow: var(--glow-brand-sm);
-      transform: translateY(-3px);
+      border-color: rgba(123,94,240,0.15);
+      box-shadow: var(--card-glow-hover);
+      transform: translateY(-4px);
     }
+    /* active：按压进材质（对齐 Button v3）*/
     .card--interactive:active {
-      transform: translateY(-1px) scale(0.99);
-      transition-duration: 80ms;
+      transform: translateY(-1px) scale(0.985);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition:
+        transform 100ms cubic-bezier(0.4, 0, 0.6, 1),
+        box-shadow 100ms cubic-bezier(0.4, 0, 0.6, 1);
     }
     .card--interactive:focus-visible {
       outline: none;
-      box-shadow: var(--focus-ring);
+      box-shadow: 0 0 0 1px rgba(123,94,240,0.25), 0 0 0 3px rgba(123,94,240,0.08);
     }
 
-    /* --- Selected (选中态) — 品牌渐变边框 --- */
+    /* --- Selected (选中态) — 渐变边框 + 外发光扩散 --- */
     .card.is-selected {
       border-color: transparent;
       background-clip: padding-box;
+      box-shadow: var(--card-glow-selected);
     }
-    /* 渐变边框技巧：双层伪元素 */
+    /* 渐变边框：双层伪元素 */
     .card.is-selected::before {
       content: '';
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      padding: 1.5px; /* 边框宽度 */
+      padding: 1.5px;
       background: var(--color-brand-gradient);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -66,14 +99,15 @@
       pointer-events: none;
       z-index: 1;
     }
+    /* 外发光 — 比旧版更大更自然 */
     .card.is-selected::after {
       content: '';
       position: absolute;
-      inset: -1px;
-      border-radius: inherit;
+      inset: -3px;
+      border-radius: calc(var(--radius-lg) + 3px);
       background: var(--color-brand-gradient);
-      opacity: 0.15;
-      filter: blur(12px);
+      opacity: 0.12;
+      filter: blur(16px);
       pointer-events: none;
       z-index: -1;
     }
@@ -85,9 +119,9 @@
       aspect-ratio: 4/3;
       object-fit: cover;
       display: block;
-      transition: transform var(--transition-slower);
+      transition: transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    .card--interactive:hover .card__media img { transform: scale(1.04); }
+    .card--interactive:hover .card__media img { transform: scale(1.06); }
 
     .card__body { padding: var(--spacing-4); }
     .card__title {
@@ -117,13 +151,14 @@
     .card--gallery .card__overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 50%);
+      /* 更真实的渐变：更深底色，覆盖范围更大 */
+      background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 80%);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
       padding: var(--spacing-4);
       opacity: 0;
-      transition: opacity var(--transition-slow);
+      transition: opacity 280ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     .card--gallery:hover .card__overlay { opacity: 1; }
     .card--gallery .card__overlay-title {
@@ -146,11 +181,15 @@
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--border-subtle);
-      transition: border-color var(--transition-fast), box-shadow var(--transition-normal), transform var(--transition-slow);
+      cursor: pointer;
+      transition:
+        border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .card--stats:hover {
-      border-color: var(--border-default);
-      box-shadow: var(--glow-brand-sm);
+      border-color: rgba(123,94,240,0.15);
+      box-shadow: var(--card-glow-hover);
       transform: translateY(-2px);
     }
     .stat-value {

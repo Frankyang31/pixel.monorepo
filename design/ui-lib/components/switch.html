@@ -1,93 +1,499 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Switch — 组件预览</title>
+  <title>Switch — 深夜工作室 v3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../tokens.css">
   <style>
-    .switch-label { display: inline-flex; align-items: center; gap: var(--spacing-3); cursor: pointer; font-size: var(--text-sm); color: var(--text-primary); user-select: none; }
-    .switch-label:has(.switch-input:disabled) { opacity: 0.4; cursor: not-allowed; }
-    .switch-input { position: absolute; opacity: 0; width: 0; height: 0; }
-    .switch-control { width: 44px; height: 24px; background: var(--bg-overlay); border: 1px solid var(--border-default); border-radius: var(--radius-full); position: relative; transition: background-color var(--transition-fast), border-color var(--transition-fast); flex-shrink: 0; }
-    .switch-thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .switch-input:hover:not(:disabled) + .switch-control { border-color: var(--border-strong); }
-    .switch-input:focus-visible + .switch-control { outline: 2px solid var(--color-brand-mid); outline-offset: 2px; }
-    .switch-input:checked + .switch-control { background: var(--color-brand-gradient); border-color: transparent; }
-    .switch-input:checked + .switch-control .switch-thumb { transform: translateX(20px); }
-    [data-theme="dark"] .switch-thumb { background: var(--text-secondary); }
-    .switch-input:checked + .switch-control .switch-thumb { background: white; }
-    .switch--sm .switch-control { width: 32px; height: 18px; }
-    .switch--sm .switch-thumb { width: 14px; height: 14px; }
-    .switch--sm .switch-input:checked + .switch-control .switch-thumb { transform: translateX(14px); }
-    .switch--lg .switch-control { width: 56px; height: 30px; }
-    .switch--lg .switch-thumb { width: 24px; height: 24px; }
-    .switch--lg .switch-input:checked + .switch-control .switch-thumb { transform: translateX(26px); }
-    .switch-text { font-weight: var(--font-medium); }
-    .switch-desc { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
+    /* ================================================================
+       SWITCH v3 — 从零重新设计
+       
+       设计理念：
+       1. Track（轨道）是一个"凹入的沟槽" — 内凹阴影，不是平面矩形
+       2. Thumb（滑块）是"被轨道容纳的球体" — 有深度、有高光，像实体物件
+       3. 开关时 thumb 先加速 → 微越界 → 减速弹回，模拟物理滑动感
+       4. 开启时轨道被品牌渐变"点亮"，thumb 变成白色发光体
+       5. 轨道宽度比例：thumb 占轨道高度 0.75，行程宽度 = 总宽 - thumb直径 - 4px gap
+       ================================================================ */
 
-    body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); margin: 0; padding: var(--spacing-8); }
-    .demo-section { margin-bottom: var(--spacing-12); }
-    .demo-title { font-size: var(--text-lg); font-weight: var(--font-semibold); margin-bottom: var(--spacing-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--spacing-2); }
-    .demo-row { display: flex; flex-direction: column; gap: var(--spacing-4); margin-bottom: var(--spacing-4); }
-    .demo-row-h { display: flex; gap: var(--spacing-6); align-items: center; flex-wrap: wrap; margin-bottom: var(--spacing-4); }
-    .demo-label { font-size: var(--text-xs); color: var(--text-tertiary); min-width: 80px; font-weight: var(--font-medium); }
-    .theme-switch { position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100; display: flex; gap: var(--spacing-2); }
-    .theme-btn { padding: var(--spacing-2) var(--spacing-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; font-size: var(--text-sm); font-family: var(--font-sans); }
-    .theme-btn.active { border-color: var(--color-brand-mid); color: var(--color-brand-mid); }
-    h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); margin-bottom: var(--spacing-2); }
-    .subtitle { color: var(--text-secondary); font-size: var(--text-base); margin-bottom: var(--spacing-8); }
-    .demo-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--spacing-5); }
+    /* ---------- 令牌 ---------- */
+    :root {
+      --sw-track-off: rgba(255,255,255,0.08);
+      --sw-track-off-border: rgba(255,255,255,0.12);
+      --sw-track-off-inset: inset 0 1px 3px rgba(0,0,0,0.25);
+      --sw-track-hover: rgba(255,255,255,0.12);
+      --sw-track-hover-border: rgba(123,94,240,0.2);
+      --sw-track-on-glow: 0 0 8px -2px rgba(123,94,240,0.35), 0 0 0 1px rgba(123,94,240,0.1);
+      --sw-thumb-off: rgba(255,255,255,0.35);
+      --sw-thumb-off-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      --sw-thumb-on: #FFFFFF;
+      --sw-thumb-on-shadow: 0 1px 4px rgba(0,0,0,0.3), 0 0 6px rgba(255,255,255,0.2);
+    }
+
+    [data-theme="light"] {
+      --sw-track-off: rgba(0,0,0,0.08);
+      --sw-track-off-border: rgba(0,0,0,0.12);
+      --sw-track-off-inset: inset 0 1px 2px rgba(0,0,0,0.1);
+      --sw-track-hover: rgba(0,0,0,0.12);
+      --sw-track-hover-border: var(--border-default);
+      --sw-track-on-glow: 0 0 0 3px rgba(123,94,240,0.12);
+      --sw-thumb-off: rgba(0,0,0,0.3);
+      --sw-thumb-off-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      --sw-thumb-on: #FFFFFF;
+      --sw-thumb-on-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* ================================================================
+       核心结构
+       ================================================================ */
+    .switch-label {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: var(--spacing-3);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch-label:has(.switch-input:disabled) {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .switch-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    /* ================================================================
+       Switch Track (轨道) — 默认 MD 44×24
+       ================================================================ */
+    .switch-track {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+      background: var(--sw-track-off);
+      border: 1.5px solid var(--sw-track-off-border);
+      box-shadow: var(--sw-track-off-inset);
+      /* 过渡编排 */
+      transition:
+        background 240ms cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      /* 精确对齐文字第一行 */
+      margin-top: 1px;
+    }
+
+    /* hover */
+    .switch-label:hover .switch-track {
+      background: var(--sw-track-hover);
+      border-color: var(--sw-track-hover-border);
+    }
+
+    /* focus-visible */
+    .switch-input:focus-visible + .switch-track {
+      outline: none;
+      border-color: var(--color-brand-mid);
+      box-shadow: var(--sw-track-off-inset),
+                  0 0 0 1px rgba(123,94,240,0.25),
+                  0 0 0 3px rgba(123,94,240,0.08);
+    }
+
+    /* 开启态 */
+    .switch-input:checked + .switch-track {
+      background: var(--color-brand-gradient);
+      border-color: transparent;
+      box-shadow: var(--sw-track-on-glow);
+    }
+
+    /* ================================================================
+       Switch Thumb (滑块)
+       ================================================================ */
+    .switch-thumb {
+      position: absolute;
+      top: 50%;
+      left: 3px;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--sw-thumb-off);
+      box-shadow: var(--sw-thumb-off-shadow);
+      /* 物理滑动过渡：
+         - translateX 用 spring curve，有超越感
+         - 背景色/阴影用独立曲线 */
+      transition:
+        transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        width 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 开启态：thumb 移到右侧并变白 */
+    .switch-input:checked + .switch-track .switch-thumb {
+      /* 44px track - 3px gap left - 3px gap right - 16px thumb = 22px */
+      transform: translateY(-50%) translateX(20px);
+      background: var(--sw-thumb-on);
+      box-shadow: var(--sw-thumb-on-shadow);
+    }
+
+    /* 按压时 thumb 拉宽，模拟物理形变 */
+    .switch-label:active .switch-thumb {
+      width: 20px;
+    }
+    .switch-label:active .switch-input:checked + .switch-track .switch-thumb {
+      transform: translateY(-50%) translateX(16px);
+    }
+
+    /* ================================================================
+       尺寸变体
+       ================================================================ */
+    /* SM — 32×18 */
+    .switch--sm .switch-track {
+      width: 32px;
+      height: 18px;
+    }
+    .switch--sm .switch-thumb {
+      width: 12px;
+      height: 12px;
+      left: 2px;
+    }
+    .switch--sm .switch-input:checked + .switch-track .switch-thumb {
+      transform: translateY(-50%) translateX(14px);
+    }
+    .switch--sm:active .switch-thumb {
+      width: 15px;
+    }
+    .switch--sm:active .switch-input:checked + .switch-track .switch-thumb {
+      transform: translateY(-50%) translateX(11px);
+    }
+    .switch--sm .switch-text { font-size: var(--text-xs); }
+
+    /* LG — 56×30 */
+    .switch--lg .switch-track {
+      width: 56px;
+      height: 30px;
+    }
+    .switch--lg .switch-thumb {
+      width: 22px;
+      height: 22px;
+      left: 3px;
+    }
+    .switch--lg .switch-input:checked + .switch-track .switch-thumb {
+      transform: translateY(-50%) translateX(26px);
+    }
+    .switch--lg:active .switch-thumb {
+      width: 26px;
+    }
+    .switch--lg:active .switch-input:checked + .switch-track .switch-thumb {
+      transform: translateY(-50%) translateX(22px);
+    }
+
+    /* ================================================================
+       图标 Switch（轨道内有图标）
+       ================================================================ */
+    .switch--icon .switch-track::before,
+    .switch--icon .switch-track::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 10px;
+      transition: opacity 200ms ease;
+    }
+
+    /* 月亮图标（关闭态） */
+    .switch--icon .switch-track::before {
+      right: 5px;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.5 5.5A3.5 3.5 0 114.5 1.5a2.5 2.5 0 104 4z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E") center/contain no-repeat;
+      opacity: 1;
+    }
+    /* 太阳图标（开启态） */
+    .switch--icon .switch-track::after {
+      left: 5px;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='5' cy='5' r='2' fill='rgba(255,255,255,0.9)'/%3E%3Cpath d='M5 1.5V2M5 8v.5M1.5 5H2M8 5h.5M2.64 2.64l.36.36M7.36 7.36l.36.36M7.36 2.64l-.36.36M2.64 7.36l.36-.36' stroke='rgba(255,255,255,0.9)' stroke-width='0.8' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+      opacity: 0;
+    }
+    .switch--icon .switch-input:checked + .switch-track::before { opacity: 0; }
+    .switch--icon .switch-input:checked + .switch-track::after  { opacity: 1; }
+
+    /* ================================================================
+       文字内容区
+       ================================================================ */
+    .switch-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .switch-text {
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .switch-desc {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    /* ================================================================
+       行设置组（带分隔线的列表）
+       ================================================================ */
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-4) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .switch-row:last-child { border-bottom: none; }
+    .switch-row .switch-label { flex-direction: row-reverse; gap: var(--spacing-4); }
+
+    /* ================================================================
+       DEMO LAYOUT
+       ================================================================ */
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      margin: 0;
+      padding: var(--spacing-8) var(--spacing-8) var(--spacing-20);
+      max-width: 960px;
+      margin-left: auto; margin-right: auto;
+      transition: background-color var(--transition-slow), color var(--transition-slow);
+    }
+
+    .demo-header { margin-bottom: var(--spacing-10); padding-bottom: var(--spacing-6); border-bottom: 1px solid var(--border-subtle); }
+    h1 { font-size: var(--text-2xl); font-weight: var(--font-bold); margin: 0 0 var(--spacing-1) 0; letter-spacing: -0.02em; }
+    .subtitle { color: var(--text-secondary); font-size: var(--text-sm); margin: 0; line-height: 1.6; }
+    .demo-section { margin-bottom: var(--spacing-10); }
+    .demo-title { font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--spacing-4); }
+    .demo-row { display: flex; flex-direction: column; gap: var(--spacing-3); }
+    .demo-row-h { display: flex; gap: var(--spacing-6); align-items: center; flex-wrap: wrap; }
+    .demo-stage {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-6);
+      margin-bottom: var(--spacing-4);
+    }
+    .size-label { font-size: 10px; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-family: var(--font-mono); }
+
+    .theme-switch {
+      position: fixed; top: var(--spacing-4); right: var(--spacing-4); z-index: 100;
+      display: flex; gap: var(--spacing-2);
+      background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius-full); padding: 3px;
+    }
+    .theme-btn {
+      padding: var(--spacing-1) var(--spacing-3); border-radius: var(--radius-full); border: none;
+      background: transparent; color: var(--text-tertiary); cursor: pointer;
+      font-size: var(--text-xs); font-family: var(--font-sans); font-weight: var(--font-medium);
+      transition: all var(--transition-fast);
+    }
+    .theme-btn.active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
   </style>
 </head>
 <body>
-  <div class="theme-switch"><button class="theme-btn active" onclick="setTheme('light')">Light</button><button class="theme-btn" onclick="setTheme('dark')">Dark</button></div>
-  <h1>Switch 开关</h1>
-  <p class="subtitle">布尔值切换组件，滑动操作契合「开关」心理模型。</p>
 
+  <div class="theme-switch">
+    <button class="theme-btn" onclick="setTheme('light')">Light</button>
+    <button class="theme-btn active" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <div class="demo-header">
+    <h1>Switch 开关</h1>
+    <p class="subtitle">凹槽中的球体 — 轨道是内凹的沟槽，滑块是被容纳的实体。滑动时 thumb 先超越终点再弹回，像真实的物理开关。</p>
+  </div>
+
+  <!-- ===== 基础状态 ===== -->
   <div class="demo-section">
-    <div class="demo-title">基础开关</div>
-    <div class="demo-card">
-      <div class="demo-row">
-        <label class="switch-label">
-          <input type="checkbox" class="switch-input" role="switch" checked>
-          <span class="switch-control"><span class="switch-thumb"></span></span>
-          <div><div class="switch-text">自动保存</div><div class="switch-desc">每次生成后自动保存到我的作品集</div></div>
-        </label>
-      </div>
+    <div class="demo-title">States 状态</div>
+    <div class="demo-stage">
       <div class="demo-row">
         <label class="switch-label">
           <input type="checkbox" class="switch-input" role="switch">
-          <span class="switch-control"><span class="switch-thumb"></span></span>
-          <div><div class="switch-text">邮件通知</div><div class="switch-desc">当作品生成完成时发送邮件通知</div></div>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">关闭（默认）</span>
         </label>
-      </div>
-      <div class="demo-row">
+
+        <label class="switch-label">
+          <input type="checkbox" class="switch-input" role="switch" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">开启</span>
+        </label>
+
         <label class="switch-label">
           <input type="checkbox" class="switch-input" role="switch" disabled>
-          <span class="switch-control"><span class="switch-thumb"></span></span>
-          <div><div class="switch-text">高级功能</div><div class="switch-desc">升级会员后可开启（Disabled）</div></div>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">禁用关闭</span>
+        </label>
+
+        <label class="switch-label">
+          <input type="checkbox" class="switch-input" role="switch" checked disabled>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">禁用开启</span>
         </label>
       </div>
     </div>
   </div>
 
+  <!-- ===== 带描述文字 ===== -->
   <div class="demo-section">
-    <div class="demo-title">尺寸</div>
-    <div class="demo-row-h">
-      <label class="switch-label switch--sm"><input type="checkbox" class="switch-input" role="switch" checked><span class="switch-control"><span class="switch-thumb"></span></span><span class="switch-text">SM 32px</span></label>
-      <label class="switch-label"><input type="checkbox" class="switch-input" role="switch" checked><span class="switch-control"><span class="switch-thumb"></span></span><span class="switch-text">MD 44px</span></label>
-      <label class="switch-label switch--lg"><input type="checkbox" class="switch-input" role="switch" checked><span class="switch-control"><span class="switch-thumb"></span></span><span class="switch-text">LG 56px</span></label>
-    </div>
-    <div class="demo-row-h">
-      <label class="switch-label switch--sm"><input type="checkbox" class="switch-input" role="switch"><span class="switch-control"><span class="switch-thumb"></span></span><span class="switch-text">Off</span></label>
-      <label class="switch-label"><input type="checkbox" class="switch-input" role="switch"><span class="switch-control"><span class="switch-thumb"></span></span><span class="switch-text">Off</span></label>
-      <label class="switch-label switch--lg"><input type="checkbox" class="switch-input" role="switch"><span class="switch-control"><span class="switch-thumb"></span></span><span class="switch-text">Off</span></label>
+    <div class="demo-title">With Description 带描述</div>
+    <div class="demo-stage">
+      <div class="demo-row">
+        <label class="switch-label">
+          <input type="checkbox" class="switch-input" role="switch" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <div class="switch-content">
+            <span class="switch-text">自动保存</span>
+            <span class="switch-desc">每次生成完成后自动保存到我的作品集</span>
+          </div>
+        </label>
+
+        <label class="switch-label">
+          <input type="checkbox" class="switch-input" role="switch">
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <div class="switch-content">
+            <span class="switch-text">邮件通知</span>
+            <span class="switch-desc">作品生成完成时发送邮件通知</span>
+          </div>
+        </label>
+
+        <label class="switch-label">
+          <input type="checkbox" class="switch-input" role="switch" disabled>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <div class="switch-content">
+            <span class="switch-text">高级分析</span>
+            <span class="switch-desc">升级 Pro 会员后可开启</span>
+          </div>
+        </label>
+      </div>
     </div>
   </div>
 
-  <script>function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===t));}</script>
+  <!-- ===== 尺寸 ===== -->
+  <div class="demo-section">
+    <div class="demo-title">Sizes 尺寸</div>
+    <div class="demo-stage">
+      <div class="demo-row-h">
+        <div>
+          <div class="size-label">SM · 32×18</div>
+          <label class="switch-label switch--sm">
+            <input type="checkbox" class="switch-input" role="switch" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">小</span>
+          </label>
+        </div>
+        <div>
+          <div class="size-label">MD · 44×24</div>
+          <label class="switch-label">
+            <input type="checkbox" class="switch-input" role="switch" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">默认</span>
+          </label>
+        </div>
+        <div>
+          <div class="size-label">LG · 56×30</div>
+          <label class="switch-label switch--lg">
+            <input type="checkbox" class="switch-input" role="switch" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">大</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 图标 Switch ===== -->
+  <div class="demo-section">
+    <div class="demo-title">Icon Switch 图标变体</div>
+    <p style="font-size:var(--text-xs);color:var(--text-tertiary);margin:-8px 0 var(--spacing-4);line-height:1.6">轨道内嵌入图标，关闭时显示月亮，开启时显示太阳，适合深色/浅色主题切换场景。</p>
+    <div class="demo-stage">
+      <div class="demo-row-h">
+        <label class="switch-label switch--icon">
+          <input type="checkbox" class="switch-input" role="switch">
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">深色模式</span>
+        </label>
+        <label class="switch-label switch--icon">
+          <input type="checkbox" class="switch-input" role="switch" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-text">已开启</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 设置面板场景 ===== -->
+  <div class="demo-section">
+    <div class="demo-title">In Context 设置面板</div>
+    <div class="demo-stage" style="max-width:400px;padding:0 var(--spacing-6)">
+      <div class="switch-row">
+        <div>
+          <div style="font-size:var(--text-sm);font-weight:var(--font-medium)">自动保存</div>
+          <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px">每次生成后自动保存</div>
+        </div>
+        <label class="switch-label" style="gap:0">
+          <input type="checkbox" class="switch-input" role="switch" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </div>
+      <div class="switch-row">
+        <div>
+          <div style="font-size:var(--text-sm);font-weight:var(--font-medium)">公开作品</div>
+          <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px">默认将新作品公开到广场</div>
+        </div>
+        <label class="switch-label" style="gap:0">
+          <input type="checkbox" class="switch-input" role="switch">
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </div>
+      <div class="switch-row">
+        <div>
+          <div style="font-size:var(--text-sm);font-weight:var(--font-medium)">邮件通知</div>
+          <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px">生成完成时邮件提醒</div>
+        </div>
+        <label class="switch-label" style="gap:0">
+          <input type="checkbox" class="switch-input" role="switch" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </div>
+      <div class="switch-row">
+        <div>
+          <div style="font-size:var(--text-sm);font-weight:var(--font-medium)">高级优化 <span style="font-size:10px;background:rgba(123,94,240,0.12);color:var(--color-accent-purple);border:1px solid rgba(123,94,240,0.15);padding:0 6px;border-radius:10px;margin-left:6px">Pro</span></div>
+          <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px">升级 Pro 会员可用</div>
+        </div>
+        <label class="switch-label" style="gap:0">
+          <input type="checkbox" class="switch-input" role="switch" disabled>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase() === theme));
+    }
+  </script>
 </body>
 </html>
