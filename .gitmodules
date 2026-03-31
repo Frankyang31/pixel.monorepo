@@ -1,3 +1,6 @@
 [submodule "web"]
 	path = web
 	url = https://github.com/Frankyang31/pixel.web.git
+[submodule "service"]
+	path = service
+	url = https://github.com/Frankyang31/pixel.service.git
